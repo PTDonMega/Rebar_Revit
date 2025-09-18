@@ -23,7 +23,6 @@ namespace MacroArmaduraAvancado
 
         // Controlos da interface
         private GroupBox groupTipoElemento;
-        private RadioButton radioPilares;
         private RadioButton radioVigas;
 
         private GroupBox groupFiltros;
@@ -87,33 +86,27 @@ namespace MacroArmaduraAvancado
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
 
-            // Grupo de selecção do tipo de elemento (APENAS PILARES E VIGAS)
+            // Grupo de selecção do tipo de elemento (APENAS VIGAS)
             groupTipoElemento = new GroupBox();
             groupTipoElemento.Text = "Tipo de Elemento Estrutural";
             groupTipoElemento.Location = new System.Drawing.Point(12, 12);
             groupTipoElemento.Size = new System.Drawing.Size(910, 70);
 
-            radioPilares = new RadioButton();
-            radioPilares.Text = "Pilares";
-            radioPilares.Location = new System.Drawing.Point(20, 25);
-            radioPilares.Size = new System.Drawing.Size(80, 25);
-            radioPilares.Checked = true;
-            radioPilares.CheckedChanged += TipoElemento_CheckedChanged;
-
             radioVigas = new RadioButton();
             radioVigas.Text = "Vigas";
-            radioVigas.Location = new System.Drawing.Point(120, 25);
+            radioVigas.Location = new System.Drawing.Point(20, 25);
             radioVigas.Size = new System.Drawing.Size(80, 25);
-            radioVigas.CheckedChanged += TipoElemento_CheckedChanged;
+            radioVigas.Checked = true;
+            radioVigas.Enabled = false;
 
             labelInfoElementos = new Label();
             labelInfoElementos.Text = "Informações: Detecção automática de posição para amarrações";
-            labelInfoElementos.Location = new System.Drawing.Point(220, 25);
+            labelInfoElementos.Location = new System.Drawing.Point(120, 25);
             labelInfoElementos.Size = new System.Drawing.Size(450, 40);
             labelInfoElementos.ForeColor = System.Drawing.Color.DarkBlue;
 
             groupTipoElemento.Controls.AddRange(new Control[] {
-                radioPilares, radioVigas, labelInfoElementos
+                radioVigas, labelInfoElementos
             });
 
             // Resto da interface... (similar mas corrigida)
@@ -199,12 +192,12 @@ namespace MacroArmaduraAvancado
             colDiametro.Text = "Diâm. (mm)";
             colDiametro.Width = 80;
 
-            colTipo = new ColumnHeader();
-            colTipo.Text = "Tipo";
-            colTipo.Width = 100;
+            colPosicao = new ColumnHeader();
+            colPosicao.Text = "Pos.";
+            colPosicao.Width = 60;
 
             listViewVaroes.Columns.AddRange(new ColumnHeader[] {
-                colQuantidade, colDiametro, colTipo
+                colQuantidade, colDiametro, colPosicao
             });
 
             buttonAdicionarVarao = new Button();
@@ -432,8 +425,10 @@ namespace MacroArmaduraAvancado
         private void AdicionarConfigPadrao()
         {
             // Adicionar varão padrão
-            ListViewItem itemVarao = new ListViewItem(new string[] { "8", "16", "Principal" });
-            listViewVaroes.Items.Add(itemVarao);
+            ListViewItem itemVaraoSuperior = new ListViewItem(new string[] { "4", "16", "Superior" });
+            listViewVaroes.Items.Add(itemVaraoSuperior);
+            ListViewItem itemVaraoInferior = new ListViewItem(new string[] { "4", "16", "Inferior" });
+            listViewVaroes.Items.Add(itemVaraoInferior);
 
             // Adicionar estribo padrão
             ListViewItem itemEstribo = new ListViewItem(new string[] { "8", "200", "Não" });
@@ -447,14 +442,6 @@ namespace MacroArmaduraAvancado
         }
 
         // Event Handlers
-        private void TipoElemento_CheckedChanged(object sender, EventArgs e)
-        {
-            if (((RadioButton)sender).Checked)
-            {
-                ActualizarElementos();
-                ActualizarCalculosAutomaticos();
-            }
-        }
 
         private void ComboDesignacao_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -499,14 +486,14 @@ namespace MacroArmaduraAvancado
         // Métodos de interface
         private void ButtonAdicionarVarao_Click(object sender, EventArgs e)
         {
-            using (FormularioConfiguracaoVarao form = new FormularioConfiguracaoVarao())
+            using (FormularioConfiguracaoVarao form = new FormularioConfiguracaoVarao(true))
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
                     ListViewItem item = new ListViewItem(new string[] {
                         form.Quantidade.ToString(),
                         form.Diametro.ToString(),
-                        form.TipoArmadura
+                        form.Posicao
                     });
                     listViewVaroes.Items.Add(item);
                     ActualizarCalculosAutomaticos();
@@ -904,9 +891,9 @@ namespace MacroArmaduraAvancado
             {
                 int quantidade = int.Parse(item.SubItems[0].Text);
                 double diametro = double.Parse(item.SubItems[1].Text);
-                string tipo = item.SubItems[2].Text;
+                string posicao = item.SubItems[2].Text;
 
-                config.Varoes.Add(new ArmVar(quantidade, diametro) { TipoArmadura = tipo });
+                config.Varoes.Add(new ArmVar(quantidade, diametro) { TipoArmadura = posicao });
             }
 
             // Configurar distribuição
@@ -939,9 +926,6 @@ namespace MacroArmaduraAvancado
                 config.Estribos.Add(new ArmStirrup(diametro, espacamento) { Alternado = alternado });
             }
 
-            // Configurar tipo de elemento
-            config.TipoElemento = ObterTipoElementoSeleccionado();
-
             // Configurar definições
             config.Defs = gestorDefinicoes.ObterDefinicoes();
 
@@ -950,9 +934,7 @@ namespace MacroArmaduraAvancado
 
         private TipoElementoEstruturalEnum ObterTipoElementoSeleccionado()
         {
-            if (radioPilares.Checked) return TipoElementoEstruturalEnum.Pilares;
-            if (radioVigas.Checked) return TipoElementoEstruturalEnum.Vigas;
-            return TipoElementoEstruturalEnum.Pilares; // Padrão
+            return TipoElementoEstruturalEnum.Vigas;
         }
 
         private void ExecutarColocacaoArmaduras(List<Element> elementos)

@@ -7,11 +7,11 @@ using Autodesk.Revit.DB.Structure;
 namespace MacroArmaduraAvancado
 {
     /// <summary>
-    /// Configura√ß√£o e execu√ß√£o de armadura para Pilares e Vigas
+    /// ConfiguraÁ„o e execuÁ„o de armadura para Pilares e Vigas
     /// </summary>
     public class ArmConfigExec
     {
-        // Configura√ß√£o principal
+        // ConfiguraÁ„o principal
         public List<ArmVar> Varoes { get; set; } = new List<ArmVar>();
         public List<ArmStirrup> Estribos { get; set; } = new List<ArmStirrup>();
         public TipoDistribuicaoArmaduraEnum TipoDistribuicao { get; set; } = TipoDistribuicaoArmaduraEnum.MistaComMaioresNasBordas;
@@ -19,8 +19,9 @@ namespace MacroArmaduraAvancado
         public bool ComprimentoAuto { get; set; } = true;
         public bool AmarracaoAuto { get; set; } = true;
         public double MultAmarracao { get; set; } = 70;
-        public string TipoAmarracao { get; set; } = "Autom√°tico";
+        public string TipoAmarracao { get; set; } = "Autom·tico";
         public bool DeteccaoAmarracaoAuto { get; set; } = true;
+        public TipoElementoEstruturalEnum TipoElemento { get; set; }
         public DefinicoesProjectoAvancadas Defs { get; set; }
 
         private Document doc;
@@ -67,7 +68,7 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na coloca√ß√£o de armadura: {ex.Message}");
+                throw new Exception($"Erro na colocaÁ„o de armadura: {ex.Message}");
             }
         }
 
@@ -86,18 +87,18 @@ namespace MacroArmaduraAvancado
                 if (altura <= 0 || largura <= 0 || profundidade <= 0)
                     return false;
 
-                double cobertura = (Defs?.CoberturaPilares ?? 40) / 304.8; // Converter mm para p√©s
+                double cobertura = (Defs?.CoberturaPilares ?? 40) / 304.8; // Converter mm para pÈs
                 double larguraUtil = largura - 2 * cobertura;
                 double profundidadeUtil = profundidade - 2 * cobertura;
 
-                // Determinar tipo de amarra√ß√£o
+                // Determinar tipo de amarraÁ„o
                 TipoAmarracaoEnum tipoAmarracao = TipoAmarracaoEnum.Reta;
                 if (DeteccaoAmarracaoAuto)
                 {
                     tipoAmarracao = detector.DeterminarTipoAmarracaoAutomatico(pilar);
                 }
 
-                // Calcular posi√ß√µes dos var√µes
+                // Calcular posiÁıes dos varıes
                 List<PosicaoVarao> posicoes = CalcularDistribuicaoVaroes(larguraUtil, profundidadeUtil);
 
                 // Criar armaduras longitudinais
@@ -129,7 +130,7 @@ namespace MacroArmaduraAvancado
                 if (comprimento <= 0 || altura <= 0 || largura <= 0)
                     return false;
 
-                double cobertura = (Defs?.CoberturaVigas ?? 25) / 304.8; // Converter mm para p√©s
+                double cobertura = (Defs?.CoberturaVigas ?? 25) / 304.8; // Converter mm para pÈs
 
                 // Criar armadura superior e inferior
                 bool sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, comprimento, altura, cobertura);
@@ -173,13 +174,13 @@ namespace MacroArmaduraAvancado
         {
             List<PosicaoVarao> posicoes = new List<PosicaoVarao>();
 
-            // Sempre 4 nos cantos (m√≠nimo para pilares)
+            // Sempre 4 nos cantos (mÌnimo para pilares)
             posicoes.Add(new PosicaoVarao(new XYZ(-largura / 2, -prof / 2, 0), TipoPosicaoVarao.Canto));
             posicoes.Add(new PosicaoVarao(new XYZ(largura / 2, -prof / 2, 0), TipoPosicaoVarao.Canto));
             posicoes.Add(new PosicaoVarao(new XYZ(largura / 2, prof / 2, 0), TipoPosicaoVarao.Canto));
             posicoes.Add(new PosicaoVarao(new XYZ(-largura / 2, prof / 2, 0), TipoPosicaoVarao.Canto));
 
-            // Distribuir restantes nas faces se necess√°rio
+            // Distribuir restantes nas faces se necess·rio
             int restantes = total - 4;
             if (restantes > 0)
             {
@@ -189,7 +190,7 @@ namespace MacroArmaduraAvancado
                     double x = -largura / 2 + (i * largura / (porFace + 1));
                     posicoes.Add(new PosicaoVarao(new XYZ(x, -prof / 2, 0), TipoPosicaoVarao.Face));
                 }
-                // Adicionar nas outras faces conforme necess√°rio...
+                // Adicionar nas outras faces conforme necess·rio...
             }
 
             return posicoes.Take(total).ToList();
@@ -286,7 +287,7 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na cria√ß√£o de armaduras longitudinais: {ex.Message}");
+                throw new Exception($"Erro na criaÁ„o de armaduras longitudinais: {ex.Message}");
             }
         }
 
@@ -295,13 +296,13 @@ namespace MacroArmaduraAvancado
         {
             try
             {
-                double comprimentoTotal = CalcCompTotal(altura * 304.8) / 304.8; // Converter para p√©s
+                double comprimentoTotal = CalcCompTotal(altura * 304.8) / 304.8; // Converter para pÈs
                 double comprimentoAmarracao = (MultAmarracao * diametro);
 
                 XYZ pontoInicial = posicao;
                 XYZ pontoFinal = new XYZ(posicao.X, posicao.Y, posicao.Z + altura);
 
-                // Calcular pontos com amarra√ß√£o
+                // Calcular pontos com amarraÁ„o
                 List<XYZ> pontosCompletos = calcAmarracao.CalcularPontosAncoragem(
                     pontoInicial, pontoFinal, tipoAmarracao, comprimentoAmarracao);
 
@@ -318,7 +319,7 @@ namespace MacroArmaduraAvancado
                 if (curvas.Count == 0)
                     curvas.Add(Line.CreateBound(pontoInicial, pontoFinal));
 
-                // Obter ganchos se necess√°rio
+                // Obter ganchos se necess·rio
                 RebarHookType gancho = calcAmarracao.DeterminarTipoGancho(doc, tipoAmarracao);
 
                 // Criar armadura
@@ -331,8 +332,8 @@ namespace MacroArmaduraAvancado
 
                 if (armadura != null)
                 {
-                    // Definir coment√°rio
-                    string comentario = $"√ò{diametro}mm - Amarra√ß√£o: {MultAmarracao}? - {tipoAmarracao}";
+                    // Definir coment·rio
+                    string comentario = $"ÿ{diametro}mm - AmarraÁ„o: {MultAmarracao}? - {tipoAmarracao}";
                     var paramComentario = armadura.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
                     paramComentario?.Set(comentario);
                 }
@@ -341,7 +342,7 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na cria√ß√£o de armadura √ò{diametro}mm: {ex.Message}");
+                throw new Exception($"Erro na criaÁ„o de armadura ÿ{diametro}mm: {ex.Message}");
             }
         }
 
@@ -355,7 +356,7 @@ namespace MacroArmaduraAvancado
                     var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
                     if (tipoEstribo == null) continue;
 
-                    double espacamento = estribo.Espacamento / 304.8; // mm para p√©s
+                    double espacamento = estribo.Espacamento / 304.8; // mm para pÈs
                     int numeroEstribos = (int)(altura / espacamento);
 
                     for (int i = 1; i < numeroEstribos; i++) // Evitar base e topo
@@ -379,7 +380,7 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na cria√ß√£o de estribos: {ex.Message}");
+                throw new Exception($"Erro na criaÁ„o de estribos: {ex.Message}");
             }
         }
 
@@ -481,7 +482,7 @@ namespace MacroArmaduraAvancado
                     // Armadura superior
                     for (int i = 0; i < varao.Quantidade / 2; i++)
                     {
-                        double y = -0.1 + (i * 0.05); // Espa√ßamento pequeno
+                        double y = -0.1 + (i * 0.05); // EspaÁamento pequeno
                         XYZ pontoInicial = new XYZ(0, y, altura - cobertura);
                         XYZ pontoFinal = new XYZ(comprimento, y, altura - cobertura);
 
@@ -503,7 +504,7 @@ namespace MacroArmaduraAvancado
                     // Armadura inferior
                     for (int i = 0; i < (varao.Quantidade + 1) / 2; i++)
                     {
-                        double y = -0.1 + (i * 0.05); // Espa√ßamento pequeno
+                        double y = -0.1 + (i * 0.05); // EspaÁamento pequeno
                         XYZ pontoInicial = new XYZ(0, y, cobertura);
                         XYZ pontoFinal = new XYZ(comprimento, y, cobertura);
 
@@ -527,7 +528,7 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na cria√ß√£o de armadura longitudinal da viga: {ex.Message}");
+                throw new Exception($"Erro na criaÁ„o de armadura longitudinal da viga: {ex.Message}");
             }
         }
 
@@ -541,7 +542,7 @@ namespace MacroArmaduraAvancado
                     var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
                     if (tipoEstribo == null) continue;
 
-                    double espacamento = estribo.Espacamento / 304.8; // mm para p√©s
+                    double espacamento = estribo.Espacamento / 304.8; // mm para pÈs
                     int numeroEstribos = (int)(comprimento / espacamento);
 
                     for (int i = 1; i < numeroEstribos; i++)
@@ -584,11 +585,11 @@ namespace MacroArmaduraAvancado
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na cria√ß√£o de estribos da viga: {ex.Message}");
+                throw new Exception($"Erro na criaÁ„o de estribos da viga: {ex.Message}");
             }
         }
 
-        // M√©todos auxiliares
+        // MÈtodos auxiliares
         private double ObterAlturaElemento(FamilyInstance inst)
         {
             var paramAltura = inst.get_Parameter(BuiltInParameter.FAMILY_HEIGHT_PARAM) ??
@@ -622,40 +623,40 @@ namespace MacroArmaduraAvancado
         }
 
         /// <summary>
-        /// Gera relat√≥rio de pr√©-visualiza√ß√£o
+        /// Gera relatÛrio de prÈ-visualizaÁ„o
         /// </summary>
         public string GerarRelatorioPreVisualizacao(List<Element> elementos)
         {
             var relatorio = new System.Text.StringBuilder();
 
-            relatorio.AppendLine("=== RELAT√ìRIO DE PR√â-VISUALIZA√á√ÉO ===");
+            relatorio.AppendLine("=== RELAT”RIO DE PR…-VISUALIZA«√O ===");
             relatorio.AppendLine($"Data/Hora: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
             relatorio.AppendLine($"Tipo de Elemento: {TipoElemento}");
             relatorio.AppendLine($"Total de Elementos: {elementos.Count}");
             relatorio.AppendLine();
 
-            // An√°lise de elementos
+            // An·lise de elementos
             if (elementos.Count > 0)
             {
                 var analise = detector.AnalisarElementos(elementos);
-                relatorio.AppendLine("AN√ÅLISE DE POSICIONAMENTO:");
-                relatorio.AppendLine($"- Funda√ß√£o: {analise.ElementosFundacao} elementos");
-                relatorio.AppendLine($"- √öltimo piso: {analise.ElementosUltimoPiso} elementos");
-                relatorio.AppendLine($"- Interm√©dios: {analise.ElementosIntermedios} elementos");
+                relatorio.AppendLine("AN¡LISE DE POSICIONAMENTO:");
+                relatorio.AppendLine($"- FundaÁ„o: {analise.ElementosFundacao} elementos");
+                relatorio.AppendLine($"- ⁄ltimo piso: {analise.ElementosUltimoPiso} elementos");
+                relatorio.AppendLine($"- IntermÈdios: {analise.ElementosIntermedios} elementos");
                 relatorio.AppendLine();
             }
 
-            // Configura√ß√£o de armadura
-            relatorio.AppendLine("CONFIGURA√á√ÉO DE ARMADURA LONGITUDINAL:");
-            relatorio.AppendLine($"- Distribui√ß√£o: {TipoDistribuicao}");
-            relatorio.AppendLine($"- Quantidade total de var√µes: {QtdTotalVaroes()}");
+            // ConfiguraÁ„o de armadura
+            relatorio.AppendLine("CONFIGURA«√O DE ARMADURA LONGITUDINAL:");
+            relatorio.AppendLine($"- DistribuiÁ„o: {TipoDistribuicao}");
+            relatorio.AppendLine($"- Quantidade total de varıes: {QtdTotalVaroes()}");
 
             foreach (var varao in Varoes)
             {
-                relatorio.AppendLine($"  * {varao.Quantidade}√ò{varao.Diametro}mm ({varao.TipoArmadura})");
+                relatorio.AppendLine($"  * {varao.Quantidade}ÿ{varao.Diametro}mm ({varao.TipoArmadura})");
             }
 
-            relatorio.AppendLine($"- Comprimento autom√°tico: {(ComprimentoAuto ? "Sim" : "N√£o")}");
+            relatorio.AppendLine($"- Comprimento autom·tico: {(ComprimentoAuto ? "Sim" : "N„o")}");
             if (!ComprimentoAuto)
             {
                 relatorio.AppendLine($"- Comprimento base: {ComprimentoBase / 1000:F2}m");
@@ -663,23 +664,23 @@ namespace MacroArmaduraAvancado
 
             if (AmarracaoAuto)
             {
-                relatorio.AppendLine($"- Amarra√ß√£o: {MultAmarracao}? (autom√°tica por posi√ß√£o)");
+                relatorio.AppendLine($"- AmarraÁ„o: {MultAmarracao}? (autom·tica por posiÁ„o)");
             }
             relatorio.AppendLine();
 
-            // Configura√ß√£o de estribos
-            relatorio.AppendLine("CONFIGURA√á√ÉO DE ESTRIBOS:");
+            // ConfiguraÁ„o de estribos
+            relatorio.AppendLine("CONFIGURA«√O DE ESTRIBOS:");
             foreach (var estribo in Estribos)
             {
                 string alternado = estribo.Alternado ? " (Alternado)" : "";
-                relatorio.AppendLine($"- √ò{estribo.Diametro}mm // {estribo.Espacamento}mm{alternado}");
+                relatorio.AppendLine($"- ÿ{estribo.Diametro}mm // {estribo.Espacamento}mm{alternado}");
             }
             relatorio.AppendLine();
 
-            // C√°lculos estimativos
+            // C·lculos estimativos
             if (elementos.Count > 0)
             {
-                relatorio.AppendLine("C√ÅLCULOS ESTIMATIVOS:");
+                relatorio.AppendLine("C¡LCULOS ESTIMATIVOS:");
 
                 double alturaMedia = 3000; // mm
                 double comprimentoMedioVarao = CalcCompTotal(alturaMedia);
@@ -689,7 +690,7 @@ namespace MacroArmaduraAvancado
                 {
                     double metros = (elementos.Count * varao.Quantidade * comprimentoMedioVarao) / 1000.0;
                     totalMetrosLongitudinal += metros;
-                    relatorio.AppendLine($"- {varao.Quantidade}√ò{varao.Diametro}: ~{metros:F1}m");
+                    relatorio.AppendLine($"- {varao.Quantidade}ÿ{varao.Diametro}: ~{metros:F1}m");
                 }
 
                 relatorio.AppendLine($"- Total armadura longitudinal: ~{totalMetrosLongitudinal:F1}m");
@@ -702,7 +703,7 @@ namespace MacroArmaduraAvancado
                     int estribosporElemento = (int)(alturaMedia / estribo.Espacamento);
                     double metrosEstribo = elementos.Count * estribosporElemento * perimetroMedio;
                     totalMetrosEstribos += metrosEstribo;
-                    relatorio.AppendLine($"- √ò{estribo.Diametro}mm: ~{metrosEstribo:F1}m ({elementos.Count * estribosporElemento} unidades)");
+                    relatorio.AppendLine($"- ÿ{estribo.Diametro}mm: ~{metrosEstribo:F1}m ({elementos.Count * estribosporElemento} unidades)");
                 }
 
                 relatorio.AppendLine($"- Total estribos: ~{totalMetrosEstribos:F1}m");
@@ -710,14 +711,14 @@ namespace MacroArmaduraAvancado
                 relatorio.AppendLine($"TOTAL GERAL: ~{totalMetrosLongitudinal + totalMetrosEstribos:F1}m de armadura");
             }
 
-            // Defini√ß√µes aplicadas
+            // DefiniÁıes aplicadas
             if (Defs != null)
             {
                 relatorio.AppendLine();
-                relatorio.AppendLine("DEFINI√á√ïES APLICADAS:");
+                relatorio.AppendLine("DEFINI«’ES APLICADAS:");
                 relatorio.AppendLine($"- Cobertura pilares: {Defs.CoberturaPilares}mm");
                 relatorio.AppendLine($"- Cobertura vigas: {Defs.CoberturaVigas}mm");
-                relatorio.AppendLine($"- Valida√ß√£o Euroc√≥digo: {(Defs.ValidarEurocodigo ? "Ativada" : "Desativada")}");
+                relatorio.AppendLine($"- ValidaÁ„o EurocÛdigo: {(Defs.ValidarEurocodigo ? "Ativada" : "Desativada")}");
             }
 
             return relatorio.ToString();
@@ -725,7 +726,7 @@ namespace MacroArmaduraAvancado
     }
 
     /// <summary>
-    /// Classe para representar um var√£o individual
+    /// Classe para representar um var„o individual
     /// </summary>
     public class ArmVar
     {
@@ -739,11 +740,11 @@ namespace MacroArmaduraAvancado
             Diametro = diametro;
         }
 
-        public override string ToString() => $"{Quantidade}√ò{Diametro}mm";
+        public override string ToString() => $"{Quantidade}ÿ{Diametro}mm";
     }
 
     /// <summary>
-    /// Classe para representar configura√ß√£o de estribos
+    /// Classe para representar configuraÁ„o de estribos
     /// </summary>
     public class ArmStirrup
     {
@@ -758,11 +759,11 @@ namespace MacroArmaduraAvancado
         }
 
         public override string ToString() =>
-            $"√ò{Diametro}mm//{Espacamento}mm{(Alternado ? " Alt." : "")}";
+            $"ÿ{Diametro}mm//{Espacamento}mm{(Alternado ? " Alt." : "")}";
     }
 
     /// <summary>
-    /// Posi√ß√£o de var√£o com tipo de localiza√ß√£o
+    /// PosiÁ„o de var„o com tipo de localizaÁ„o
     /// </summary>
     public class PosicaoVarao
     {
@@ -777,12 +778,12 @@ namespace MacroArmaduraAvancado
     }
 
     /// <summary>
-    /// Tipo de posi√ß√£o do var√£o
+    /// Tipo de posiÁ„o do var„o
     /// </summary>
     public enum TipoPosicaoVarao
     {
-        Canto,      // Nos cantos da se√ß√£o
-        Face,       // Nas faces da se√ß√£o
-        Interior    // No interior da se√ß√£o
+        Canto,      // Nos cantos da seÁ„o
+        Face,       // Nas faces da seÁ„o
+        Interior    // No interior da seÁ„o
     }
 }

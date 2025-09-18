@@ -42,16 +42,6 @@ namespace MacroArmaduraAvancado
         }
     }
 
-    /// <summary>
-    /// Enumeração para tipos de elementos estruturais
-    /// </summary>
-    public enum TipoElementoEstruturalEnum
-    {
-        Pilares,
-        Vigas,
-        Fundacoes,
-        Lajes
-    }
 
     /// <summary>
     /// Enumeração para tipos de distribuição de armadura
