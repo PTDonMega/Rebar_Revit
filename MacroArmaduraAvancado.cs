@@ -42,14 +42,45 @@ namespace MacroArmaduraAvancado
         }
     }
 
+    /// <summary>
+    /// Tipo de elemento estrutural
+    /// </summary>
+    public enum TipoElementoEstruturalEnum
+    {
+        Pilares,
+        Vigas,
+        Fundacoes,
+        Lajes
+    }
 
     /// <summary>
-    /// Enumeração para tipos de distribuição de armadura
+    /// Tipos de distribuição de armadura
     /// </summary>
     public enum TipoDistribuicaoArmaduraEnum
     {
         Uniforme,
         ConcentradaNasBordas,
         MistaComMaioresNasBordas
+    }
+
+    /// <summary>
+    /// Tipos de amarração
+    /// </summary>
+    public enum TipoAmarracaoEnum
+    {
+        Automatico,
+        Reta,
+        Dobrada90,
+        Gancho135
+    }
+
+    /// <summary>
+    /// Posição da armadura na viga
+    /// </summary>
+    public enum PosicaoArmaduraViga
+    {
+        Superior,
+        Inferior,
+        Lateral
     }
 }
