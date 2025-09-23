@@ -28,699 +28,744 @@ namespace Rebar_Revit
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupTipoElemento = new System.Windows.Forms.GroupBox();
-            this.labelInfoElementos = new System.Windows.Forms.Label();
-            this.radioVigas = new System.Windows.Forms.RadioButton();
-            this.groupFiltros = new System.Windows.Forms.GroupBox();
-            this.labelContagem = new System.Windows.Forms.Label();
-            this.checkSeleccaoActual = new System.Windows.Forms.CheckBox();
-            this.listNiveis = new System.Windows.Forms.CheckedListBox();
-            this.labelNiveis = new System.Windows.Forms.Label();
-            this.comboDesignacao = new System.Windows.Forms.ComboBox();
-            this.labelDesignacao = new System.Windows.Forms.Label();
-            this.groupConfigArmadura = new System.Windows.Forms.GroupBox();
-            this.checkAmarracaoAutomatica = new System.Windows.Forms.CheckBox();
-            this.comboTipoDistribuicao = new System.Windows.Forms.ComboBox();
-            this.labelDistribuicao = new System.Windows.Forms.Label();
-            this.buttonRemoverVarao = new System.Windows.Forms.Button();
-            this.buttonAdicionarVarao = new System.Windows.Forms.Button();
-            this.listViewVaroes = new System.Windows.Forms.ListView();
-            this.colQuantidade = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colDiametro = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colPosicao = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.groupVisualizador = new System.Windows.Forms.GroupBox();
-            this.labelInfoVisualizador = new System.Windows.Forms.Label();
-            this.buttonModoEdicao = new System.Windows.Forms.Button();
-            this.buttonAlternarVista = new System.Windows.Forms.Button();
-            this.lblLarguraVigaValor = new System.Windows.Forms.Label();
-            this.labelLargura = new System.Windows.Forms.Label();
-            this.lblAlturaVigaValor = new System.Windows.Forms.Label();
-            this.labelAltura = new System.Windows.Forms.Label();
-            this.lblComprimentoVigaValor = new System.Windows.Forms.Label();
-            this.labelComprimento = new System.Windows.Forms.Label();
-            this.labelDimensoes = new System.Windows.Forms.Label();
-            this.groupAmarracao = new System.Windows.Forms.GroupBox();
-            this.labelAmarracaoInfo = new System.Windows.Forms.Label();
-            this.comboTipoAmarracao = new System.Windows.Forms.ComboBox();
-            this.labelTipoAmarracao = new System.Windows.Forms.Label();
-            this.labelPhi = new System.Windows.Forms.Label();
-            this.numMultiplicadorAmarracao = new System.Windows.Forms.NumericUpDown();
-            this.labelMultiplicador = new System.Windows.Forms.Label();
-            this.groupEstribos = new System.Windows.Forms.GroupBox();
-            this.checkEstribosAutomaticos = new System.Windows.Forms.CheckBox();
-            this.buttonRemoverEstribo = new System.Windows.Forms.Button();
-            this.buttonAdicionarEstribo = new System.Windows.Forms.Button();
-            this.listViewEstribos = new System.Windows.Forms.ListView();
-            this.colDiametroEstribo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colEspacamento = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colAlternado = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.buttonCancelar = new System.Windows.Forms.Button();
-            this.buttonExecutar = new System.Windows.Forms.Button();
-            this.buttonPreVisualizacao = new System.Windows.Forms.Button();
-            this.buttonDefinicoes = new System.Windows.Forms.Button();
-            this.buttonSelecionarElementos = new System.Windows.Forms.Button();
-            this.groupTipoElemento.SuspendLayout();
-            this.groupFiltros.SuspendLayout();
-            this.groupConfigArmadura.SuspendLayout();
-            this.groupVisualizador.SuspendLayout();
-            this.groupAmarracao.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numMultiplicadorAmarracao)).BeginInit();
-            this.groupEstribos.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            VisualizadorArmaduraViga.InformacaoArmaduraViga informacaoArmaduraViga1 = new VisualizadorArmaduraViga.InformacaoArmaduraViga();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormularioPrincipalAvancado));
+            panelEsquerdo = new Panel();
+            groupSelecaoViga = new GroupBox();
+            labelSelecionarViga = new Label();
+            comboVigasDisponiveis = new ComboBox();
+            labelFiltrarPor = new Label();
+            radioFiltrarPorDescricao = new RadioButton();
+            radioFiltrarPorNivel = new RadioButton();
+            buttonAtualizarLista = new Button();
+            groupVisualizacao = new GroupBox();
+            labelDimensoes = new Label();
+            labelAltura = new Label();
+            lblAlturaValor = new Label();
+            labelLargura = new Label();
+            lblLarguraValor = new Label();
+            lblComprimentoValor = new Label();
+            visualizador = new VisualizadorArmaduraViga();
+            labelInfoViga = new Label();
+            panelDireito = new Panel();
+            groupArmaduraLongitudinal = new GroupBox();
+            groupArmaduraSuperior = new GroupBox();
+            labelQuantSuperior = new Label();
+            numQuantSuperior = new NumericUpDown();
+            labelDiamSuperior = new Label();
+            comboDiamSuperior = new ComboBox();
+            groupArmaduraInferior = new GroupBox();
+            labelQuantInferior = new Label();
+            numQuantInferior = new NumericUpDown();
+            labelDiamInferior = new Label();
+            comboDiamInferior = new ComboBox();
+            groupArmaduraLateral = new GroupBox();
+            checkArmaduraLateral = new CheckBox();
+            labelQuantLateral = new Label();
+            numQuantLateral = new NumericUpDown();
+            labelDiamLateral = new Label();
+            comboDiamLateral = new ComboBox();
+            groupEstribos = new GroupBox();
+            labelDiamEstribo = new Label();
+            comboDiamEstribo = new ComboBox();
+            labelEspacamentoEstribo = new Label();
+            numEspacamentoEstribo = new NumericUpDown();
+            checkEspacamentoVariavel = new CheckBox();
+            groupParametros = new GroupBox();
+            labelCobrimento = new Label();
+            numCobrimento = new NumericUpDown();
+            labelAmarracao = new Label();
+            numMultAmarracao = new NumericUpDown();
+            buttonExecutar = new Button();
+            buttonCancelar = new Button();
+            progressBar = new ProgressBar();
+            panelEsquerdo.SuspendLayout();
+            groupSelecaoViga.SuspendLayout();
+            groupVisualizacao.SuspendLayout();
+            panelDireito.SuspendLayout();
+            groupArmaduraLongitudinal.SuspendLayout();
+            groupArmaduraSuperior.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantSuperior).BeginInit();
+            groupArmaduraInferior.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantInferior).BeginInit();
+            groupArmaduraLateral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantLateral).BeginInit();
+            groupEstribos.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numEspacamentoEstribo).BeginInit();
+            groupParametros.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numCobrimento).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numMultAmarracao).BeginInit();
+            SuspendLayout();
             // 
-            // groupTipoElemento
+            // panelEsquerdo
             // 
-            this.groupTipoElemento.Controls.Add(this.labelInfoElementos);
-            this.groupTipoElemento.Controls.Add(this.radioVigas);
-            this.groupTipoElemento.Location = new System.Drawing.Point(12, 12);
-            this.groupTipoElemento.Name = "groupTipoElemento";
-            this.groupTipoElemento.Size = new System.Drawing.Size(1160, 70);
-            this.groupTipoElemento.TabIndex = 0;
-            this.groupTipoElemento.TabStop = false;
-            this.groupTipoElemento.Text = "Tipo de Elemento Estrutural";
+            panelEsquerdo.Controls.Add(groupSelecaoViga);
+            panelEsquerdo.Controls.Add(groupVisualizacao);
+            panelEsquerdo.Dock = DockStyle.Left;
+            panelEsquerdo.Location = new Point(0, 0);
+            panelEsquerdo.Margin = new Padding(3, 4, 3, 4);
+            panelEsquerdo.Name = "panelEsquerdo";
+            panelEsquerdo.Padding = new Padding(10, 12, 10, 12);
+            panelEsquerdo.Size = new Size(500, 812);
+            panelEsquerdo.TabIndex = 0;
             // 
-            // labelInfoElementos
+            // groupSelecaoViga
             // 
-            this.labelInfoElementos.ForeColor = System.Drawing.Color.DarkBlue;
-            this.labelInfoElementos.Location = new System.Drawing.Point(240, 25);
-            this.labelInfoElementos.Name = "labelInfoElementos";
-            this.labelInfoElementos.Size = new System.Drawing.Size(450, 40);
-            this.labelInfoElementos.TabIndex = 1;
-            this.labelInfoElementos.Text = "Armadura longitudinal (superior, inferior, lateral) + estribos automáticos";
+            groupSelecaoViga.Controls.Add(labelSelecionarViga);
+            groupSelecaoViga.Controls.Add(comboVigasDisponiveis);
+            groupSelecaoViga.Controls.Add(labelFiltrarPor);
+            groupSelecaoViga.Controls.Add(radioFiltrarPorDescricao);
+            groupSelecaoViga.Controls.Add(radioFiltrarPorNivel);
+            groupSelecaoViga.Controls.Add(buttonAtualizarLista);
+            groupSelecaoViga.Dock = DockStyle.Top;
+            groupSelecaoViga.Location = new Point(10, 12);
+            groupSelecaoViga.Margin = new Padding(3, 4, 3, 4);
+            groupSelecaoViga.Name = "groupSelecaoViga";
+            groupSelecaoViga.Padding = new Padding(3, 4, 3, 4);
+            groupSelecaoViga.Size = new Size(480, 143);
+            groupSelecaoViga.TabIndex = 0;
+            groupSelecaoViga.TabStop = false;
+            groupSelecaoViga.Text = "Seleção de Viga";
             // 
-            // radioVigas
+            // labelSelecionarViga
             // 
-            this.radioVigas.AutoSize = true;
-            this.radioVigas.Checked = true;
-            this.radioVigas.Enabled = false;
-            this.radioVigas.Location = new System.Drawing.Point(20, 25);
-            this.radioVigas.Name = "radioVigas";
-            this.radioVigas.Size = new System.Drawing.Size(173, 19);
-            this.radioVigas.TabIndex = 0;
-            this.radioVigas.TabStop = true;
-            this.radioVigas.Text = "Vigas (Automação Focada)";
-            this.radioVigas.UseVisualStyleBackColor = true;
+            labelSelecionarViga.AutoSize = true;
+            labelSelecionarViga.Location = new Point(15, 31);
+            labelSelecionarViga.Name = "labelSelecionarViga";
+            labelSelecionarViga.Size = new Size(115, 20);
+            labelSelecionarViga.TabIndex = 0;
+            labelSelecionarViga.Text = "Selecionar Viga:";
             // 
-            // groupFiltros
+            // comboVigasDisponiveis
             // 
-            this.groupFiltros.Controls.Add(this.labelContagem);
-            this.groupFiltros.Controls.Add(this.checkSeleccaoActual);
-            this.groupFiltros.Controls.Add(this.listNiveis);
-            this.groupFiltros.Controls.Add(this.labelNiveis);
-            this.groupFiltros.Controls.Add(this.comboDesignacao);
-            this.groupFiltros.Controls.Add(this.labelDesignacao);
-            this.groupFiltros.Location = new System.Drawing.Point(12, 95);
-            this.groupFiltros.Name = "groupFiltros";
-            this.groupFiltros.Size = new System.Drawing.Size(580, 120);
-            this.groupFiltros.TabIndex = 1;
-            this.groupFiltros.TabStop = false;
-            this.groupFiltros.Text = "Selecção de Vigas";
+            comboVigasDisponiveis.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboVigasDisponiveis.FormattingEnabled = true;
+            comboVigasDisponiveis.Location = new Point(15, 56);
+            comboVigasDisponiveis.Margin = new Padding(3, 4, 3, 4);
+            comboVigasDisponiveis.Name = "comboVigasDisponiveis";
+            comboVigasDisponiveis.Size = new Size(350, 28);
+            comboVigasDisponiveis.TabIndex = 1;
             // 
-            // labelContagem
+            // labelFiltrarPor
             // 
-            this.labelContagem.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelContagem.Location = new System.Drawing.Point(20, 90);
-            this.labelContagem.Name = "labelContagem";
-            this.labelContagem.Size = new System.Drawing.Size(300, 20);
-            this.labelContagem.TabIndex = 5;
-            this.labelContagem.Text = "Vigas encontradas: 0";
+            labelFiltrarPor.AutoSize = true;
+            labelFiltrarPor.Location = new Point(15, 100);
+            labelFiltrarPor.Name = "labelFiltrarPor";
+            labelFiltrarPor.Size = new Size(77, 20);
+            labelFiltrarPor.TabIndex = 2;
+            labelFiltrarPor.Text = "Filtrar por:";
             // 
-            // checkSeleccaoActual
+            // radioFiltrarPorDescricao
             // 
-            this.checkSeleccaoActual.AutoSize = true;
-            this.checkSeleccaoActual.Location = new System.Drawing.Point(20, 65);
-            this.checkSeleccaoActual.Name = "checkSeleccaoActual";
-            this.checkSeleccaoActual.Size = new System.Drawing.Size(138, 19);
-            this.checkSeleccaoActual.TabIndex = 4;
-            this.checkSeleccaoActual.Text = "Usar selecção actual";
-            this.checkSeleccaoActual.UseVisualStyleBackColor = true;
-            this.checkSeleccaoActual.CheckedChanged += new System.EventHandler(this.CheckSeleccaoActual_CheckedChanged);
+            radioFiltrarPorDescricao.AutoSize = true;
+            radioFiltrarPorDescricao.Checked = true;
+            radioFiltrarPorDescricao.Location = new Point(100, 98);
+            radioFiltrarPorDescricao.Margin = new Padding(3, 4, 3, 4);
+            radioFiltrarPorDescricao.Name = "radioFiltrarPorDescricao";
+            radioFiltrarPorDescricao.Size = new Size(61, 24);
+            radioFiltrarPorDescricao.TabIndex = 3;
+            radioFiltrarPorDescricao.TabStop = true;
+            radioFiltrarPorDescricao.Text = "Type";
+            radioFiltrarPorDescricao.UseVisualStyleBackColor = true;
             // 
-            // listNiveis
+            // radioFiltrarPorNivel
             // 
-            this.listNiveis.FormattingEnabled = true;
-            this.listNiveis.Location = new System.Drawing.Point(380, 28);
-            this.listNiveis.Name = "listNiveis";
-            this.listNiveis.Size = new System.Drawing.Size(180, 76);
-            this.listNiveis.TabIndex = 3;
-            this.listNiveis.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.ListNiveis_ItemCheck);
+            radioFiltrarPorNivel.AutoSize = true;
+            radioFiltrarPorNivel.Location = new Point(170, 98);
+            radioFiltrarPorNivel.Margin = new Padding(3, 4, 3, 4);
+            radioFiltrarPorNivel.Name = "radioFiltrarPorNivel";
+            radioFiltrarPorNivel.Size = new Size(64, 24);
+            radioFiltrarPorNivel.TabIndex = 4;
+            radioFiltrarPorNivel.Text = "Nível";
+            radioFiltrarPorNivel.UseVisualStyleBackColor = true;
             // 
-            // labelNiveis
+            // buttonAtualizarLista
             // 
-            this.labelNiveis.AutoSize = true;
-            this.labelNiveis.Location = new System.Drawing.Point(330, 30);
-            this.labelNiveis.Name = "labelNiveis";
-            this.labelNiveis.Size = new System.Drawing.Size(44, 15);
-            this.labelNiveis.TabIndex = 2;
-            this.labelNiveis.Text = "Níveis:";
+            buttonAtualizarLista.Location = new Point(375, 56);
+            buttonAtualizarLista.Margin = new Padding(3, 4, 3, 4);
+            buttonAtualizarLista.Name = "buttonAtualizarLista";
+            buttonAtualizarLista.Size = new Size(90, 31);
+            buttonAtualizarLista.TabIndex = 5;
+            buttonAtualizarLista.Text = "Atualizar";
+            buttonAtualizarLista.UseVisualStyleBackColor = true;
             // 
-            // comboDesignacao
+            // groupVisualizacao
             // 
-            this.comboDesignacao.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboDesignacao.FormattingEnabled = true;
-            this.comboDesignacao.Location = new System.Drawing.Point(110, 28);
-            this.comboDesignacao.Name = "comboDesignacao";
-            this.comboDesignacao.Size = new System.Drawing.Size(200, 23);
-            this.comboDesignacao.TabIndex = 1;
-            this.comboDesignacao.SelectedIndexChanged += new System.EventHandler(this.ComboDesignacao_SelectedIndexChanged);
-            // 
-            // labelDesignacao
-            // 
-            this.labelDesignacao.AutoSize = true;
-            this.labelDesignacao.Location = new System.Drawing.Point(20, 30);
-            this.labelDesignacao.Name = "labelDesignacao";
-            this.labelDesignacao.Size = new System.Drawing.Size(80, 15);
-            this.labelDesignacao.TabIndex = 0;
-            this.labelDesignacao.Text = "Tipo de Viga:";
-            // 
-            // groupConfigArmadura
-            // 
-            this.groupConfigArmadura.Controls.Add(this.checkAmarracaoAutomatica);
-            this.groupConfigArmadura.Controls.Add(this.comboTipoDistribuicao);
-            this.groupConfigArmadura.Controls.Add(this.labelDistribuicao);
-            this.groupConfigArmadura.Controls.Add(this.buttonRemoverVarao);
-            this.groupConfigArmadura.Controls.Add(this.buttonAdicionarVarao);
-            this.groupConfigArmadura.Controls.Add(this.listViewVaroes);
-            this.groupConfigArmadura.Location = new System.Drawing.Point(12, 230);
-            this.groupConfigArmadura.Name = "groupConfigArmadura";
-            this.groupConfigArmadura.Size = new System.Drawing.Size(580, 200);
-            this.groupConfigArmadura.TabIndex = 2;
-            this.groupConfigArmadura.TabStop = false;
-            this.groupConfigArmadura.Text = "Armadura Longitudinal";
-            // 
-            // checkAmarracaoAutomatica
-            // 
-            this.checkAmarracaoAutomatica.AutoSize = true;
-            this.checkAmarracaoAutomatica.Checked = true;
-            this.checkAmarracaoAutomatica.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkAmarracaoAutomatica.Location = new System.Drawing.Point(20, 170);
-            this.checkAmarracaoAutomatica.Name = "checkAmarracaoAutomatica";
-            this.checkAmarracaoAutomatica.Size = new System.Drawing.Size(154, 19);
-            this.checkAmarracaoAutomatica.TabIndex = 5;
-            this.checkAmarracaoAutomatica.Text = "Amarração automática";
-            this.checkAmarracaoAutomatica.UseVisualStyleBackColor = true;
-            this.checkAmarracaoAutomatica.CheckedChanged += new System.EventHandler(this.CheckAmarracaoAutomatica_CheckedChanged);
-            // 
-            // comboTipoDistribuicao
-            // 
-            this.comboTipoDistribuicao.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboTipoDistribuicao.FormattingEnabled = true;
-            this.comboTipoDistribuicao.Items.AddRange(new object[] {
-            "Automática (Regulamentar)",
-            "Uniforme",
-            "ConcentradaNasBordas"});
-            this.comboTipoDistribuicao.Location = new System.Drawing.Point(100, 138);
-            this.comboTipoDistribuicao.Name = "comboTipoDistribuicao";
-            this.comboTipoDistribuicao.Size = new System.Drawing.Size(180, 23);
-            this.comboTipoDistribuicao.TabIndex = 4;
-            // 
-            // labelDistribuicao
-            // 
-            this.labelDistribuicao.AutoSize = true;
-            this.labelDistribuicao.Location = new System.Drawing.Point(20, 140);
-            this.labelDistribuicao.Name = "labelDistribuicao";
-            this.labelDistribuicao.Size = new System.Drawing.Size(74, 15);
-            this.labelDistribuicao.TabIndex = 3;
-            this.labelDistribuicao.Text = "Distribuição:";
-            // 
-            // buttonRemoverVarao
-            // 
-            this.buttonRemoverVarao.Location = new System.Drawing.Point(420, 65);
-            this.buttonRemoverVarao.Name = "buttonRemoverVarao";
-            this.buttonRemoverVarao.Size = new System.Drawing.Size(80, 25);
-            this.buttonRemoverVarao.TabIndex = 2;
-            this.buttonRemoverVarao.Text = "Remover";
-            this.buttonRemoverVarao.UseVisualStyleBackColor = true;
-            this.buttonRemoverVarao.Click += new System.EventHandler(this.ButtonRemoverVarao_Click);
-            // 
-            // buttonAdicionarVarao
-            // 
-            this.buttonAdicionarVarao.Location = new System.Drawing.Point(420, 30);
-            this.buttonAdicionarVarao.Name = "buttonAdicionarVarao";
-            this.buttonAdicionarVarao.Size = new System.Drawing.Size(80, 25);
-            this.buttonAdicionarVarao.TabIndex = 1;
-            this.buttonAdicionarVarao.Text = "Adicionar";
-            this.buttonAdicionarVarao.UseVisualStyleBackColor = true;
-            this.buttonAdicionarVarao.Click += new System.EventHandler(this.ButtonAdicionarVarao_Click);
-            // 
-            // listViewVaroes
-            // 
-            this.listViewVaroes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.colQuantidade,
-            this.colDiametro,
-            this.colPosicao});
-            this.listViewVaroes.FullRowSelect = true;
-            this.listViewVaroes.GridLines = true;
-            this.listViewVaroes.Location = new System.Drawing.Point(20, 30);
-            this.listViewVaroes.Name = "listViewVaroes";
-            this.listViewVaroes.Size = new System.Drawing.Size(380, 100);
-            this.listViewVaroes.TabIndex = 0;
-            this.listViewVaroes.UseCompatibleStateImageBehavior = false;
-            this.listViewVaroes.View = System.Windows.Forms.View.Details;
-            // 
-            // colQuantidade
-            // 
-            this.colQuantidade.Text = "Quant.";
-            this.colQuantidade.Width = 60;
-            // 
-            // colDiametro
-            // 
-            this.colDiametro.Text = "Ø (mm)";
-            this.colDiametro.Width = 70;
-            // 
-            // colPosicao
-            // 
-            this.colPosicao.Text = "Posição";
-            this.colPosicao.Width = 80;
-            // 
-            // groupVisualizador
-            // 
-            this.groupVisualizador.Controls.Add(this.labelInfoVisualizador);
-            this.groupVisualizador.Controls.Add(this.buttonModoEdicao);
-            this.groupVisualizador.Controls.Add(this.buttonAlternarVista);
-            this.groupVisualizador.Controls.Add(this.lblLarguraVigaValor);
-            this.groupVisualizador.Controls.Add(this.labelLargura);
-            this.groupVisualizador.Controls.Add(this.lblAlturaVigaValor);
-            this.groupVisualizador.Controls.Add(this.labelAltura);
-            this.groupVisualizador.Controls.Add(this.lblComprimentoVigaValor);
-            this.groupVisualizador.Controls.Add(this.labelComprimento);
-            this.groupVisualizador.Controls.Add(this.labelDimensoes);
-            this.groupVisualizador.Location = new System.Drawing.Point(610, 95);
-            this.groupVisualizador.Name = "groupVisualizador";
-            this.groupVisualizador.Size = new System.Drawing.Size(562, 485);
-            this.groupVisualizador.TabIndex = 3;
-            this.groupVisualizador.TabStop = false;
-            this.groupVisualizador.Text = "Visualização da Viga";
-            // 
-            // labelInfoVisualizador
-            // 
-            this.labelInfoVisualizador.ForeColor = System.Drawing.Color.DarkBlue;
-            this.labelInfoVisualizador.Location = new System.Drawing.Point(20, 440);
-            this.labelInfoVisualizador.Name = "labelInfoVisualizador";
-            this.labelInfoVisualizador.Size = new System.Drawing.Size(520, 20);
-            this.labelInfoVisualizador.TabIndex = 9;
-            this.labelInfoVisualizador.Text = "Visualizador será carregado dinamicamente.";
-            // 
-            // buttonModoEdicao
-            // 
-            this.buttonModoEdicao.Location = new System.Drawing.Point(430, 25);
-            this.buttonModoEdicao.Name = "buttonModoEdicao";
-            this.buttonModoEdicao.Size = new System.Drawing.Size(70, 25);
-            this.buttonModoEdicao.TabIndex = 8;
-            this.buttonModoEdicao.Text = "? Editar";
-            this.buttonModoEdicao.UseVisualStyleBackColor = true;
-            this.buttonModoEdicao.Click += new System.EventHandler(this.ButtonModoEdicao_Click);
-            // 
-            // buttonAlternarVista
-            // 
-            this.buttonAlternarVista.Location = new System.Drawing.Point(350, 25);
-            this.buttonAlternarVista.Name = "buttonAlternarVista";
-            this.buttonAlternarVista.Size = new System.Drawing.Size(70, 25);
-            this.buttonAlternarVista.TabIndex = 7;
-            this.buttonAlternarVista.Text = "?? Vista";
-            this.buttonAlternarVista.UseVisualStyleBackColor = true;
-            this.buttonAlternarVista.Click += new System.EventHandler(this.ButtonAlternarVista_Click);
-            // 
-            // lblLarguraVigaValor
-            // 
-            this.lblLarguraVigaValor.Location = new System.Drawing.Point(240, 48);
-            this.lblLarguraVigaValor.Name = "lblLarguraVigaValor";
-            this.lblLarguraVigaValor.Size = new System.Drawing.Size(70, 23);
-            this.lblLarguraVigaValor.TabIndex = 6;
-            this.lblLarguraVigaValor.Text = "300";
-            this.lblLarguraVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelLargura
-            // 
-            this.labelLargura.AutoSize = true;
-            this.labelLargura.Location = new System.Drawing.Point(220, 50);
-            this.labelLargura.Name = "labelLargura";
-            this.labelLargura.Size = new System.Drawing.Size(16, 15);
-            this.labelLargura.TabIndex = 5;
-            this.labelLargura.Text = "L:";
-            // 
-            // lblAlturaVigaValor
-            // 
-            this.lblAlturaVigaValor.Location = new System.Drawing.Point(140, 48);
-            this.lblAlturaVigaValor.Name = "lblAlturaVigaValor";
-            this.lblAlturaVigaValor.Size = new System.Drawing.Size(70, 23);
-            this.lblAlturaVigaValor.TabIndex = 4;
-            this.lblAlturaVigaValor.Text = "500";
-            this.lblAlturaVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelAltura
-            // 
-            this.labelAltura.AutoSize = true;
-            this.labelAltura.Location = new System.Drawing.Point(120, 50);
-            this.labelAltura.Name = "labelAltura";
-            this.labelAltura.Size = new System.Drawing.Size(18, 15);
-            this.labelAltura.TabIndex = 3;
-            this.labelAltura.Text = "H:";
-            // 
-            // lblComprimentoVigaValor
-            // 
-            this.lblComprimentoVigaValor.Location = new System.Drawing.Point(40, 48);
-            this.lblComprimentoVigaValor.Name = "lblComprimentoVigaValor";
-            this.lblComprimentoVigaValor.Size = new System.Drawing.Size(70, 23);
-            this.lblComprimentoVigaValor.TabIndex = 2;
-            this.lblComprimentoVigaValor.Text = "5000";
-            this.lblComprimentoVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelComprimento
-            // 
-            this.labelComprimento.AutoSize = true;
-            this.labelComprimento.Location = new System.Drawing.Point(20, 50);
-            this.labelComprimento.Name = "labelComprimento";
-            this.labelComprimento.Size = new System.Drawing.Size(17, 15);
-            this.labelComprimento.TabIndex = 1;
-            this.labelComprimento.Text = "C:";
+            groupVisualizacao.Controls.Add(labelDimensoes);
+            groupVisualizacao.Controls.Add(labelAltura);
+            groupVisualizacao.Controls.Add(lblAlturaValor);
+            groupVisualizacao.Controls.Add(labelLargura);
+            groupVisualizacao.Controls.Add(lblLarguraValor);
+            groupVisualizacao.Controls.Add(lblComprimentoValor);
+            groupVisualizacao.Controls.Add(visualizador);
+            groupVisualizacao.Controls.Add(labelInfoViga);
+            groupVisualizacao.Dock = DockStyle.Fill;
+            groupVisualizacao.Location = new Point(10, 12);
+            groupVisualizacao.Margin = new Padding(3, 4, 3, 4);
+            groupVisualizacao.Name = "groupVisualizacao";
+            groupVisualizacao.Padding = new Padding(3, 4, 3, 4);
+            groupVisualizacao.Size = new Size(480, 788);
+            groupVisualizacao.TabIndex = 1;
+            groupVisualizacao.TabStop = false;
+            groupVisualizacao.Text = "Pré-visualização (secção)";
             // 
             // labelDimensoes
             // 
-            this.labelDimensoes.AutoSize = true;
-            this.labelDimensoes.Location = new System.Drawing.Point(20, 25);
-            this.labelDimensoes.Name = "labelDimensoes";
-            this.labelDimensoes.Size = new System.Drawing.Size(106, 15);
-            this.labelDimensoes.TabIndex = 0;
-            this.labelDimensoes.Text = "Dimensões (mm):";
+            labelDimensoes.AutoSize = true;
+            labelDimensoes.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            labelDimensoes.Location = new Point(18, 214);
+            labelDimensoes.Name = "labelDimensoes";
+            labelDimensoes.Size = new Size(143, 18);
+            labelDimensoes.TabIndex = 0;
+            labelDimensoes.Text = "Dimensões (mm):";
             // 
-            // groupAmarracao
+            // labelAltura
             // 
-            this.groupAmarracao.Controls.Add(this.labelAmarracaoInfo);
-            this.groupAmarracao.Controls.Add(this.comboTipoAmarracao);
-            this.groupAmarracao.Controls.Add(this.labelTipoAmarracao);
-            this.groupAmarracao.Controls.Add(this.labelPhi);
-            this.groupAmarracao.Controls.Add(this.numMultiplicadorAmarracao);
-            this.groupAmarracao.Controls.Add(this.labelMultiplicador);
-            this.groupAmarracao.Location = new System.Drawing.Point(12, 440);
-            this.groupAmarracao.Name = "groupAmarracao";
-            this.groupAmarracao.Size = new System.Drawing.Size(580, 110);
-            this.groupAmarracao.TabIndex = 4;
-            this.groupAmarracao.TabStop = false;
-            this.groupAmarracao.Text = "Configuração de Amarração";
+            labelAltura.AutoSize = true;
+            labelAltura.Location = new Point(350, 212);
+            labelAltura.Name = "labelAltura";
+            labelAltura.Size = new Size(52, 20);
+            labelAltura.TabIndex = 3;
+            labelAltura.Text = "Altura:";
             // 
-            // labelAmarracaoInfo
+            // lblAlturaValor
             // 
-            this.labelAmarracaoInfo.ForeColor = System.Drawing.Color.DarkBlue;
-            this.labelAmarracaoInfo.Location = new System.Drawing.Point(300, 63);
-            this.labelAmarracaoInfo.Name = "labelAmarracaoInfo";
-            this.labelAmarracaoInfo.Size = new System.Drawing.Size(250, 25);
-            this.labelAmarracaoInfo.TabIndex = 5;
-            this.labelAmarracaoInfo.Text = "Amarração automática ajustada para vigas";
+            lblAlturaValor.AutoSize = true;
+            lblAlturaValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblAlturaValor.Location = new Point(408, 213);
+            lblAlturaValor.Name = "lblAlturaValor";
+            lblAlturaValor.Size = new Size(44, 18);
+            lblAlturaValor.TabIndex = 4;
+            lblAlturaValor.Text = "0000";
             // 
-            // comboTipoAmarracao
+            // labelLargura
             // 
-            this.comboTipoAmarracao.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboTipoAmarracao.FormattingEnabled = true;
-            this.comboTipoAmarracao.Items.AddRange(new object[] {
-            "Automático",
-            "Reta",
-            "Dobrada 90°",
-            "Gancho 135°"});
-            this.comboTipoAmarracao.Location = new System.Drawing.Point(140, 63);
-            this.comboTipoAmarracao.Name = "comboTipoAmarracao";
-            this.comboTipoAmarracao.Size = new System.Drawing.Size(150, 23);
-            this.comboTipoAmarracao.TabIndex = 4;
+            labelLargura.AutoSize = true;
+            labelLargura.Location = new Point(185, 211);
+            labelLargura.Name = "labelLargura";
+            labelLargura.Size = new Size(62, 20);
+            labelLargura.TabIndex = 5;
+            labelLargura.Text = "Largura:";
             // 
-            // labelTipoAmarracao
+            // lblLarguraValor
             // 
-            this.labelTipoAmarracao.AutoSize = true;
-            this.labelTipoAmarracao.Location = new System.Drawing.Point(20, 65);
-            this.labelTipoAmarracao.Name = "labelTipoAmarracao";
-            this.labelTipoAmarracao.Size = new System.Drawing.Size(114, 15);
-            this.labelTipoAmarracao.TabIndex = 3;
-            this.labelTipoAmarracao.Text = "Tipo de amarração:";
+            lblLarguraValor.AutoSize = true;
+            lblLarguraValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblLarguraValor.Location = new Point(253, 214);
+            lblLarguraValor.Name = "lblLarguraValor";
+            lblLarguraValor.Size = new Size(44, 18);
+            lblLarguraValor.TabIndex = 6;
+            lblLarguraValor.Text = "0000";
             // 
-            // labelPhi
+            // lblComprimentoValor
             // 
-            this.labelPhi.AutoSize = true;
-            this.labelPhi.Location = new System.Drawing.Point(220, 30);
-            this.labelPhi.Name = "labelPhi";
-            this.labelPhi.Size = new System.Drawing.Size(108, 15);
-            this.labelPhi.TabIndex = 2;
-            this.labelPhi.Text = "? (50? para vigas)";
+            lblComprimentoValor.AutoSize = true;
+            lblComprimentoValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblComprimentoValor.Location = new Point(100, 213);
+            lblComprimentoValor.Name = "lblComprimentoValor";
+            lblComprimentoValor.Size = new Size(44, 18);
+            lblComprimentoValor.TabIndex = 10;
+            lblComprimentoValor.Text = "0000";
             // 
-            // numMultiplicadorAmarracao
+            // visualizador
             // 
-            this.numMultiplicadorAmarracao.Location = new System.Drawing.Point(160, 28);
-            this.numMultiplicadorAmarracao.Maximum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.numMultiplicadorAmarracao.Minimum = new decimal(new int[] {
-            30,
-            0,
-            0,
-            0});
-            this.numMultiplicadorAmarracao.Name = "numMultiplicadorAmarracao";
-            this.numMultiplicadorAmarracao.Size = new System.Drawing.Size(50, 23);
-            this.numMultiplicadorAmarracao.TabIndex = 1;
-            this.numMultiplicadorAmarracao.Value = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.numMultiplicadorAmarracao.ValueChanged += new System.EventHandler(this.NumMultiplicadorAmarracao_ValueChanged);
+            visualizador.BackColor = Color.White;
+            visualizador.BorderStyle = BorderStyle.FixedSingle;
+            informacaoArmaduraViga1.Altura = 500D;
+            informacaoArmaduraViga1.AmarracaoAutomatica = true;
+            informacaoArmaduraViga1.Cobertura = 25D;
+            informacaoArmaduraViga1.Comprimento = 5000D;
+            informacaoArmaduraViga1.Designacao = "";
+            informacaoArmaduraViga1.Largura = 300D;
+            informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
+            informacaoArmaduraViga1.TipoFamilia = "";
+            visualizador.InformacaoViga = informacaoArmaduraViga1;
+            visualizador.Location = new Point(15, 269);
+            visualizador.Margin = new Padding(3, 4, 3, 4);
+            visualizador.ModoEdicao = false;
+            visualizador.MostrarCorteTransversal = true;
+            visualizador.Name = "visualizador";
+            visualizador.Size = new Size(450, 437);
+            visualizador.TabIndex = 8;
+            visualizador.Load += visualizador_Load;
             // 
-            // labelMultiplicador
+            // labelInfoViga
             // 
-            this.labelMultiplicador.AutoSize = true;
-            this.labelMultiplicador.Location = new System.Drawing.Point(20, 30);
-            this.labelMultiplicador.Name = "labelMultiplicador";
-            this.labelMultiplicador.Size = new System.Drawing.Size(139, 15);
-            this.labelMultiplicador.TabIndex = 0;
-            this.labelMultiplicador.Text = "Comprimento amarração:";
+            labelInfoViga.BackColor = Color.WhiteSmoke;
+            labelInfoViga.BorderStyle = BorderStyle.FixedSingle;
+            labelInfoViga.Location = new Point(15, 269);
+            labelInfoViga.Name = "labelInfoViga";
+            labelInfoViga.Size = new Size(450, 437);
+            labelInfoViga.TabIndex = 7;
+            labelInfoViga.Text = "Pré-visualização 2D da secção da viga com armaduras";
+            labelInfoViga.TextAlign = ContentAlignment.MiddleCenter;
+            labelInfoViga.Visible = false;
+            labelInfoViga.Click += labelInfoViga_Click;
+            // 
+            // panelDireito
+            // 
+            panelDireito.Controls.Add(groupArmaduraLongitudinal);
+            panelDireito.Controls.Add(groupEstribos);
+            panelDireito.Controls.Add(groupParametros);
+            panelDireito.Controls.Add(buttonExecutar);
+            panelDireito.Controls.Add(buttonCancelar);
+            panelDireito.Controls.Add(progressBar);
+            panelDireito.Dock = DockStyle.Fill;
+            panelDireito.Location = new Point(500, 0);
+            panelDireito.Margin = new Padding(3, 4, 3, 4);
+            panelDireito.Name = "panelDireito";
+            panelDireito.Padding = new Padding(10, 12, 10, 12);
+            panelDireito.Size = new Size(400, 812);
+            panelDireito.TabIndex = 1;
+            // 
+            // groupArmaduraLongitudinal
+            // 
+            groupArmaduraLongitudinal.Controls.Add(groupArmaduraSuperior);
+            groupArmaduraLongitudinal.Controls.Add(groupArmaduraInferior);
+            groupArmaduraLongitudinal.Controls.Add(groupArmaduraLateral);
+            groupArmaduraLongitudinal.Dock = DockStyle.Top;
+            groupArmaduraLongitudinal.Location = new Point(10, 262);
+            groupArmaduraLongitudinal.Margin = new Padding(3, 4, 3, 4);
+            groupArmaduraLongitudinal.Name = "groupArmaduraLongitudinal";
+            groupArmaduraLongitudinal.Padding = new Padding(3, 4, 3, 4);
+            groupArmaduraLongitudinal.Size = new Size(380, 350);
+            groupArmaduraLongitudinal.TabIndex = 0;
+            groupArmaduraLongitudinal.TabStop = false;
+            groupArmaduraLongitudinal.Text = "Armadura Longitudinal";
+            // 
+            // groupArmaduraSuperior
+            // 
+            groupArmaduraSuperior.Controls.Add(labelQuantSuperior);
+            groupArmaduraSuperior.Controls.Add(numQuantSuperior);
+            groupArmaduraSuperior.Controls.Add(labelDiamSuperior);
+            groupArmaduraSuperior.Controls.Add(comboDiamSuperior);
+            groupArmaduraSuperior.Location = new Point(15, 31);
+            groupArmaduraSuperior.Margin = new Padding(3, 4, 3, 4);
+            groupArmaduraSuperior.Name = "groupArmaduraSuperior";
+            groupArmaduraSuperior.Padding = new Padding(3, 4, 3, 4);
+            groupArmaduraSuperior.Size = new Size(350, 94);
+            groupArmaduraSuperior.TabIndex = 0;
+            groupArmaduraSuperior.TabStop = false;
+            groupArmaduraSuperior.Text = "Armadura Superior";
+            // 
+            // labelQuantSuperior
+            // 
+            labelQuantSuperior.AutoSize = true;
+            labelQuantSuperior.Location = new Point(15, 31);
+            labelQuantSuperior.Name = "labelQuantSuperior";
+            labelQuantSuperior.Size = new Size(90, 20);
+            labelQuantSuperior.TabIndex = 0;
+            labelQuantSuperior.Text = "Quantidade:";
+            // 
+            // numQuantSuperior
+            // 
+            numQuantSuperior.Location = new Point(15, 56);
+            numQuantSuperior.Margin = new Padding(3, 4, 3, 4);
+            numQuantSuperior.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+            numQuantSuperior.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
+            numQuantSuperior.Name = "numQuantSuperior";
+            numQuantSuperior.Size = new Size(60, 27);
+            numQuantSuperior.TabIndex = 1;
+            numQuantSuperior.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            // 
+            // labelDiamSuperior
+            // 
+            labelDiamSuperior.AutoSize = true;
+            labelDiamSuperior.Location = new Point(100, 31);
+            labelDiamSuperior.Name = "labelDiamSuperior";
+            labelDiamSuperior.Size = new Size(115, 20);
+            labelDiamSuperior.TabIndex = 2;
+            labelDiamSuperior.Text = "Diâmetro (mm):";
+            // 
+            // comboDiamSuperior
+            // 
+            comboDiamSuperior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiamSuperior.FormattingEnabled = true;
+            comboDiamSuperior.Location = new Point(100, 56);
+            comboDiamSuperior.Margin = new Padding(3, 4, 3, 4);
+            comboDiamSuperior.Name = "comboDiamSuperior";
+            comboDiamSuperior.Size = new Size(70, 28);
+            comboDiamSuperior.TabIndex = 3;
+            // 
+            // groupArmaduraInferior
+            // 
+            groupArmaduraInferior.Controls.Add(labelQuantInferior);
+            groupArmaduraInferior.Controls.Add(numQuantInferior);
+            groupArmaduraInferior.Controls.Add(labelDiamInferior);
+            groupArmaduraInferior.Controls.Add(comboDiamInferior);
+            groupArmaduraInferior.Location = new Point(15, 138);
+            groupArmaduraInferior.Margin = new Padding(3, 4, 3, 4);
+            groupArmaduraInferior.Name = "groupArmaduraInferior";
+            groupArmaduraInferior.Padding = new Padding(3, 4, 3, 4);
+            groupArmaduraInferior.Size = new Size(350, 94);
+            groupArmaduraInferior.TabIndex = 1;
+            groupArmaduraInferior.TabStop = false;
+            groupArmaduraInferior.Text = "Armadura Inferior";
+            // 
+            // labelQuantInferior
+            // 
+            labelQuantInferior.AutoSize = true;
+            labelQuantInferior.Location = new Point(15, 31);
+            labelQuantInferior.Name = "labelQuantInferior";
+            labelQuantInferior.Size = new Size(90, 20);
+            labelQuantInferior.TabIndex = 0;
+            labelQuantInferior.Text = "Quantidade:";
+            // 
+            // numQuantInferior
+            // 
+            numQuantInferior.Location = new Point(15, 56);
+            numQuantInferior.Margin = new Padding(3, 4, 3, 4);
+            numQuantInferior.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+            numQuantInferior.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
+            numQuantInferior.Name = "numQuantInferior";
+            numQuantInferior.Size = new Size(60, 27);
+            numQuantInferior.TabIndex = 1;
+            numQuantInferior.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            // 
+            // labelDiamInferior
+            // 
+            labelDiamInferior.AutoSize = true;
+            labelDiamInferior.Location = new Point(100, 31);
+            labelDiamInferior.Name = "labelDiamInferior";
+            labelDiamInferior.Size = new Size(115, 20);
+            labelDiamInferior.TabIndex = 2;
+            labelDiamInferior.Text = "Diâmetro (mm):";
+            // 
+            // comboDiamInferior
+            // 
+            comboDiamInferior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiamInferior.FormattingEnabled = true;
+            comboDiamInferior.Location = new Point(100, 56);
+            comboDiamInferior.Margin = new Padding(3, 4, 3, 4);
+            comboDiamInferior.Name = "comboDiamInferior";
+            comboDiamInferior.Size = new Size(70, 28);
+            comboDiamInferior.TabIndex = 3;
+            // 
+            // groupArmaduraLateral
+            // 
+            groupArmaduraLateral.Controls.Add(checkArmaduraLateral);
+            groupArmaduraLateral.Controls.Add(labelQuantLateral);
+            groupArmaduraLateral.Controls.Add(numQuantLateral);
+            groupArmaduraLateral.Controls.Add(labelDiamLateral);
+            groupArmaduraLateral.Controls.Add(comboDiamLateral);
+            groupArmaduraLateral.Location = new Point(15, 244);
+            groupArmaduraLateral.Margin = new Padding(3, 4, 3, 4);
+            groupArmaduraLateral.Name = "groupArmaduraLateral";
+            groupArmaduraLateral.Padding = new Padding(3, 4, 3, 4);
+            groupArmaduraLateral.Size = new Size(350, 94);
+            groupArmaduraLateral.TabIndex = 2;
+            groupArmaduraLateral.TabStop = false;
+            groupArmaduraLateral.Text = "Armadura Lateral (Opcional)";
+            // 
+            // checkArmaduraLateral
+            // 
+            checkArmaduraLateral.AutoSize = true;
+            checkArmaduraLateral.Location = new Point(280, 31);
+            checkArmaduraLateral.Margin = new Padding(3, 4, 3, 4);
+            checkArmaduraLateral.Name = "checkArmaduraLateral";
+            checkArmaduraLateral.Size = new Size(70, 24);
+            checkArmaduraLateral.TabIndex = 0;
+            checkArmaduraLateral.Text = "Ativar";
+            checkArmaduraLateral.UseVisualStyleBackColor = true;
+            // 
+            // labelQuantLateral
+            // 
+            labelQuantLateral.AutoSize = true;
+            labelQuantLateral.Enabled = false;
+            labelQuantLateral.Location = new Point(15, 31);
+            labelQuantLateral.Name = "labelQuantLateral";
+            labelQuantLateral.Size = new Size(90, 20);
+            labelQuantLateral.TabIndex = 1;
+            labelQuantLateral.Text = "Quantidade:";
+            // 
+            // numQuantLateral
+            // 
+            numQuantLateral.Enabled = false;
+            numQuantLateral.Location = new Point(15, 56);
+            numQuantLateral.Margin = new Padding(3, 4, 3, 4);
+            numQuantLateral.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuantLateral.Name = "numQuantLateral";
+            numQuantLateral.Size = new Size(60, 27);
+            numQuantLateral.TabIndex = 2;
+            numQuantLateral.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            // 
+            // labelDiamLateral
+            // 
+            labelDiamLateral.AutoSize = true;
+            labelDiamLateral.Enabled = false;
+            labelDiamLateral.Location = new Point(100, 31);
+            labelDiamLateral.Name = "labelDiamLateral";
+            labelDiamLateral.Size = new Size(115, 20);
+            labelDiamLateral.TabIndex = 3;
+            labelDiamLateral.Text = "Diâmetro (mm):";
+            // 
+            // comboDiamLateral
+            // 
+            comboDiamLateral.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiamLateral.Enabled = false;
+            comboDiamLateral.FormattingEnabled = true;
+            comboDiamLateral.Location = new Point(100, 56);
+            comboDiamLateral.Margin = new Padding(3, 4, 3, 4);
+            comboDiamLateral.Name = "comboDiamLateral";
+            comboDiamLateral.Size = new Size(70, 28);
+            comboDiamLateral.TabIndex = 4;
             // 
             // groupEstribos
             // 
-            this.groupEstribos.Controls.Add(this.checkEstribosAutomaticos);
-            this.groupEstribos.Controls.Add(this.buttonRemoverEstribo);
-            this.groupEstribos.Controls.Add(this.buttonAdicionarEstribo);
-            this.groupEstribos.Controls.Add(this.listViewEstribos);
-            this.groupEstribos.Location = new System.Drawing.Point(12, 560);
-            this.groupEstribos.Name = "groupEstribos";
-            this.groupEstribos.Size = new System.Drawing.Size(1160, 90);
-            this.groupEstribos.TabIndex = 5;
-            this.groupEstribos.TabStop = false;
-            this.groupEstribos.Text = "Configuração de Estribos";
+            groupEstribos.Controls.Add(labelDiamEstribo);
+            groupEstribos.Controls.Add(comboDiamEstribo);
+            groupEstribos.Controls.Add(labelEspacamentoEstribo);
+            groupEstribos.Controls.Add(numEspacamentoEstribo);
+            groupEstribos.Controls.Add(checkEspacamentoVariavel);
+            groupEstribos.Dock = DockStyle.Top;
+            groupEstribos.Location = new Point(10, 137);
+            groupEstribos.Margin = new Padding(3, 4, 3, 4);
+            groupEstribos.Name = "groupEstribos";
+            groupEstribos.Padding = new Padding(3, 4, 3, 4);
+            groupEstribos.Size = new Size(380, 125);
+            groupEstribos.TabIndex = 1;
+            groupEstribos.TabStop = false;
+            groupEstribos.Text = "Estribos";
             // 
-            // checkEstribosAutomaticos
+            // labelDiamEstribo
             // 
-            this.checkEstribosAutomaticos.AutoSize = true;
-            this.checkEstribosAutomaticos.Checked = true;
-            this.checkEstribosAutomaticos.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkEstribosAutomaticos.Location = new System.Drawing.Point(480, 30);
-            this.checkEstribosAutomaticos.Name = "checkEstribosAutomaticos";
-            this.checkEstribosAutomaticos.Size = new System.Drawing.Size(422, 19);
-            this.checkEstribosAutomaticos.TabIndex = 3;
-            this.checkEstribosAutomaticos.Text = "Distribuição automática (zonas de corte elevado nas extremidades)";
-            this.checkEstribosAutomaticos.UseVisualStyleBackColor = true;
+            labelDiamEstribo.AutoSize = true;
+            labelDiamEstribo.Location = new Point(15, 31);
+            labelDiamEstribo.Name = "labelDiamEstribo";
+            labelDiamEstribo.Size = new Size(115, 20);
+            labelDiamEstribo.TabIndex = 0;
+            labelDiamEstribo.Text = "Diâmetro (mm):";
             // 
-            // buttonRemoverEstribo
+            // comboDiamEstribo
             // 
-            this.buttonRemoverEstribo.Location = new System.Drawing.Point(380, 55);
-            this.buttonRemoverEstribo.Name = "buttonRemoverEstribo";
-            this.buttonRemoverEstribo.Size = new System.Drawing.Size(80, 25);
-            this.buttonRemoverEstribo.TabIndex = 2;
-            this.buttonRemoverEstribo.Text = "Remover";
-            this.buttonRemoverEstribo.UseVisualStyleBackColor = true;
-            this.buttonRemoverEstribo.Click += new System.EventHandler(this.ButtonRemoverEstribo_Click);
+            comboDiamEstribo.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiamEstribo.FormattingEnabled = true;
+            comboDiamEstribo.Location = new Point(15, 56);
+            comboDiamEstribo.Margin = new Padding(3, 4, 3, 4);
+            comboDiamEstribo.Name = "comboDiamEstribo";
+            comboDiamEstribo.Size = new Size(70, 28);
+            comboDiamEstribo.TabIndex = 1;
             // 
-            // buttonAdicionarEstribo
+            // labelEspacamentoEstribo
             // 
-            this.buttonAdicionarEstribo.Location = new System.Drawing.Point(380, 30);
-            this.buttonAdicionarEstribo.Name = "buttonAdicionarEstribo";
-            this.buttonAdicionarEstribo.Size = new System.Drawing.Size(80, 25);
-            this.buttonAdicionarEstribo.TabIndex = 1;
-            this.buttonAdicionarEstribo.Text = "Adicionar";
-            this.buttonAdicionarEstribo.UseVisualStyleBackColor = true;
-            this.buttonAdicionarEstribo.Click += new System.EventHandler(this.ButtonAdicionarEstribo_Click);
+            labelEspacamentoEstribo.AutoSize = true;
+            labelEspacamentoEstribo.Location = new Point(110, 31);
+            labelEspacamentoEstribo.Name = "labelEspacamentoEstribo";
+            labelEspacamentoEstribo.Size = new Size(141, 20);
+            labelEspacamentoEstribo.TabIndex = 2;
+            labelEspacamentoEstribo.Text = "Espaçamento (mm):";
             // 
-            // listViewEstribos
+            // numEspacamentoEstribo
             // 
-            this.listViewEstribos.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.colDiametroEstribo,
-            this.colEspacamento,
-            this.colAlternado});
-            this.listViewEstribos.FullRowSelect = true;
-            this.listViewEstribos.GridLines = true;
-            this.listViewEstribos.Location = new System.Drawing.Point(20, 30);
-            this.listViewEstribos.Name = "listViewEstribos";
-            this.listViewEstribos.Size = new System.Drawing.Size(350, 50);
-            this.listViewEstribos.TabIndex = 0;
-            this.listViewEstribos.UseCompatibleStateImageBehavior = false;
-            this.listViewEstribos.View = System.Windows.Forms.View.Details;
+            numEspacamentoEstribo.Increment = new decimal(new int[] { 25, 0, 0, 0 });
+            numEspacamentoEstribo.Location = new Point(110, 56);
+            numEspacamentoEstribo.Margin = new Padding(3, 4, 3, 4);
+            numEspacamentoEstribo.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
+            numEspacamentoEstribo.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
+            numEspacamentoEstribo.Name = "numEspacamentoEstribo";
+            numEspacamentoEstribo.Size = new Size(80, 27);
+            numEspacamentoEstribo.TabIndex = 3;
+            numEspacamentoEstribo.Value = new decimal(new int[] { 150, 0, 0, 0 });
             // 
-            // colDiametroEstribo
+            // checkEspacamentoVariavel
             // 
-            this.colDiametroEstribo.Text = "Ø (mm)";
-            this.colDiametroEstribo.Width = 70;
+            checkEspacamentoVariavel.AutoSize = true;
+            checkEspacamentoVariavel.Location = new Point(15, 94);
+            checkEspacamentoVariavel.Margin = new Padding(3, 4, 3, 4);
+            checkEspacamentoVariavel.Name = "checkEspacamentoVariavel";
+            checkEspacamentoVariavel.Size = new Size(308, 24);
+            checkEspacamentoVariavel.TabIndex = 4;
+            checkEspacamentoVariavel.Text = "Espaçamento variável (menor nos apoios)";
+            checkEspacamentoVariavel.UseVisualStyleBackColor = true;
             // 
-            // colEspacamento
+            // groupParametros
             // 
-            this.colEspacamento.Text = "Espaçamento (mm)";
-            this.colEspacamento.Width = 120;
+            groupParametros.Controls.Add(labelCobrimento);
+            groupParametros.Controls.Add(numCobrimento);
+            groupParametros.Controls.Add(labelAmarracao);
+            groupParametros.Controls.Add(numMultAmarracao);
+            groupParametros.Dock = DockStyle.Top;
+            groupParametros.Location = new Point(10, 12);
+            groupParametros.Margin = new Padding(3, 4, 3, 4);
+            groupParametros.Name = "groupParametros";
+            groupParametros.Padding = new Padding(3, 4, 3, 4);
+            groupParametros.Size = new Size(380, 125);
+            groupParametros.TabIndex = 2;
+            groupParametros.TabStop = false;
+            groupParametros.Text = "Parâmetros";
             // 
-            // colAlternado
+            // labelCobrimento
             // 
-            this.colAlternado.Text = "Tipo";
-            this.colAlternado.Width = 100;
+            labelCobrimento.AutoSize = true;
+            labelCobrimento.Location = new Point(15, 31);
+            labelCobrimento.Name = "labelCobrimento";
+            labelCobrimento.Size = new Size(131, 20);
+            labelCobrimento.TabIndex = 0;
+            labelCobrimento.Text = "Cobrimento (mm):";
             // 
-            // progressBar
+            // numCobrimento
             // 
-            this.progressBar.Location = new System.Drawing.Point(300, 680);
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(530, 15);
-            this.progressBar.TabIndex = 9;
-            this.progressBar.Visible = false;
+            numCobrimento.Increment = new decimal(new int[] { 5, 0, 0, 0 });
+            numCobrimento.Location = new Point(15, 56);
+            numCobrimento.Margin = new Padding(3, 4, 3, 4);
+            numCobrimento.Minimum = new decimal(new int[] { 15, 0, 0, 0 });
+            numCobrimento.Name = "numCobrimento";
+            numCobrimento.Size = new Size(70, 27);
+            numCobrimento.TabIndex = 1;
+            numCobrimento.Value = new decimal(new int[] { 25, 0, 0, 0 });
             // 
-            // buttonCancelar
+            // labelAmarracao
             // 
-            this.buttonCancelar.Location = new System.Drawing.Point(1020, 670);
-            this.buttonCancelar.Name = "buttonCancelar";
-            this.buttonCancelar.Size = new System.Drawing.Size(90, 35);
-            this.buttonCancelar.TabIndex = 8;
-            this.buttonCancelar.Text = "? Cancelar";
-            this.buttonCancelar.UseVisualStyleBackColor = true;
-            this.buttonCancelar.Click += new System.EventHandler(this.ButtonCancelar_Click);
+            labelAmarracao.AutoSize = true;
+            labelAmarracao.Location = new Point(110, 31);
+            labelAmarracao.Name = "labelAmarracao";
+            labelAmarracao.Size = new Size(178, 20);
+            labelAmarracao.TabIndex = 2;
+            labelAmarracao.Text = "Multiplicador Amarração:";
+            // 
+            // numMultAmarracao
+            // 
+            numMultAmarracao.Increment = new decimal(new int[] { 5, 0, 0, 0 });
+            numMultAmarracao.Location = new Point(110, 56);
+            numMultAmarracao.Margin = new Padding(3, 4, 3, 4);
+            numMultAmarracao.Minimum = new decimal(new int[] { 30, 0, 0, 0 });
+            numMultAmarracao.Name = "numMultAmarracao";
+            numMultAmarracao.Size = new Size(70, 27);
+            numMultAmarracao.TabIndex = 3;
+            numMultAmarracao.Value = new decimal(new int[] { 50, 0, 0, 0 });
             // 
             // buttonExecutar
             // 
-            this.buttonExecutar.BackColor = System.Drawing.Color.LightGreen;
-            this.buttonExecutar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonExecutar.Location = new System.Drawing.Point(850, 670);
-            this.buttonExecutar.Name = "buttonExecutar";
-            this.buttonExecutar.Size = new System.Drawing.Size(150, 35);
-            this.buttonExecutar.TabIndex = 7;
-            this.buttonExecutar.Text = "? Executar Armadura";
-            this.buttonExecutar.UseVisualStyleBackColor = false;
-            this.buttonExecutar.Click += new System.EventHandler(this.ButtonExecutar_Click);
+            buttonExecutar.BackColor = Color.LightGreen;
+            buttonExecutar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            buttonExecutar.Location = new Point(95, 638);
+            buttonExecutar.Margin = new Padding(3, 4, 3, 4);
+            buttonExecutar.Name = "buttonExecutar";
+            buttonExecutar.Size = new Size(160, 44);
+            buttonExecutar.TabIndex = 4;
+            buttonExecutar.Text = "Criar Armadura";
+            buttonExecutar.UseVisualStyleBackColor = false;
             // 
-            // buttonPreVisualizacao
+            // buttonCancelar
             // 
-            this.buttonPreVisualizacao.BackColor = System.Drawing.Color.LightBlue;
-            this.buttonPreVisualizacao.Location = new System.Drawing.Point(150, 670);
-            this.buttonPreVisualizacao.Name = "buttonPreVisualizacao";
-            this.buttonPreVisualizacao.Size = new System.Drawing.Size(130, 35);
-            this.buttonPreVisualizacao.TabIndex = 6;
-            this.buttonPreVisualizacao.Text = "?? Pré-visualização";
-            this.buttonPreVisualizacao.UseVisualStyleBackColor = false;
-            this.buttonPreVisualizacao.Click += new System.EventHandler(this.ButtonPreVisualizacao_Click);
+            buttonCancelar.Location = new Point(265, 638);
+            buttonCancelar.Margin = new Padding(3, 4, 3, 4);
+            buttonCancelar.Name = "buttonCancelar";
+            buttonCancelar.Size = new Size(100, 44);
+            buttonCancelar.TabIndex = 5;
+            buttonCancelar.Text = "Cancelar";
+            buttonCancelar.UseVisualStyleBackColor = true;
             // 
-            // buttonDefinicoes
+            // progressBar
             // 
-            this.buttonDefinicoes.Location = new System.Drawing.Point(12, 670);
-            this.buttonDefinicoes.Name = "buttonDefinicoes";
-            this.buttonDefinicoes.Size = new System.Drawing.Size(120, 35);
-            this.buttonDefinicoes.TabIndex = 10;
-            this.buttonDefinicoes.Text = "? Definições";
-            this.buttonDefinicoes.UseVisualStyleBackColor = true;
-            this.buttonDefinicoes.Click += new System.EventHandler(this.ButtonDefinicoes_Click);
-            // 
-            // buttonSelecionarElementos
-            // 
-            this.buttonSelecionarElementos.Location = new System.Drawing.Point(600, 670);
-            this.buttonSelecionarElementos.Name = "buttonSelecionarElementos";
-            this.buttonSelecionarElementos.Size = new System.Drawing.Size(200, 35);
-            this.buttonSelecionarElementos.TabIndex = 11;
-            this.buttonSelecionarElementos.Text = "Selecionar Elementos no Revit";
-            this.buttonSelecionarElementos.UseVisualStyleBackColor = true;
-            this.buttonSelecionarElementos.Click += new System.EventHandler(this.ButtonSelecionarElementos_Click);
+            progressBar.Location = new Point(15, 700);
+            progressBar.Margin = new Padding(3, 4, 3, 4);
+            progressBar.Name = "progressBar";
+            progressBar.Size = new Size(350, 25);
+            progressBar.TabIndex = 6;
+            progressBar.Visible = false;
             // 
             // FormularioPrincipalAvancado
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1184, 721);
-            this.Controls.Add(this.buttonDefinicoes);
-            this.Controls.Add(this.progressBar);
-            this.Controls.Add(this.buttonCancelar);
-            this.Controls.Add(this.buttonExecutar);
-            this.Controls.Add(this.buttonPreVisualizacao);
-            this.Controls.Add(this.groupEstribos);
-            this.Controls.Add(this.groupAmarracao);
-            this.Controls.Add(this.groupVisualizador);
-            this.Controls.Add(this.groupConfigArmadura);
-            this.Controls.Add(this.groupFiltros);
-            this.Controls.Add(this.groupTipoElemento);
-            this.Controls.Add(this.buttonSelecionarElementos);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.Name = "FormularioPrincipalAvancado";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Automação de Armaduras - Vigas v2.0";
-            this.groupTipoElemento.ResumeLayout(false);
-            this.groupTipoElemento.PerformLayout();
-            this.groupFiltros.ResumeLayout(false);
-            this.groupFiltros.PerformLayout();
-            this.groupConfigArmadura.ResumeLayout(false);
-            this.groupConfigArmadura.PerformLayout();
-            this.groupVisualizador.ResumeLayout(false);
-            this.groupVisualizador.PerformLayout();
-            this.groupAmarracao.ResumeLayout(false);
-            this.groupAmarracao.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numMultiplicadorAmarracao)).EndInit();
-            this.groupEstribos.ResumeLayout(false);
-            this.groupEstribos.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(900, 812);
+            Controls.Add(panelDireito);
+            Controls.Add(panelEsquerdo);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(3, 4, 3, 4);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "FormularioPrincipalAvancado";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Criação de Armaduras em Vigas - v2.0";
+            panelEsquerdo.ResumeLayout(false);
+            groupSelecaoViga.ResumeLayout(false);
+            groupSelecaoViga.PerformLayout();
+            groupVisualizacao.ResumeLayout(false);
+            groupVisualizacao.PerformLayout();
+            panelDireito.ResumeLayout(false);
+            groupArmaduraLongitudinal.ResumeLayout(false);
+            groupArmaduraSuperior.ResumeLayout(false);
+            groupArmaduraSuperior.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantSuperior).EndInit();
+            groupArmaduraInferior.ResumeLayout(false);
+            groupArmaduraInferior.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantInferior).EndInit();
+            groupArmaduraLateral.ResumeLayout(false);
+            groupArmaduraLateral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numQuantLateral).EndInit();
+            groupEstribos.ResumeLayout(false);
+            groupEstribos.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numEspacamentoEstribo).EndInit();
+            groupParametros.ResumeLayout(false);
+            groupParametros.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numCobrimento).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numMultAmarracao).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.GroupBox groupTipoElemento;
-        private System.Windows.Forms.Label labelInfoElementos;
-        private System.Windows.Forms.RadioButton radioVigas;
-        private System.Windows.Forms.GroupBox groupFiltros;
-        private System.Windows.Forms.Label labelContagem;
-        private System.Windows.Forms.CheckBox checkSeleccaoActual;
-        private System.Windows.Forms.CheckedListBox listNiveis;
-        private System.Windows.Forms.Label labelNiveis;
-        private System.Windows.Forms.ComboBox comboDesignacao;
-        private System.Windows.Forms.Label labelDesignacao;
-        private System.Windows.Forms.GroupBox groupConfigArmadura;
-        private System.Windows.Forms.CheckBox checkAmarracaoAutomatica;
-        private System.Windows.Forms.ComboBox comboTipoDistribuicao;
-        private System.Windows.Forms.Label labelDistribuicao;
-        private System.Windows.Forms.Button buttonRemoverVarao;
-        private System.Windows.Forms.Button buttonAdicionarVarao;
-        private System.Windows.Forms.ListView listViewVaroes;
-        private System.Windows.Forms.ColumnHeader colQuantidade;
-        private System.Windows.Forms.ColumnHeader colDiametro;
-        private System.Windows.Forms.ColumnHeader colPosicao;
-        private System.Windows.Forms.GroupBox groupVisualizador;
-        private System.Windows.Forms.Label labelInfoVisualizador;
-        private System.Windows.Forms.Button buttonModoEdicao;
-        private System.Windows.Forms.Button buttonAlternarVista;
-        private System.Windows.Forms.Label lblLarguraVigaValor;
-        private System.Windows.Forms.Label labelLargura;
-        private System.Windows.Forms.Label lblAlturaVigaValor;
-        private System.Windows.Forms.Label labelAltura;
-        private System.Windows.Forms.Label lblComprimentoVigaValor;
-        private System.Windows.Forms.Label labelComprimento;
-        private System.Windows.Forms.Label labelDimensoes;
-        private System.Windows.Forms.GroupBox groupAmarracao;
-        private System.Windows.Forms.Label labelAmarracaoInfo;
-        private System.Windows.Forms.ComboBox comboTipoAmarracao;
-        private System.Windows.Forms.Label labelTipoAmarracao;
-        private System.Windows.Forms.Label labelPhi;
-        private System.Windows.Forms.NumericUpDown numMultiplicadorAmarracao;
-        private System.Windows.Forms.Label labelMultiplicador;
-        private System.Windows.Forms.GroupBox groupEstribos;
-        private System.Windows.Forms.CheckBox checkEstribosAutomaticos;
-        private System.Windows.Forms.Button buttonRemoverEstribo;
-        private System.Windows.Forms.Button buttonAdicionarEstribo;
-        private System.Windows.Forms.ListView listViewEstribos;
-        private System.Windows.Forms.ColumnHeader colDiametroEstribo;
-        private System.Windows.Forms.ColumnHeader colEspacamento;
-        private System.Windows.Forms.ColumnHeader colAlternado;
-        private System.Windows.Forms.ProgressBar progressBar;
-        private System.Windows.Forms.Button buttonCancelar;
-        private System.Windows.Forms.Button buttonExecutar;
-        private System.Windows.Forms.Button buttonPreVisualizacao;
-        private System.Windows.Forms.Button buttonDefinicoes;
-        private System.Windows.Forms.Button buttonSelecionarElementos;
+        // PAINEL ESQUERDO - SELEÇÃO E VISUALIZAÇÃO
+        private Panel panelEsquerdo;
+        private GroupBox groupSelecaoViga;
+        private Label labelSelecionarViga;
+        private ComboBox comboVigasDisponiveis;
+        private Label labelFiltrarPor;
+        private RadioButton radioFiltrarPorDescricao;
+        private RadioButton radioFiltrarPorNivel;
+        private Button buttonAtualizarLista;
+
+        // PAINEL DIREITO - CONFIGURAÇÃO DE ARMADURA
+        private Panel panelDireito;
+        
+        private GroupBox groupArmaduraLongitudinal;
+        private GroupBox groupArmaduraSuperior;
+        private Label labelQuantSuperior;
+        private NumericUpDown numQuantSuperior;
+        private Label labelDiamSuperior;
+        private ComboBox comboDiamSuperior;
+        
+        private GroupBox groupArmaduraInferior;
+        private Label labelQuantInferior;
+        private NumericUpDown numQuantInferior;
+        private Label labelDiamInferior;
+        private ComboBox comboDiamInferior;
+        
+        private GroupBox groupArmaduraLateral;
+        private CheckBox checkArmaduraLateral;
+        private Label labelQuantLateral;
+        private NumericUpDown numQuantLateral;
+        private Label labelDiamLateral;
+        private ComboBox comboDiamLateral;
+        
+        private GroupBox groupEstribos;
+        private Label labelDiamEstribo;
+        private ComboBox comboDiamEstribo;
+        private Label labelEspacamentoEstribo;
+        private NumericUpDown numEspacamentoEstribo;
+        private CheckBox checkEspacamentoVariavel;
+        
+        private GroupBox groupParametros;
+        private Label labelCobrimento;
+        private NumericUpDown numCobrimento;
+        private Label labelAmarracao;
+        private NumericUpDown numMultAmarracao;
+        
+        // BOTÕES DE AÇÃO
+        private Button buttonExecutar;
+        private Button buttonCancelar;
+        private ProgressBar progressBar;
+        private GroupBox groupVisualizacao;
+        private Label labelDimensoes;
+        private Label labelAltura;
+        private Label lblAlturaValor;
+        private Label labelLargura;
+        private Label lblLarguraValor;
+        private Label lblComprimentoValor;
+        private VisualizadorArmaduraViga visualizador;
+        private Label labelInfoViga;
     }
 }

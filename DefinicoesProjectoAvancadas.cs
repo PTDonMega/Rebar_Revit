@@ -1,7 +1,7 @@
 namespace Rebar_Revit
 {
     /// <summary>
-    /// DefiniÃ§Ãµes avanÃ§adas do projecto
+    /// Definições avançadas do projecto
     /// </summary>
     public class DefinicoesProjectoAvancadas
     {
@@ -11,7 +11,7 @@ namespace Rebar_Revit
         public double CoberturaFundacoes { get; set; } = 50;
         public double CoberturaLajes { get; set; } = 20;
 
-        // ConfiguraÃ§Ãµes de amarraÃ§Ã£o
+        // Configurações de amarração
         public double MultiplicadorAmarracaoMinimo { get; set; } = 30;
         public double MultiplicadorAmarracaoMaximo { get; set; } = 100;
         public bool AmarracaoAutomaticaGlobal { get; set; } = true;
@@ -22,7 +22,7 @@ namespace Rebar_Revit
         public bool ConfinamentoSismicoAutomatico { get; set; } = true;
         public double RatioConfinamento { get; set; } = 0.2; // 20% da altura nas extremidades
 
-        // FundaÃ§Ãµes
+        // Fundações
         public bool IncluirEsperasFundacao { get; set; } = true;
         public double ComprimentoEspera { get; set; } = 500; // mm
         public double EspacamentoMinimoMalha { get; set; } = 150; // mm
@@ -33,7 +33,7 @@ namespace Rebar_Revit
         public double RatioArmaduraSuperior { get; set; } = 0.4;
         public double ComprimentoZonaConfinamento { get; set; } = 600; // mm
 
-        // ValidaÃ§Ã£o
+        // Validação
         public bool ValidarEurocodigo { get; set; } = true;
         public bool ValidarEspacamentosMinimos { get; set; } = true;
         public bool GerarAvisosSobreposicao { get; set; } = true;
@@ -41,6 +41,6 @@ namespace Rebar_Revit
         // Produtividade
         public bool GerarRelatorioQuantidades { get; set; } = true;
         public bool CriarEtiquetasAutomaticas { get; set; } = true;
-        public string FormatoEtiqueta { get; set; } = "{Diametro}Ï† L={Comprimento}mm";
+        public string FormatoEtiqueta { get; set; } = "{Diametro}? L={Comprimento}mm";
     }
 }

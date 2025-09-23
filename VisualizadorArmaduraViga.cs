@@ -189,19 +189,6 @@ namespace Rebar_Revit
             this.Size = new Size(600, 400);
             this.BackColor = Color.White;
             this.BorderStyle = BorderStyle.FixedSingle;
-            
-            // Context menu para edição
-            var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Adicionar Armadura Superior", null, (s, e) => AdicionarArmadura("Superior"));
-            contextMenu.Items.Add("Adicionar Armadura Inferior", null, (s, e) => AdicionarArmadura("Inferior"));
-            contextMenu.Items.Add("Adicionar Armadura Lateral", null, (s, e) => AdicionarArmadura("Lateral"));
-            contextMenu.Items.Add("-");
-            contextMenu.Items.Add("Editar Selecionado", null, (s, e) => EditarArmaduraSelecionada());
-            contextMenu.Items.Add("Remover Selecionado", null, (s, e) => RemoverArmaduraSelecionada());
-            contextMenu.Items.Add("-");
-            contextMenu.Items.Add("Alternar Vista", null, (s, e) => AlternarVista());
-            
-            this.ContextMenuStrip = contextMenu;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -683,68 +670,6 @@ namespace Rebar_Revit
             }
             
             Invalidate();
-        }
-
-        protected override void OnMouseDoubleClick(MouseEventArgs e)
-        {
-            base.OnMouseDoubleClick(e);
-            
-            if (pontoSelecionado != null)
-            {
-                EditarArmaduraSelecionada();
-            }
-        }
-
-        private void AdicionarArmadura(string tipo)
-        {
-            using (var form = new ConfiguracaoVarao(false))
-            {
-                form.Text = $"Nova Armadura {tipo}";
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    var novoVarao = new ArmVar(form.QuantidadeValue, form.DiametroValue)
-                    {
-                        TipoArmadura = tipo
-                    };
-                    
-                    informacaoViga.VaroesLongitudinais.Add(novoVarao);
-                    AtualizarVisualizacao();
-                    
-                    ArmaduraEditada?.Invoke(this, new ArmaduraEditadaEventArgs 
-                    { 
-                        TipoOperacao = "Adicionar", 
-                        VaraoModificado = novoVarao 
-                    });
-                }
-            }
-        }
-
-        private void EditarArmaduraSelecionada()
-        {
-            if (pontoSelecionado == null) return;
-            
-            var varaoOriginal = informacaoViga.VaroesLongitudinais[pontoSelecionado.IndiceOriginal];
-            
-            using (var form = new ConfiguracaoVarao(false))
-            {
-                form.Text = "Editar Armadura";
-                // Pré-preencher com valores atuais seria necessário modificar ConfiguracaoVarao
-                
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    varaoOriginal.Quantidade = form.QuantidadeValue;
-                    varaoOriginal.Diametro = form.DiametroValue;
-                    varaoOriginal.TipoArmadura = form.PosicaoValue;
-                    
-                    AtualizarVisualizacao();
-                    
-                    ArmaduraEditada?.Invoke(this, new ArmaduraEditadaEventArgs 
-                    { 
-                        TipoOperacao = "Editar", 
-                        VaraoModificado = varaoOriginal 
-                    });
-                }
-            }
         }
 
         private void RemoverArmaduraSelecionada()

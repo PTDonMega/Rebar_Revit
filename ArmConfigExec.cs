@@ -3,6 +3,8 @@ using Autodesk.Revit.DB.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebar_Revit;
+using Rebar_Revit;
 
 namespace Rebar_Revit
 {
@@ -43,7 +45,7 @@ namespace Rebar_Revit
                 {
                     return ColocarArmaduraViga(elemento);
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -55,7 +57,7 @@ namespace Rebar_Revit
         private bool ColocarArmaduraViga(Element viga)
         {
             FamilyInstance inst = viga as FamilyInstance;
-            if (inst == null) 
+            if (inst == null)
             {
                 throw new Exception("Elemento não é uma FamilyInstance válida");
             }
@@ -65,10 +67,10 @@ namespace Rebar_Revit
                 // Informações da viga para debug
                 string familyName = inst.Symbol?.FamilyName ?? "N/A";
                 string typeName = inst.Symbol?.Name ?? "N/A";
-                
+
                 // Obter propriedades da viga
                 var propriedades = ObterPropriedadesViga(inst);
-                if (propriedades == null) 
+                if (propriedades == null)
                 {
                     throw new Exception($"Não foi possível obter as propriedades geométricas da viga {familyName} - {typeName}");
                 }
@@ -145,12 +147,10 @@ namespace Rebar_Revit
 
         private bool ValidarDimensoesCriticas(PropriedadesViga props, double cobertura)
         {
-            if (props == null) return false;
-            
-            double larguraMinima = 50 / 304.8; // 5cm em pés
-            double alturaMinima = 100 / 304.8; // 10cm em pés
-            double comprimentoMinimo = 300 / 304.8; // 30cm em pés
-            
+            double larguraMinima = Uteis.MilimetrosParaFeet(50); // 5cm em pés
+            double alturaMinima = Uteis.MilimetrosParaFeet(100); // 10cm em pés
+            double comprimentoMinimo = Uteis.MilimetrosParaFeet(300); // 30cm em pés
+
             if (props.Largura < larguraMinima ||
                 props.Altura < alturaMinima ||
                 props.Comprimento < comprimentoMinimo)
@@ -161,13 +161,13 @@ namespace Rebar_Revit
             double larguraUtil = props.Largura - 2 * cobertura;
             double alturaUtil = props.Altura - 2 * cobertura;
 
-            if (larguraUtil <= 20 / 304.8 || alturaUtil <= 20 / 304.8) 
+            if (larguraUtil <= Uteis.MilimetrosParaFeet(20) || alturaUtil <= Uteis.MilimetrosParaFeet(20))
             {
                 return false;
             }
 
             if (props.PontoInicial == null || props.PontoFinal == null ||
-                props.PontoInicial.IsAlmostEqualTo(props.PontoFinal))
+                Uteis.PontosSaoQuaseIguais(props.PontoInicial, props.PontoFinal))
             {
                 return false;
             }
@@ -175,15 +175,17 @@ namespace Rebar_Revit
             return true;
         }
 
-        private PropriedadesViga ObterPropriedadesViga(FamilyInstance inst)
+        public PropriedadesViga ObterPropriedadesViga(FamilyInstance inst)
         {
             try
             {
                 LocationCurve locCurve = inst.Location as LocationCurve;
-                if (locCurve == null) 
+                if (locCurve == null)
                 {
                     throw new Exception("Viga não possui LocationCurve válida");
                 }
+
+                var props = new PropriedadesViga();
 
                 Curve curvaViga = locCurve.Curve;
                 double comprimento = curvaViga.Length;
@@ -193,10 +195,12 @@ namespace Rebar_Revit
 
                 // Tentar obter dimensões da instância
                 Parameter paramAlturaInst = inst.LookupParameter("Altura") ??
-                                           inst.LookupParameter("Height");
+                                           inst.LookupParameter("Height") ??
+                                           inst.LookupParameter("h");
 
                 Parameter paramLarguraInst = inst.LookupParameter("Largura") ??
-                                            inst.LookupParameter("Width");
+                                            inst.LookupParameter("Width") ??
+                                            inst.LookupParameter("b");
 
                 if (paramAlturaInst != null && paramAlturaInst.AsDouble() > 0)
                 {
@@ -219,8 +223,8 @@ namespace Rebar_Revit
                             var alturaFamilia = elementType.LookupParameter("By") ??
                                               elementType.LookupParameter("Altura") ??
                                               elementType.LookupParameter("Height") ??
-                                              elementType.get_Parameter(BuiltInParameter.FAMILY_HEIGHT_PARAM);
-                            
+                                              elementType.LookupParameter("h");
+
                             if (alturaFamilia != null && alturaFamilia.AsDouble() > 0)
                             {
                                 altura = alturaFamilia.AsDouble();
@@ -232,8 +236,8 @@ namespace Rebar_Revit
                             var larguraFamilia = elementType.LookupParameter("Bx") ??
                                                elementType.LookupParameter("Largura") ??
                                                elementType.LookupParameter("Width") ??
-                                               elementType.get_Parameter(BuiltInParameter.FAMILY_WIDTH_PARAM);
-                            
+                                               elementType.LookupParameter("b");
+
                             if (larguraFamilia != null && larguraFamilia.AsDouble() > 0)
                             {
                                 largura = larguraFamilia.AsDouble();
@@ -245,7 +249,7 @@ namespace Rebar_Revit
                 // Verificar se encontrou todas as dimensões
                 if (comprimento <= 0)
                 {
-                    throw new Exception($"Comprimento inválido: {comprimento * 304.8:F0}mm");
+                    throw new Exception($"Comprimento inválido: {Uteis.FeetParaMilimetros(comprimento):F0}mm");
                 }
 
                 if (altura <= 0)
@@ -265,7 +269,8 @@ namespace Rebar_Revit
                     Largura = largura,
                     CurvaEixo = curvaViga,
                     PontoInicial = curvaViga.GetEndPoint(0),
-                    PontoFinal = curvaViga.GetEndPoint(1)
+                    PontoFinal = curvaViga.GetEndPoint(1),
+                    InstanciaViga = inst
                 };
             }
             catch (Exception ex)
@@ -287,7 +292,7 @@ namespace Rebar_Revit
                         t.Name.Contains(varao.Diametro.ToString("F0"))) ?? tiposArmadura.First();
 
                     string tipoLower = varao.TipoArmadura.ToLower();
-                    
+
                     if (tipoLower == "superior")
                     {
                         if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, cobertura))
@@ -313,7 +318,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarArmaduraSuperior(FamilyInstance elemento, PropriedadesViga props, 
+        private bool CriarArmaduraSuperior(FamilyInstance elemento, PropriedadesViga props,
                                          ArmVar varao, RebarBarType tipoVarao, double cobertura)
         {
             try
@@ -435,32 +440,27 @@ namespace Rebar_Revit
 
         private Transform ObterTransformViga(PropriedadesViga props)
         {
-            try
-            {
-                XYZ direcaoViga = (props.PontoFinal - props.PontoInicial).Normalize();
-                XYZ eixoZ = XYZ.BasisZ;
-                XYZ eixoY = eixoZ.CrossProduct(direcaoViga).Normalize();
-                
-                if (eixoY.IsAlmostEqualTo(XYZ.Zero))
-                {
-                    eixoY = XYZ.BasisY;
-                    eixoZ = direcaoViga.CrossProduct(eixoY).Normalize();
-                }
+            // Baseado apenas em Z global para evitar rotações inesperadas.
+            XYZ x = (props.PontoFinal - props.PontoInicial).Normalize();
+            XYZ z = XYZ.BasisZ;
 
-                Transform transform = Transform.Identity;
-                transform.Origin = props.PontoInicial;
-                transform.BasisX = direcaoViga;
-                transform.BasisY = eixoY;
-                transform.BasisZ = eixoZ;
-
-                return transform;
-            }
-            catch
+            // Se a viga for quase vertical, usar Y global como referência de "cima"
+            if (x.IsAlmostEqualTo(z, 1e-6) || x.IsAlmostEqualTo(-z, 1e-6))
             {
-                Transform fallback = Transform.Identity;
-                fallback.Origin = props.PontoInicial;
-                return fallback;
+                z = XYZ.BasisY;
             }
+
+            XYZ y = z.CrossProduct(x).Normalize();
+            // Recalcular Z para garantir ortonormalidade
+            z = x.CrossProduct(y).Normalize();
+
+            Transform transform = Transform.Identity;
+            transform.Origin = props.PontoInicial;
+            transform.BasisX = x;
+            transform.BasisY = y;
+            transform.BasisZ = z;
+
+            return transform;
         }
 
         private List<XYZ> CalcularPontosAmarracao(XYZ pontoInicial, XYZ pontoFinal, double diametro, string posicao)
@@ -482,7 +482,7 @@ namespace Rebar_Revit
                 if (AmarracaoAuto)
                 {
                     double comprimentoAmarracao = (MultAmarracao * diametro) / 304.8;
-                    
+
                     if (comprimentoAmarracao <= 0)
                     {
                         pontos.Add(pontoInicial);
@@ -491,7 +491,7 @@ namespace Rebar_Revit
                     }
 
                     TipoAmarracaoEnum tipoAmarracao = TipoAmarracaoEnum.Reta;
-                    
+
                     if (posicao == "superior")
                     {
                         tipoAmarracao = TipoAmarracaoEnum.Dobrada90;
@@ -500,7 +500,7 @@ namespace Rebar_Revit
                     try
                     {
                         pontos = calcAmarracao.CalcularPontosAncoragem(pontoInicial, pontoFinal, tipoAmarracao, comprimentoAmarracao);
-                        
+
                         if (pontos == null || pontos.Count < 2)
                         {
                             pontos = new List<XYZ> { pontoInicial, pontoFinal };
@@ -525,7 +525,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarArmaduraIndividual(FamilyInstance elemento, List<XYZ> pontos, 
+        private bool CriarArmaduraIndividual(FamilyInstance elemento, List<XYZ> pontos,
                                            RebarBarType tipoArmadura, double diametro)
         {
             try
@@ -560,21 +560,21 @@ namespace Rebar_Revit
                     throw new Exception("Nenhuma curva válida criada");
                 }
 
-                XYZ vetorNormal = DeterminarVetorNormalSeguro(curvas, elemento);
+                XYZ vetorNormal = Uteis.DeterminarVetorNormalSeguro(curvas);
 
                 // Tentar sem ganchos primeiro
                 Rebar armadura = Rebar.CreateFromCurves(
-                    doc, 
-                    RebarStyle.Standard, 
+                    doc,
+                    RebarStyle.Standard,
                     tipoArmadura,
                     null, // sem gancho
                     null, // sem gancho
                     elemento,
-                    vetorNormal, 
+                    vetorNormal,
                     curvas,
-                    RebarHookOrientation.Right, 
                     RebarHookOrientation.Right,
-                    true, 
+                    RebarHookOrientation.Right,
+                    true,
                     true);
 
                 if (armadura != null)
@@ -593,52 +593,17 @@ namespace Rebar_Revit
 
         private List<XYZ> ValidarELimparPontos(List<XYZ> pontos)
         {
-            List<XYZ> pontosLimpos = new List<XYZ>();
-            
-            foreach (XYZ ponto in pontos)
-            {
-                if (ponto != null && 
-                    !double.IsNaN(ponto.X) && !double.IsNaN(ponto.Y) && !double.IsNaN(ponto.Z) &&
-                    !double.IsInfinity(ponto.X) && !double.IsInfinity(ponto.Y) && !double.IsInfinity(ponto.Z))
-                {
-                    if (pontosLimpos.Count == 0 || 
-                        !ponto.IsAlmostEqualTo(pontosLimpos.Last(), 1e-3))
-                    {
-                        pontosLimpos.Add(ponto);
-                    }
-                }
-            }
-
-            return pontosLimpos;
+            return Uteis.ValidarELimparPontos(pontos);
         }
 
-        private XYZ DeterminarVetorNormalSeguro(List<Curve> curvas, FamilyInstance elemento)
+        private XYZ DeterminarVetorNormalSeguro(List<Curve> curvas)
         {
-            try
-            {
-                if (curvas.Count > 0)
-                {
-                    XYZ direcaoCurva = (curvas[0].GetEndPoint(1) - curvas[0].GetEndPoint(0)).Normalize();
-                    
-                    XYZ vetorTeste1 = XYZ.BasisZ.CrossProduct(direcaoCurva);
-                    if (!vetorTeste1.IsAlmostEqualTo(XYZ.Zero, 1e-6))
-                    {
-                        return vetorTeste1.Normalize();
-                    }
-                    
-                    XYZ vetorTeste2 = XYZ.BasisY.CrossProduct(direcaoCurva);
-                    if (!vetorTeste2.IsAlmostEqualTo(XYZ.Zero, 1e-6))
-                    {
-                        return vetorTeste2.Normalize();
-                    }
-                }
+            return Uteis.DeterminarVetorNormalSeguro(curvas);
+        }
 
-                return XYZ.BasisX;
-            }
-            catch
-            {
-                return XYZ.BasisX;
-            }
+        private List<XYZ> ConverterPontosParaGlobais(List<XYZ> pontosLocais, Transform transform)
+        {
+            return Uteis.ConverterPontosParaGlobais(pontosLocais, transform);
         }
 
         private void DefinirPropriedadesArmadura(Rebar armadura, double diametro)
@@ -677,7 +642,7 @@ namespace Rebar_Revit
                     for (int i = 1; i <= numeroEstribos; i++)
                     {
                         double posicaoX = i * espacamento;
-                        
+
                         if (posicaoX >= props.Comprimento) break;
 
                         CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, cobertura, transformViga);
@@ -692,8 +657,8 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX, 
-                                              PropriedadesViga props, RebarBarType tipoEstribo, 
+        private bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX,
+                                              PropriedadesViga props, RebarBarType tipoEstribo,
                                               double cobertura, Transform transformViga)
         {
             try
@@ -714,10 +679,10 @@ namespace Rebar_Revit
                     new XYZ(posicaoX, y2, z1),
                     new XYZ(posicaoX, y2, z2),
                     new XYZ(posicaoX, y1, z2),
-                    new XYZ(posicaoX, y1, z1)
+                    new XYZ(posicaoX, y1, z1) // Fechar o estribo
                 };
 
-                List<XYZ> pontosGlobais = pontosLocais.Select(p => transformViga.OfPoint(p)).ToList();
+                List<XYZ> pontosGlobais = Uteis.ConverterPontosParaGlobais(pontosLocais, transformViga);
 
                 List<Curve> curvasEstribo = new List<Curve>();
                 for (int i = 0; i < pontosGlobais.Count - 1; i++)
@@ -735,17 +700,17 @@ namespace Rebar_Revit
                 XYZ vetorNormal = (props.PontoFinal - props.PontoInicial).Normalize();
 
                 Rebar estriboCriado = Rebar.CreateFromCurves(
-                    doc, 
-                    RebarStyle.StirrupTie, 
+                    doc,
+                    RebarStyle.StirrupTie,
                     tipoEstribo,
                     null, // sem gancho
                     null, // sem gancho
                     elemento,
-                    vetorNormal, 
+                    vetorNormal,
                     curvasEstribo,
-                    RebarHookOrientation.Right, 
                     RebarHookOrientation.Right,
-                    true, 
+                    RebarHookOrientation.Right,
+                    true,
                     true);
 
                 return estriboCriado != null;
@@ -871,5 +836,6 @@ namespace Rebar_Revit
         public Curve CurvaEixo { get; set; }
         public XYZ PontoInicial { get; set; }
         public XYZ PontoFinal { get; set; }
+        public FamilyInstance InstanciaViga { get; set; }
     }
 }
