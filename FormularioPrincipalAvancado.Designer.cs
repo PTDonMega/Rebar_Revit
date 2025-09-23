@@ -28,7 +28,6 @@ namespace Rebar_Revit
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             VisualizadorArmaduraViga.InformacaoArmaduraViga informacaoArmaduraViga1 = new VisualizadorArmaduraViga.InformacaoArmaduraViga();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormularioPrincipalAvancado));
             panelEsquerdo = new Panel();
@@ -37,7 +36,7 @@ namespace Rebar_Revit
             comboVigasDisponiveis = new ComboBox();
             labelFiltrarPor = new Label();
             radioFiltrarPorDescricao = new RadioButton();
-            radioFiltrarPorNivel = new RadioButton();
+            radioFiltrarPorDesignacao = new RadioButton();
             buttonAtualizarLista = new Button();
             groupVisualizacao = new GroupBox();
             labelDimensoes = new Label();
@@ -45,7 +44,6 @@ namespace Rebar_Revit
             lblAlturaValor = new Label();
             labelLargura = new Label();
             lblLarguraValor = new Label();
-            lblComprimentoValor = new Label();
             visualizador = new VisualizadorArmaduraViga();
             labelInfoViga = new Label();
             panelDireito = new Panel();
@@ -116,7 +114,7 @@ namespace Rebar_Revit
             groupSelecaoViga.Controls.Add(comboVigasDisponiveis);
             groupSelecaoViga.Controls.Add(labelFiltrarPor);
             groupSelecaoViga.Controls.Add(radioFiltrarPorDescricao);
-            groupSelecaoViga.Controls.Add(radioFiltrarPorNivel);
+            groupSelecaoViga.Controls.Add(radioFiltrarPorDesignacao);
             groupSelecaoViga.Controls.Add(buttonAtualizarLista);
             groupSelecaoViga.Dock = DockStyle.Top;
             groupSelecaoViga.Location = new Point(10, 12);
@@ -169,16 +167,16 @@ namespace Rebar_Revit
             radioFiltrarPorDescricao.Text = "Type";
             radioFiltrarPorDescricao.UseVisualStyleBackColor = true;
             // 
-            // radioFiltrarPorNivel
+            // radioFiltrarPorDesignacao
             // 
-            radioFiltrarPorNivel.AutoSize = true;
-            radioFiltrarPorNivel.Location = new Point(170, 98);
-            radioFiltrarPorNivel.Margin = new Padding(3, 4, 3, 4);
-            radioFiltrarPorNivel.Name = "radioFiltrarPorNivel";
-            radioFiltrarPorNivel.Size = new Size(64, 24);
-            radioFiltrarPorNivel.TabIndex = 4;
-            radioFiltrarPorNivel.Text = "Nível";
-            radioFiltrarPorNivel.UseVisualStyleBackColor = true;
+            radioFiltrarPorDesignacao.AutoSize = true;
+            radioFiltrarPorDesignacao.Location = new Point(170, 98);
+            radioFiltrarPorDesignacao.Margin = new Padding(3, 4, 3, 4);
+            radioFiltrarPorDesignacao.Name = "radioFiltrarPorDesignacao";
+            radioFiltrarPorDesignacao.Size = new Size(108, 24);
+            radioFiltrarPorDesignacao.TabIndex = 4;
+            radioFiltrarPorDesignacao.Text = "Designação";
+            radioFiltrarPorDesignacao.UseVisualStyleBackColor = true;
             // 
             // buttonAtualizarLista
             // 
@@ -197,7 +195,6 @@ namespace Rebar_Revit
             groupVisualizacao.Controls.Add(lblAlturaValor);
             groupVisualizacao.Controls.Add(labelLargura);
             groupVisualizacao.Controls.Add(lblLarguraValor);
-            groupVisualizacao.Controls.Add(lblComprimentoValor);
             groupVisualizacao.Controls.Add(visualizador);
             groupVisualizacao.Controls.Add(labelInfoViga);
             groupVisualizacao.Dock = DockStyle.Fill;
@@ -214,7 +211,7 @@ namespace Rebar_Revit
             // 
             labelDimensoes.AutoSize = true;
             labelDimensoes.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            labelDimensoes.Location = new Point(18, 214);
+            labelDimensoes.Location = new Point(18, 190);
             labelDimensoes.Name = "labelDimensoes";
             labelDimensoes.Size = new Size(143, 18);
             labelDimensoes.TabIndex = 0;
@@ -223,7 +220,7 @@ namespace Rebar_Revit
             // labelAltura
             // 
             labelAltura.AutoSize = true;
-            labelAltura.Location = new Point(350, 212);
+            labelAltura.Location = new Point(350, 198);
             labelAltura.Name = "labelAltura";
             labelAltura.Size = new Size(52, 20);
             labelAltura.TabIndex = 3;
@@ -233,7 +230,7 @@ namespace Rebar_Revit
             // 
             lblAlturaValor.AutoSize = true;
             lblAlturaValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblAlturaValor.Location = new Point(408, 213);
+            lblAlturaValor.Location = new Point(408, 202);
             lblAlturaValor.Name = "lblAlturaValor";
             lblAlturaValor.Size = new Size(44, 18);
             lblAlturaValor.TabIndex = 4;
@@ -242,7 +239,7 @@ namespace Rebar_Revit
             // labelLargura
             // 
             labelLargura.AutoSize = true;
-            labelLargura.Location = new Point(185, 211);
+            labelLargura.Location = new Point(185, 193);
             labelLargura.Name = "labelLargura";
             labelLargura.Size = new Size(62, 20);
             labelLargura.TabIndex = 5;
@@ -252,21 +249,11 @@ namespace Rebar_Revit
             // 
             lblLarguraValor.AutoSize = true;
             lblLarguraValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLarguraValor.Location = new Point(253, 214);
+            lblLarguraValor.Location = new Point(253, 198);
             lblLarguraValor.Name = "lblLarguraValor";
             lblLarguraValor.Size = new Size(44, 18);
             lblLarguraValor.TabIndex = 6;
             lblLarguraValor.Text = "0000";
-            // 
-            // lblComprimentoValor
-            // 
-            lblComprimentoValor.AutoSize = true;
-            lblComprimentoValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblComprimentoValor.Location = new Point(100, 213);
-            lblComprimentoValor.Name = "lblComprimentoValor";
-            lblComprimentoValor.Size = new Size(44, 18);
-            lblComprimentoValor.TabIndex = 10;
-            lblComprimentoValor.Text = "0000";
             // 
             // visualizador
             // 
@@ -281,12 +268,12 @@ namespace Rebar_Revit
             informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
             informacaoArmaduraViga1.TipoFamilia = "";
             visualizador.InformacaoViga = informacaoArmaduraViga1;
-            visualizador.Location = new Point(15, 269);
+            visualizador.Location = new Point(15, 238);
             visualizador.Margin = new Padding(3, 4, 3, 4);
             visualizador.ModoEdicao = false;
             visualizador.MostrarCorteTransversal = true;
             visualizador.Name = "visualizador";
-            visualizador.Size = new Size(450, 437);
+            visualizador.Size = new Size(450, 478);
             visualizador.TabIndex = 8;
             visualizador.Load += visualizador_Load;
             // 
@@ -715,7 +702,7 @@ namespace Rebar_Revit
         private ComboBox comboVigasDisponiveis;
         private Label labelFiltrarPor;
         private RadioButton radioFiltrarPorDescricao;
-        private RadioButton radioFiltrarPorNivel;
+        private RadioButton radioFiltrarPorDesignacao;
         private Button buttonAtualizarLista;
 
         // PAINEL DIREITO - CONFIGURAÇÃO DE ARMADURA
@@ -764,7 +751,6 @@ namespace Rebar_Revit
         private Label lblAlturaValor;
         private Label labelLargura;
         private Label lblLarguraValor;
-        private Label lblComprimentoValor;
         private VisualizadorArmaduraViga visualizador;
         private Label labelInfoViga;
     }

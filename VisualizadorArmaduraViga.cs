@@ -391,7 +391,9 @@ namespace Rebar_Revit
                         float espacamento = (areaViga.Width - 2 * cobertura) / (total - 1);
                         x = areaViga.X + cobertura + indice * espacamento;
                     }
-                    y = areaViga.Y + cobertura;
+                    var varaoSup = informacaoViga.VaroesLongitudinais.FirstOrDefault(v => v.TipoArmadura.ToLower() == "superior");
+                    float diametroSup = varaoSup != null ? (float)varaoSup.Diametro : 0f;
+                    y = areaViga.Y + cobertura + diametroSup * escalaDesenho / 2;
                     break;
 
                 case "inferior":
@@ -404,23 +406,26 @@ namespace Rebar_Revit
                         float espacamento = (areaViga.Width - 2 * cobertura) / (total - 1);
                         x = areaViga.X + cobertura + indice * espacamento;
                     }
-                    y = areaViga.Y + areaViga.Height - cobertura;
+                    var varaoInf = informacaoViga.VaroesLongitudinais.FirstOrDefault(v => v.TipoArmadura.ToLower() == "inferior");
+                    float diametroInf = varaoInf != null ? (float)varaoInf.Diametro : 0f;
+                    y = areaViga.Y + areaViga.Height - cobertura - diametroInf * escalaDesenho / 2;
                     break;
 
                 case "lateral":
-                    if (indice < total / 2)
+                    // Corrigido: posicionar a meia altura entre superior e inferior
+                    float alturaUtil = areaViga.Height - 2 * cobertura;
+                    float yMeiaAltura = areaViga.Y + cobertura + alturaUtil / 2;
+                    if (total == 1)
                     {
-                        x = areaViga.X + cobertura;
-                        float alturaUtil = areaViga.Height - 2 * cobertura;
-                        float espacamento = alturaUtil / (total / 2 + 1);
-                        y = areaViga.Y + cobertura + (indice + 1) * espacamento;
+                        x = areaViga.X + areaViga.Width / 2;
+                        y = yMeiaAltura;
                     }
                     else
                     {
-                        x = areaViga.X + areaViga.Width - cobertura;
-                        float alturaUtil = areaViga.Height - 2 * cobertura;
-                        float espacamento = alturaUtil / (total / 2 + 1);
-                        y = areaViga.Y + cobertura + (indice - total / 2 + 1) * espacamento;
+                        // Distribuir lateralmente, mas sempre a meia altura
+                        float espacamento = (areaViga.Width - 2 * cobertura) / (total - 1);
+                        x = areaViga.X + cobertura + indice * espacamento;
+                        y = yMeiaAltura;
                     }
                     break;
 
@@ -549,82 +554,83 @@ namespace Rebar_Revit
             }
         }
 
-        private void DesenharLegenda(Graphics g)
-        {
-            float x = 10;
-            float y = this.Height - 80;
-            
-            using (var font = new Font("Arial", 8))
-            using (var brush = new SolidBrush(Color.Black))
-            {
-                g.DrawString("Legenda:", font, brush, x, y);
-                y += 15;
-                
-                DesenharItemLegenda(g, font, x, ref y, COR_ARMADURA_SUPERIOR, "Superior");
-                DesenharItemLegenda(g, font, x, ref y, COR_ARMADURA_INFERIOR, "Inferior");
-                DesenharItemLegenda(g, font, x + 100, ref y, COR_ARMADURA_LATERAL, "Lateral");
-                y -= 15;
-                DesenharItemLegenda(g, font, x + 200, ref y, COR_ESTRIBO, "Estribos");
-            }
-        }
-
-        private void DesenharItemLegenda(Graphics g, Font font, float x, ref float y, Color cor, string texto)
-        {
-            using (var brush = new SolidBrush(cor))
-            using (var brushTexto = new SolidBrush(Color.Black))
-            {
-                g.FillRectangle(brush, x, y, 10, 10);
-                g.DrawString(texto, font, brushTexto, x + 15, y - 2);
-                y += 15;
-            }
-        }
-
         private void DesenharInformacoes(Graphics g)
         {
-            float x = this.Width - 220;
-            float y = this.Height - 120;
-            
+            // Centralizar informações horizontalmente abaixo do título
+            float larguraInfo = 180; // largura estimada do bloco de informações
+            float x = (this.Width - larguraInfo) / 2;
+            float y = areaViga.Bottom + 20; // logo abaixo da viga
+            float espacamentoY = 15;
+
             using (var font = new Font("Arial", 8))
             using (var fontBold = new Font("Arial", 8, FontStyle.Bold))
             using (var brush = new SolidBrush(Color.Black))
             using (var brushTitle = new SolidBrush(Color.DarkBlue))
             {
-                // Informações da viga
                 if (!string.IsNullOrEmpty(informacaoViga.Designacao))
                 {
                     g.DrawString($"Designação: {informacaoViga.Designacao}", fontBold, brushTitle, x, y);
-                    y += 12;
+                    y += espacamentoY;
                 }
-                
                 if (!string.IsNullOrEmpty(informacaoViga.TipoFamilia))
                 {
                     g.DrawString($"Tipo: {informacaoViga.TipoFamilia}", font, brush, x, y);
-                    y += 12;
+                    y += espacamentoY;
                 }
-                
-                y += 3;
+                y += 2;
                 g.DrawString($"Dimensões:", fontBold, brushTitle, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Comprimento: {informacaoViga.Comprimento:F0}mm", font, brush, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Altura (By): {informacaoViga.Altura:F0}mm", font, brush, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Largura (Bx): {informacaoViga.Largura:F0}mm", font, brush, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Cobertura: {informacaoViga.Cobertura:F0}mm", font, brush, x, y);
-                y += 15;
-                
+                y += espacamentoY + 2;
                 g.DrawString($"Armadura:", fontBold, brushTitle, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Total: {informacaoViga.VaroesLongitudinais.Sum(v => v.Quantidade)} varões", font, brush, x, y);
-                y += 12;
+                y += espacamentoY;
                 g.DrawString($"Estribos: {informacaoViga.Estribos.Count} tipos", font, brush, x, y);
-                
                 if (informacaoViga.AmarracaoAutomatica)
                 {
-                    y += 12;
+                    y += espacamentoY;
                     g.DrawString($"Amarração: {informacaoViga.MultiplicadorAmarracao}?", font, brush, x, y);
                 }
+            }
+        }
+
+        private void DesenharLegenda(Graphics g)
+        {
+            // Legenda horizontal centralizada na parte inferior
+            float totalLegendaLargura = 350; // largura total estimada da legenda
+            float x = (this.Width - totalLegendaLargura) / 2;
+            float y = this.Height - 35;
+            float espacamentoX = 70;
+
+            using (var font = new Font("Arial", 8))
+            using (var brush = new SolidBrush(Color.Black))
+            {
+                g.DrawString("Legenda:", font, brush, x, y);
+                x += 60;
+                DesenharItemLegenda(g, font, x, y, COR_ARMADURA_SUPERIOR, "Superior");
+                x += espacamentoX;
+                DesenharItemLegenda(g, font, x, y, COR_ARMADURA_INFERIOR, "Inferior");
+                x += espacamentoX;
+                DesenharItemLegenda(g, font, x, y, COR_ARMADURA_LATERAL, "Lateral");
+                x += espacamentoX;
+                DesenharItemLegenda(g, font, x, y, COR_ESTRIBO, "Estribos");
+            }
+        }
+
+        private void DesenharItemLegenda(Graphics g, Font font, float x, float y, Color cor, string texto)
+        {
+            using (var brush = new SolidBrush(cor))
+            using (var brushTexto = new SolidBrush(Color.Black))
+            {
+                g.FillRectangle(brush, x, y, 12, 12);
+                g.DrawString(texto, font, brushTexto, x + 18, y - 1);
             }
         }
 

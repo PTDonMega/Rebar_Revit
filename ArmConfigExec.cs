@@ -329,10 +329,14 @@ namespace Rebar_Revit
                 double larguraUtil = props.Largura - 2 * cobertura;
                 double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
 
+                // Obter diâmetro do estribo
+                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
+                double diamVarao = varao.Diametro / 304.8;
+                double alturaZ = props.Altura - cobertura - diamEstribo / 2 - diamVarao / 2;
+
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
                     double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
-                    double alturaZ = props.Altura - cobertura;
 
                     XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
                     XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
@@ -365,10 +369,13 @@ namespace Rebar_Revit
                 double larguraUtil = props.Largura - 2 * cobertura;
                 double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
 
+                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
+                double diamVarao = varao.Diametro / 304.8;
+                double alturaZ = cobertura + diamEstribo / 2 + diamVarao / 2;
+
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
                     double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
-                    double alturaZ = cobertura;
 
                     XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
                     XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
@@ -399,14 +406,18 @@ namespace Rebar_Revit
 
                 Transform transformViga = ObterTransformViga(props);
                 double alturaUtil = props.Altura - 2 * cobertura;
-                double espacamento = varao.Quantidade > 1 ? alturaUtil / (varao.Quantidade - 1) : 0;
+                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
+                double diamVarao = varao.Diametro / 304.8;
+                double alturaZ = cobertura + diamEstribo / 2 + alturaUtil / 2; // Meia altura útil
+
+                // Lado esquerdo
+                double offsetYEsq = -(props.Largura / 2 - cobertura - diamEstribo / 2 - diamVarao / 2);
+                // Lado direito
+                double offsetYDir = props.Largura / 2 - cobertura - diamEstribo / 2 - diamVarao / 2;
 
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
-                    double alturaZ = varao.Quantidade == 1 ? props.Altura / 2 : cobertura + (i * espacamento);
-
-                    // Lado esquerdo
-                    double offsetYEsq = -(props.Largura / 2 - cobertura);
+                    // Se quiser distribuir lateralmente, pode ajustar offsetYEsq/offsetYDir
                     XYZ pontoInicialEsqLocal = new XYZ(0, offsetYEsq, alturaZ);
                     XYZ pontoFinalEsqLocal = new XYZ(props.Comprimento, offsetYEsq, alturaZ);
 
@@ -417,8 +428,6 @@ namespace Rebar_Revit
                     if (!CriarArmaduraIndividual(elemento, pontosEsq, tipoVarao, varao.Diametro))
                         return false;
 
-                    // Lado direito
-                    double offsetYDir = props.Largura / 2 - cobertura;
                     XYZ pontoInicialDirLocal = new XYZ(0, offsetYDir, alturaZ);
                     XYZ pontoFinalDirLocal = new XYZ(props.Comprimento, offsetYDir, alturaZ);
 

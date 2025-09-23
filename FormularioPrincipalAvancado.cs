@@ -77,7 +77,7 @@ namespace Rebar_Revit
             // Seleção de viga
             comboVigasDisponiveis.SelectedIndexChanged += ComboVigasDisponiveis_SelectedIndexChanged;
             radioFiltrarPorDescricao.CheckedChanged += RadioFiltro_CheckedChanged; // agora representa "Type"
-            radioFiltrarPorNivel.CheckedChanged += RadioFiltro_CheckedChanged;
+            radioFiltrarPorDesignacao.CheckedChanged += RadioFiltro_CheckedChanged; // agora representa "Designacao"
             buttonAtualizarLista.Click += ButtonAtualizarLista_Click;
 
             // Armadura lateral
@@ -131,21 +131,22 @@ namespace Rebar_Revit
 
                 if (radioFiltrarPorDescricao.Checked)
                 {
-                    // Agora agrupa por Type (símbolo)
+                    // Agrupa por Type (símbolo)
                     vigasAgrupadas = Uteis.AgruparVigasPorTipo(vigasDisponiveis, doc);
                 }
-                else
+                else if (radioFiltrarPorDesignacao.Checked)
                 {
-                    // Criar agrupamento por nível manualmente se a função não existir
+                    // Agrupa por Designacao
                     vigasAgrupadas = new Dictionary<string, List<Element>>();
                     foreach (var viga in vigasDisponiveis)
                     {
-                        string nivel = Uteis.ObterNomeNivel(viga, doc);
-                        if (!vigasAgrupadas.ContainsKey(nivel))
+                        string designacao = Uteis.ObterDesignacaoViga(viga, doc); // Função que retorna o parâmetro "Designacao"
+                        if (string.IsNullOrEmpty(designacao)) designacao = "(Sem Designação)";
+                        if (!vigasAgrupadas.ContainsKey(designacao))
                         {
-                            vigasAgrupadas[nivel] = new List<Element>();
+                            vigasAgrupadas[designacao] = new List<Element>();
                         }
-                        vigasAgrupadas[nivel].Add(viga);
+                        vigasAgrupadas[designacao].Add(viga);
                     }
                 }
 

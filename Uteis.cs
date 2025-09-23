@@ -436,5 +436,30 @@ namespace Rebar_Revit
         }
 
         #endregion
+
+        #region Designacao de Vigas
+
+        /// <summary>
+        /// Obter valor do parâmetro "Designacao" de uma viga
+        /// </summary>
+        public static string ObterDesignacaoViga(Element elemento, Document doc)
+        {
+            try
+            {
+                var param = elemento.LookupParameter("Designacao");
+                if (param != null)
+                {
+                    string val = param.AsString();
+                    if (!string.IsNullOrWhiteSpace(val)) return val;
+                }
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        #endregion
     }
 }
