@@ -4,7 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Calculadora especializada para amarrações de vigas

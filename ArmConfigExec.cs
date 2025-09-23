@@ -1,10 +1,10 @@
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Configuração e execução de armadura especializada para Vigas
@@ -55,28 +55,124 @@ namespace MacroArmaduraAvancado
         private bool ColocarArmaduraViga(Element viga)
         {
             FamilyInstance inst = viga as FamilyInstance;
-            if (inst == null) return false;
+            if (inst == null) 
+            {
+                throw new Exception("Elemento não é uma FamilyInstance válida");
+            }
 
             try
             {
+                // Informações da viga para debug
+                string familyName = inst.Symbol?.FamilyName ?? "N/A";
+                string typeName = inst.Symbol?.Name ?? "N/A";
+                
                 // Obter propriedades da viga
                 var propriedades = ObterPropriedadesViga(inst);
-                if (propriedades == null) return false;
+                if (propriedades == null) 
+                {
+                    throw new Exception($"Não foi possível obter as propriedades geométricas da viga {familyName} - {typeName}");
+                }
 
                 double cobertura = (Defs?.CoberturaVigas ?? 25) / 304.8; // Converter mm para pés
 
+                // Verificar se existem configurações de armadura
+                if (Varoes.Count == 0 && Estribos.Count == 0)
+                {
+                    throw new Exception("Nenhuma configuração de armadura definida");
+                }
+
+                // Verificar se existem tipos de armadura disponíveis no projeto
+                var tiposDisponiveis = ObterTiposArmaduraDisponiveis();
+                if (tiposDisponiveis.Count == 0)
+                {
+                    throw new Exception("Nenhum tipo de armadura (RebarBarType) encontrado no projeto. Carregue um template de armaduras ou crie tipos de armadura no projeto.");
+                }
+
+                // Validação dimensional crítica
+                if (!ValidarDimensoesCriticas(propriedades, cobertura))
+                {
+                    string dimensoesInfo = $"Dimensões: L={propriedades.Comprimento * 304.8:F0}mm, " +
+                                          $"B={propriedades.Largura * 304.8:F0}mm, " +
+                                          $"H={propriedades.Altura * 304.8:F0}mm, " +
+                                          $"Cobertura={cobertura * 304.8:F0}mm";
+                    throw new Exception($"Dimensões insuficientes para colocação de armadura. {dimensoesInfo}");
+                }
+
+                bool sucessoLongitudinal = true;
+                bool sucessoEstribos = true;
+
                 // Criar armadura longitudinal (superior, inferior, lateral)
-                bool sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, propriedades, cobertura);
+                if (Varoes.Count > 0)
+                {
+                    try
+                    {
+                        sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, propriedades, cobertura);
+                        if (!sucessoLongitudinal)
+                        {
+                            throw new Exception("Falha na criação de armadura longitudinal");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Erro na armadura longitudinal: {ex.Message}");
+                    }
+                }
 
                 // Criar estribos da viga
-                bool sucessoEstribos = CriarEstribosViga(inst, propriedades, cobertura);
+                if (Estribos.Count > 0)
+                {
+                    try
+                    {
+                        sucessoEstribos = CriarEstribosViga(inst, propriedades, cobertura);
+                        if (!sucessoEstribos)
+                        {
+                            throw new Exception("Falha na criação de estribos");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Erro nos estribos: {ex.Message}");
+                    }
+                }
 
                 return sucessoLongitudinal && sucessoEstribos;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erro na viga {viga.Id}: {ex.Message}");
+                throw new Exception($"Erro na viga {viga.Id} ({inst.Symbol?.FamilyName} - {inst.Symbol?.Name}): {ex.Message}");
             }
+        }
+
+        private bool ValidarDimensoesCriticas(PropriedadesViga props, double cobertura)
+        {
+            if (props == null) return false;
+            
+            double larguraMinima = 50 / 304.8; // 5cm em pés
+            double alturaMinima = 100 / 304.8; // 10cm em pés
+            double comprimentoMinimo = 300 / 304.8; // 30cm em pés
+            
+            if (props.Largura < larguraMinima ||
+                props.Altura < alturaMinima ||
+                props.Comprimento < comprimentoMinimo)
+            {
+                return false;
+            }
+
+            double larguraUtil = props.Largura - 2 * cobertura;
+            double alturaUtil = props.Altura - 2 * cobertura;
+
+            if (larguraUtil <= 20 / 304.8 || alturaUtil <= 20 / 304.8) 
+            {
+                return false;
+            }
+
+            if (props.PontoInicial == null || props.PontoFinal == null ||
+                props.PontoInicial.IsAlmostEqualTo(props.PontoFinal))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private PropriedadesViga ObterPropriedadesViga(FamilyInstance inst)
@@ -84,16 +180,83 @@ namespace MacroArmaduraAvancado
             try
             {
                 LocationCurve locCurve = inst.Location as LocationCurve;
-                if (locCurve == null) return null;
+                if (locCurve == null) 
+                {
+                    throw new Exception("Viga não possui LocationCurve válida");
+                }
 
                 Curve curvaViga = locCurve.Curve;
                 double comprimento = curvaViga.Length;
-                
-                double altura = inst.get_Parameter(BuiltInParameter.FAMILY_HEIGHT_PARAM)?.AsDouble() ?? 0;
-                double largura = inst.get_Parameter(BuiltInParameter.FAMILY_WIDTH_PARAM)?.AsDouble() ?? 0;
 
-                if (comprimento <= 0 || altura <= 0 || largura <= 0)
-                    return null;
+                double altura = 0;
+                double largura = 0;
+
+                // Tentar obter dimensões da instância
+                Parameter paramAlturaInst = inst.LookupParameter("Altura") ??
+                                           inst.LookupParameter("Height");
+
+                Parameter paramLarguraInst = inst.LookupParameter("Largura") ??
+                                            inst.LookupParameter("Width");
+
+                if (paramAlturaInst != null && paramAlturaInst.AsDouble() > 0)
+                {
+                    altura = paramAlturaInst.AsDouble();
+                }
+
+                if (paramLarguraInst != null && paramLarguraInst.AsDouble() > 0)
+                {
+                    largura = paramLarguraInst.AsDouble();
+                }
+
+                // Se não encontrou nas Properties da instância, buscar no tipo
+                if (altura <= 0 || largura <= 0)
+                {
+                    ElementType elementType = doc.GetElement(inst.GetTypeId()) as ElementType;
+                    if (elementType != null)
+                    {
+                        if (altura <= 0)
+                        {
+                            var alturaFamilia = elementType.LookupParameter("By") ??
+                                              elementType.LookupParameter("Altura") ??
+                                              elementType.LookupParameter("Height") ??
+                                              elementType.get_Parameter(BuiltInParameter.FAMILY_HEIGHT_PARAM);
+                            
+                            if (alturaFamilia != null && alturaFamilia.AsDouble() > 0)
+                            {
+                                altura = alturaFamilia.AsDouble();
+                            }
+                        }
+
+                        if (largura <= 0)
+                        {
+                            var larguraFamilia = elementType.LookupParameter("Bx") ??
+                                               elementType.LookupParameter("Largura") ??
+                                               elementType.LookupParameter("Width") ??
+                                               elementType.get_Parameter(BuiltInParameter.FAMILY_WIDTH_PARAM);
+                            
+                            if (larguraFamilia != null && larguraFamilia.AsDouble() > 0)
+                            {
+                                largura = larguraFamilia.AsDouble();
+                            }
+                        }
+                    }
+                }
+
+                // Verificar se encontrou todas as dimensões
+                if (comprimento <= 0)
+                {
+                    throw new Exception($"Comprimento inválido: {comprimento * 304.8:F0}mm");
+                }
+
+                if (altura <= 0)
+                {
+                    throw new Exception("Altura não encontrada nos parâmetros da viga");
+                }
+
+                if (largura <= 0)
+                {
+                    throw new Exception("Largura não encontrada nos parâmetros da viga");
+                }
 
                 return new PropriedadesViga
                 {
@@ -105,9 +268,9 @@ namespace MacroArmaduraAvancado
                     PontoFinal = curvaViga.GetEndPoint(1)
                 };
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                throw new Exception($"Erro ao obter propriedades da viga: {ex.Message}");
             }
         }
 
@@ -123,22 +286,22 @@ namespace MacroArmaduraAvancado
                     var tipoVarao = tiposArmadura.FirstOrDefault(t =>
                         t.Name.Contains(varao.Diametro.ToString("F0"))) ?? tiposArmadura.First();
 
-                    switch (varao.TipoArmadura.ToLower())
+                    string tipoLower = varao.TipoArmadura.ToLower();
+                    
+                    if (tipoLower == "superior")
                     {
-                        case "superior":
-                            if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, cobertura))
-                                return false;
-                            break;
-
-                        case "inferior":
-                            if (!CriarArmaduraInferior(elemento, props, varao, tipoVarao, cobertura))
-                                return false;
-                            break;
-
-                        case "lateral":
-                            if (!CriarArmaduraLateral(elemento, props, varao, tipoVarao, cobertura))
-                                return false;
-                            break;
+                        if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, cobertura))
+                            return false;
+                    }
+                    else if (tipoLower == "inferior")
+                    {
+                        if (!CriarArmaduraInferior(elemento, props, varao, tipoVarao, cobertura))
+                            return false;
+                    }
+                    else if (tipoLower == "lateral")
+                    {
+                        if (!CriarArmaduraLateral(elemento, props, varao, tipoVarao, cobertura))
+                            return false;
                     }
                 }
 
@@ -155,17 +318,23 @@ namespace MacroArmaduraAvancado
         {
             try
             {
-                double espacamento = (props.Largura - 2 * cobertura) / (varao.Quantidade + 1);
+                if (varao.Quantidade <= 0) return true;
 
-                for (int i = 1; i <= varao.Quantidade; i++)
+                Transform transformViga = ObterTransformViga(props);
+                double larguraUtil = props.Largura - 2 * cobertura;
+                double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
+
+                for (int i = 0; i < varao.Quantidade; i++)
                 {
-                    double offsetY = -props.Largura / 2 + cobertura + (i * espacamento);
+                    double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
                     double alturaZ = props.Altura - cobertura;
 
-                    XYZ pontoInicial = new XYZ(props.PontoInicial.X, props.PontoInicial.Y + offsetY, props.PontoInicial.Z + alturaZ);
-                    XYZ pontoFinal = new XYZ(props.PontoFinal.X, props.PontoFinal.Y + offsetY, props.PontoFinal.Z + alturaZ);
+                    XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
+                    XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
 
-                    // Calcular amarração
+                    XYZ pontoInicial = transformViga.OfPoint(pontoInicialLocal);
+                    XYZ pontoFinal = transformViga.OfPoint(pontoFinalLocal);
+
                     List<XYZ> pontosComAmarracao = CalcularPontosAmarracao(pontoInicial, pontoFinal, varao.Diametro, "superior");
 
                     if (!CriarArmaduraIndividual(elemento, pontosComAmarracao, tipoVarao, varao.Diametro))
@@ -174,9 +343,9 @@ namespace MacroArmaduraAvancado
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw new Exception($"Erro na armadura superior: {ex.Message}");
             }
         }
 
@@ -185,17 +354,23 @@ namespace MacroArmaduraAvancado
         {
             try
             {
-                double espacamento = (props.Largura - 2 * cobertura) / (varao.Quantidade + 1);
+                if (varao.Quantidade <= 0) return true;
 
-                for (int i = 1; i <= varao.Quantidade; i++)
+                Transform transformViga = ObterTransformViga(props);
+                double larguraUtil = props.Largura - 2 * cobertura;
+                double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
+
+                for (int i = 0; i < varao.Quantidade; i++)
                 {
-                    double offsetY = -props.Largura / 2 + cobertura + (i * espacamento);
+                    double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
                     double alturaZ = cobertura;
 
-                    XYZ pontoInicial = new XYZ(props.PontoInicial.X, props.PontoInicial.Y + offsetY, props.PontoInicial.Z + alturaZ);
-                    XYZ pontoFinal = new XYZ(props.PontoFinal.X, props.PontoFinal.Y + offsetY, props.PontoFinal.Z + alturaZ);
+                    XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
+                    XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
 
-                    // Calcular amarração
+                    XYZ pontoInicial = transformViga.OfPoint(pontoInicialLocal);
+                    XYZ pontoFinal = transformViga.OfPoint(pontoFinalLocal);
+
                     List<XYZ> pontosComAmarracao = CalcularPontosAmarracao(pontoInicial, pontoFinal, varao.Diametro, "inferior");
 
                     if (!CriarArmaduraIndividual(elemento, pontosComAmarracao, tipoVarao, varao.Diametro))
@@ -204,9 +379,9 @@ namespace MacroArmaduraAvancado
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw new Exception($"Erro na armadura inferior: {ex.Message}");
             }
         }
 
@@ -215,72 +390,139 @@ namespace MacroArmaduraAvancado
         {
             try
             {
-                double alturaUtil = props.Altura - 2 * cobertura;
-                double espacamento = alturaUtil / (varao.Quantidade + 1);
+                if (varao.Quantidade <= 0) return true;
 
-                for (int i = 1; i <= varao.Quantidade; i++)
+                Transform transformViga = ObterTransformViga(props);
+                double alturaUtil = props.Altura - 2 * cobertura;
+                double espacamento = varao.Quantidade > 1 ? alturaUtil / (varao.Quantidade - 1) : 0;
+
+                for (int i = 0; i < varao.Quantidade; i++)
                 {
-                    double alturaZ = cobertura + (i * espacamento);
+                    double alturaZ = varao.Quantidade == 1 ? props.Altura / 2 : cobertura + (i * espacamento);
 
                     // Lado esquerdo
-                    double offsetYEsq = -props.Largura / 2 + cobertura;
-                    XYZ pontoInicialEsq = new XYZ(props.PontoInicial.X, props.PontoInicial.Y + offsetYEsq, props.PontoInicial.Z + alturaZ);
-                    XYZ pontoFinalEsq = new XYZ(props.PontoFinal.X, props.PontoFinal.Y + offsetYEsq, props.PontoFinal.Z + alturaZ);
+                    double offsetYEsq = -(props.Largura / 2 - cobertura);
+                    XYZ pontoInicialEsqLocal = new XYZ(0, offsetYEsq, alturaZ);
+                    XYZ pontoFinalEsqLocal = new XYZ(props.Comprimento, offsetYEsq, alturaZ);
+
+                    XYZ pontoInicialEsq = transformViga.OfPoint(pontoInicialEsqLocal);
+                    XYZ pontoFinalEsq = transformViga.OfPoint(pontoFinalEsqLocal);
 
                     List<XYZ> pontosEsq = CalcularPontosAmarracao(pontoInicialEsq, pontoFinalEsq, varao.Diametro, "lateral");
                     if (!CriarArmaduraIndividual(elemento, pontosEsq, tipoVarao, varao.Diametro))
                         return false;
 
-                    // Lado direito (se mais de 1 varão lateral)
-                    if (varao.Quantidade > 1)
-                    {
-                        double offsetYDir = props.Largura / 2 - cobertura;
-                        XYZ pontoInicialDir = new XYZ(props.PontoInicial.X, props.PontoInicial.Y + offsetYDir, props.PontoInicial.Z + alturaZ);
-                        XYZ pontoFinalDir = new XYZ(props.PontoFinal.X, props.PontoFinal.Y + offsetYDir, props.PontoFinal.Z + alturaZ);
+                    // Lado direito
+                    double offsetYDir = props.Largura / 2 - cobertura;
+                    XYZ pontoInicialDirLocal = new XYZ(0, offsetYDir, alturaZ);
+                    XYZ pontoFinalDirLocal = new XYZ(props.Comprimento, offsetYDir, alturaZ);
 
-                        List<XYZ> pontosDir = CalcularPontosAmarracao(pontoInicialDir, pontoFinalDir, varao.Diametro, "lateral");
-                        if (!CriarArmaduraIndividual(elemento, pontosDir, tipoVarao, varao.Diametro))
-                            return false;
-                    }
+                    XYZ pontoInicialDir = transformViga.OfPoint(pontoInicialDirLocal);
+                    XYZ pontoFinalDir = transformViga.OfPoint(pontoFinalDirLocal);
+
+                    List<XYZ> pontosDir = CalcularPontosAmarracao(pontoInicialDir, pontoFinalDir, varao.Diametro, "lateral");
+                    if (!CriarArmaduraIndividual(elemento, pontosDir, tipoVarao, varao.Diametro))
+                        return false;
                 }
 
                 return true;
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro na armadura lateral: {ex.Message}");
+            }
+        }
+
+        private Transform ObterTransformViga(PropriedadesViga props)
+        {
+            try
+            {
+                XYZ direcaoViga = (props.PontoFinal - props.PontoInicial).Normalize();
+                XYZ eixoZ = XYZ.BasisZ;
+                XYZ eixoY = eixoZ.CrossProduct(direcaoViga).Normalize();
+                
+                if (eixoY.IsAlmostEqualTo(XYZ.Zero))
+                {
+                    eixoY = XYZ.BasisY;
+                    eixoZ = direcaoViga.CrossProduct(eixoY).Normalize();
+                }
+
+                Transform transform = Transform.Identity;
+                transform.Origin = props.PontoInicial;
+                transform.BasisX = direcaoViga;
+                transform.BasisY = eixoY;
+                transform.BasisZ = eixoZ;
+
+                return transform;
+            }
             catch
             {
-                return false;
+                Transform fallback = Transform.Identity;
+                fallback.Origin = props.PontoInicial;
+                return fallback;
             }
         }
 
         private List<XYZ> CalcularPontosAmarracao(XYZ pontoInicial, XYZ pontoFinal, double diametro, string posicao)
         {
-            List<XYZ> pontos = new List<XYZ>();
-
-            if (AmarracaoAuto)
+            try
             {
-                double comprimentoAmarracao = (MultAmarracao * diametro) / 304.8; // Converter mm para pés
-
-                // Determinar tipo de amarração baseado na posição
-                TipoAmarracaoEnum tipoAmarracao = TipoAmarracaoEnum.Reta;
-                
-                if (posicao == "superior")
+                if (pontoInicial == null || pontoFinal == null)
                 {
-                    tipoAmarracao = TipoAmarracaoEnum.Dobrada90; // Ganchos na armadura superior
-                }
-                else if (posicao == "inferior")
-                {
-                    tipoAmarracao = TipoAmarracaoEnum.Reta; // Armadura inferior geralmente reta
+                    throw new Exception("Pontos inicial ou final são nulos");
                 }
 
-                pontos = calcAmarracao.CalcularPontosAncoragem(pontoInicial, pontoFinal, tipoAmarracao, comprimentoAmarracao);
-            }
-            else
-            {
-                pontos.Add(pontoInicial);
-                pontos.Add(pontoFinal);
-            }
+                if (pontoInicial.IsAlmostEqualTo(pontoFinal, 1e-6))
+                {
+                    throw new Exception("Pontos inicial e final são coincidentes");
+                }
 
-            return pontos;
+                List<XYZ> pontos = new List<XYZ>();
+
+                if (AmarracaoAuto)
+                {
+                    double comprimentoAmarracao = (MultAmarracao * diametro) / 304.8;
+                    
+                    if (comprimentoAmarracao <= 0)
+                    {
+                        pontos.Add(pontoInicial);
+                        pontos.Add(pontoFinal);
+                        return pontos;
+                    }
+
+                    TipoAmarracaoEnum tipoAmarracao = TipoAmarracaoEnum.Reta;
+                    
+                    if (posicao == "superior")
+                    {
+                        tipoAmarracao = TipoAmarracaoEnum.Dobrada90;
+                    }
+
+                    try
+                    {
+                        pontos = calcAmarracao.CalcularPontosAncoragem(pontoInicial, pontoFinal, tipoAmarracao, comprimentoAmarracao);
+                        
+                        if (pontos == null || pontos.Count < 2)
+                        {
+                            pontos = new List<XYZ> { pontoInicial, pontoFinal };
+                        }
+                    }
+                    catch
+                    {
+                        pontos = new List<XYZ> { pontoInicial, pontoFinal };
+                    }
+                }
+                else
+                {
+                    pontos.Add(pontoInicial);
+                    pontos.Add(pontoFinal);
+                }
+
+                return pontos;
+            }
+            catch
+            {
+                return new List<XYZ> { pontoInicial, pontoFinal };
+            }
         }
 
         private bool CriarArmaduraIndividual(FamilyInstance elemento, List<XYZ> pontos, 
@@ -288,38 +530,60 @@ namespace MacroArmaduraAvancado
         {
             try
             {
-                // Criar curvas
-                List<Curve> curvas = new List<Curve>();
-                for (int i = 0; i < pontos.Count - 1; i++)
+                if (pontos == null || pontos.Count < 2)
                 {
-                    if (pontos[i].DistanceTo(pontos[i + 1]) > 1e-6)
+                    throw new Exception("Pontos insuficientes para criar armadura");
+                }
+
+                List<XYZ> pontosValidados = ValidarELimparPontos(pontos);
+                if (pontosValidados.Count < 2)
+                {
+                    throw new Exception("Pontos validados insuficientes");
+                }
+
+                List<Curve> curvas = new List<Curve>();
+                for (int i = 0; i < pontosValidados.Count - 1; i++)
+                {
+                    double distancia = pontosValidados[i].DistanceTo(pontosValidados[i + 1]);
+                    if (distancia > 1e-3) // 1mm mínimo
                     {
-                        curvas.Add(Line.CreateBound(pontos[i], pontos[i + 1]));
+                        if (!pontosValidados[i].IsAlmostEqualTo(pontosValidados[i + 1], 1e-3))
+                        {
+                            Line linha = Line.CreateBound(pontosValidados[i], pontosValidados[i + 1]);
+                            curvas.Add(linha);
+                        }
                     }
                 }
 
-                if (curvas.Count == 0) return false;
+                if (curvas.Count == 0)
+                {
+                    throw new Exception("Nenhuma curva válida criada");
+                }
 
-                // Obter ganchos se necessário
-                RebarHookType gancho = calcAmarracao.DeterminarTipoGancho(doc, TipoAmarracaoEnum.Dobrada90);
+                XYZ vetorNormal = DeterminarVetorNormalSeguro(curvas, elemento);
 
-                // Criar armadura
+                // Tentar sem ganchos primeiro
                 Rebar armadura = Rebar.CreateFromCurves(
-                    doc, RebarStyle.Standard, tipoArmadura,
-                    gancho, gancho, elemento,
-                    XYZ.BasisX, curvas,
-                    RebarHookOrientation.Right, RebarHookOrientation.Right,
-                    true, true);
+                    doc, 
+                    RebarStyle.Standard, 
+                    tipoArmadura,
+                    null, // sem gancho
+                    null, // sem gancho
+                    elemento,
+                    vetorNormal, 
+                    curvas,
+                    RebarHookOrientation.Right, 
+                    RebarHookOrientation.Right,
+                    true, 
+                    true);
 
                 if (armadura != null)
                 {
-                    // Definir comentário
-                    string comentario = $"Ø{diametro}mm - Amarração: {MultAmarracao}?";
-                    var paramComentario = armadura.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
-                    paramComentario?.Set(comentario);
+                    DefinirPropriedadesArmadura(armadura, diametro);
+                    return true;
                 }
 
-                return armadura != null;
+                return false;
             }
             catch (Exception ex)
             {
@@ -327,27 +591,96 @@ namespace MacroArmaduraAvancado
             }
         }
 
+        private List<XYZ> ValidarELimparPontos(List<XYZ> pontos)
+        {
+            List<XYZ> pontosLimpos = new List<XYZ>();
+            
+            foreach (XYZ ponto in pontos)
+            {
+                if (ponto != null && 
+                    !double.IsNaN(ponto.X) && !double.IsNaN(ponto.Y) && !double.IsNaN(ponto.Z) &&
+                    !double.IsInfinity(ponto.X) && !double.IsInfinity(ponto.Y) && !double.IsInfinity(ponto.Z))
+                {
+                    if (pontosLimpos.Count == 0 || 
+                        !ponto.IsAlmostEqualTo(pontosLimpos.Last(), 1e-3))
+                    {
+                        pontosLimpos.Add(ponto);
+                    }
+                }
+            }
+
+            return pontosLimpos;
+        }
+
+        private XYZ DeterminarVetorNormalSeguro(List<Curve> curvas, FamilyInstance elemento)
+        {
+            try
+            {
+                if (curvas.Count > 0)
+                {
+                    XYZ direcaoCurva = (curvas[0].GetEndPoint(1) - curvas[0].GetEndPoint(0)).Normalize();
+                    
+                    XYZ vetorTeste1 = XYZ.BasisZ.CrossProduct(direcaoCurva);
+                    if (!vetorTeste1.IsAlmostEqualTo(XYZ.Zero, 1e-6))
+                    {
+                        return vetorTeste1.Normalize();
+                    }
+                    
+                    XYZ vetorTeste2 = XYZ.BasisY.CrossProduct(direcaoCurva);
+                    if (!vetorTeste2.IsAlmostEqualTo(XYZ.Zero, 1e-6))
+                    {
+                        return vetorTeste2.Normalize();
+                    }
+                }
+
+                return XYZ.BasisX;
+            }
+            catch
+            {
+                return XYZ.BasisX;
+            }
+        }
+
+        private void DefinirPropriedadesArmadura(Rebar armadura, double diametro)
+        {
+            try
+            {
+                if (armadura != null)
+                {
+                    string comentario = $"Ø{diametro}mm - Amarração: {MultAmarracao}Ø";
+                    var paramComentario = armadura.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
+                    paramComentario?.Set(comentario);
+                }
+            }
+            catch
+            {
+                // Ignorar erros
+            }
+        }
+
         private bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double cobertura)
         {
             try
             {
+                if (Estribos.Count == 0) return true;
+
                 foreach (var estribo in Estribos)
                 {
                     var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
                     if (tipoEstribo == null) continue;
 
-                    double espacamento = estribo.Espacamento / 304.8; // mm para pés
-                    int numeroEstribos = (int)(props.Comprimento / espacamento);
+                    double espacamento = estribo.Espacamento / 304.8;
+                    int numeroEstribos = Math.Max(1, (int)(props.Comprimento / espacamento) - 1);
 
-                    for (int i = 1; i < numeroEstribos; i++)
+                    Transform transformViga = ObterTransformViga(props);
+
+                    for (int i = 1; i <= numeroEstribos; i++)
                     {
                         double posicaoX = i * espacamento;
+                        
+                        if (posicaoX >= props.Comprimento) break;
 
-                        // Calcular posição ao longo da viga
-                        XYZ pontoEstribo = props.PontoInicial + (props.PontoFinal - props.PontoInicial).Normalize() * posicaoX;
-
-                        if (!CriarEstriboVigaIndividual(elemento, pontoEstribo, props, tipoEstribo, cobertura))
-                            return false;
+                        CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, cobertura, transformViga);
                     }
                 }
 
@@ -359,42 +692,61 @@ namespace MacroArmaduraAvancado
             }
         }
 
-        private bool CriarEstriboVigaIndividual(FamilyInstance elemento, XYZ posicao, 
-                                              PropriedadesViga props, RebarBarType tipoEstribo, double cobertura)
+        private bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX, 
+                                              PropriedadesViga props, RebarBarType tipoEstribo, 
+                                              double cobertura, Transform transformViga)
         {
             try
             {
-                // Criar estribo retangular vertical
-                double y1 = -props.Largura / 2 + cobertura;
-                double y2 = props.Largura / 2 - cobertura;
+                double larguraUtil = props.Largura - 2 * cobertura;
+                double alturaUtil = props.Altura - 2 * cobertura;
+
+                if (larguraUtil <= 0 || alturaUtil <= 0) return false;
+
+                double y1 = -larguraUtil / 2;
+                double y2 = larguraUtil / 2;
                 double z1 = cobertura;
                 double z2 = props.Altura - cobertura;
 
-                List<Curve> curvasEstribo = new List<Curve>
+                List<XYZ> pontosLocais = new List<XYZ>
                 {
-                    Line.CreateBound(new XYZ(posicao.X, posicao.Y + y1, posicao.Z + z1), 
-                                   new XYZ(posicao.X, posicao.Y + y2, posicao.Z + z1)),
-                    Line.CreateBound(new XYZ(posicao.X, posicao.Y + y2, posicao.Z + z1), 
-                                   new XYZ(posicao.X, posicao.Y + y2, posicao.Z + z2)),
-                    Line.CreateBound(new XYZ(posicao.X, posicao.Y + y2, posicao.Z + z2), 
-                                   new XYZ(posicao.X, posicao.Y + y1, posicao.Z + z2)),
-                    Line.CreateBound(new XYZ(posicao.X, posicao.Y + y1, posicao.Z + z2), 
-                                   new XYZ(posicao.X, posicao.Y + y1, posicao.Z + z1))
+                    new XYZ(posicaoX, y1, z1),
+                    new XYZ(posicaoX, y2, z1),
+                    new XYZ(posicaoX, y2, z2),
+                    new XYZ(posicaoX, y1, z2),
+                    new XYZ(posicaoX, y1, z1)
                 };
 
-                var ganchos = new FilteredElementCollector(doc)
-                    .OfClass(typeof(RebarHookType))
-                    .Cast<RebarHookType>();
+                List<XYZ> pontosGlobais = pontosLocais.Select(p => transformViga.OfPoint(p)).ToList();
 
-                RebarHookType ganchoEstribo = ganchos.FirstOrDefault(g => g.Name.Contains("90")) ??
-                                            ganchos.FirstOrDefault();
+                List<Curve> curvasEstribo = new List<Curve>();
+                for (int i = 0; i < pontosGlobais.Count - 1; i++)
+                {
+                    double distancia = pontosGlobais[i].DistanceTo(pontosGlobais[i + 1]);
+                    if (distancia > 1e-6)
+                    {
+                        Line linha = Line.CreateBound(pontosGlobais[i], pontosGlobais[i + 1]);
+                        curvasEstribo.Add(linha);
+                    }
+                }
+
+                if (curvasEstribo.Count < 3) return false;
+
+                XYZ vetorNormal = (props.PontoFinal - props.PontoInicial).Normalize();
 
                 Rebar estriboCriado = Rebar.CreateFromCurves(
-                    doc, RebarStyle.StirrupTie, tipoEstribo,
-                    ganchoEstribo, ganchoEstribo, elemento,
-                    XYZ.BasisX, curvasEstribo,
-                    RebarHookOrientation.Right, RebarHookOrientation.Right,
-                    true, true);
+                    doc, 
+                    RebarStyle.StirrupTie, 
+                    tipoEstribo,
+                    null, // sem gancho
+                    null, // sem gancho
+                    elemento,
+                    vetorNormal, 
+                    curvasEstribo,
+                    RebarHookOrientation.Right, 
+                    RebarHookOrientation.Right,
+                    true, 
+                    true);
 
                 return estriboCriado != null;
             }
@@ -404,7 +756,6 @@ namespace MacroArmaduraAvancado
             }
         }
 
-        // Métodos auxiliares
         private List<RebarBarType> ObterTiposArmaduraDisponiveis()
         {
             var collector = new FilteredElementCollector(doc);
@@ -423,9 +774,6 @@ namespace MacroArmaduraAvancado
                    tipos.FirstOrDefault();
         }
 
-        /// <summary>
-        /// Gera relatório de pré-visualização especializado para vigas
-        /// </summary>
         public string GerarRelatorioPreVisualizacao(List<Element> elementos)
         {
             var relatorio = new System.Text.StringBuilder();
@@ -435,7 +783,6 @@ namespace MacroArmaduraAvancado
             relatorio.AppendLine($"Total de Vigas: {elementos.Count}");
             relatorio.AppendLine();
 
-            // Configuração de armadura longitudinal
             relatorio.AppendLine("ARMADURA LONGITUDINAL:");
             relatorio.AppendLine($"- Quantidade total de varões: {QtdTotalVaroes()}");
 
@@ -464,65 +811,12 @@ namespace MacroArmaduraAvancado
                     relatorio.AppendLine($"    * {varao.Quantidade}Ø{varao.Diametro}mm");
             }
 
-            if (AmarracaoAuto)
-            {
-                relatorio.AppendLine($"- Amarração: {MultAmarracao}? (automática por posição)");
-                relatorio.AppendLine("  * Superior: Ganchos 90°");
-                relatorio.AppendLine("  * Inferior: Reta");
-                relatorio.AppendLine("  * Lateral: Reta");
-            }
             relatorio.AppendLine();
-
-            // Configuração de estribos
             relatorio.AppendLine("ESTRIBOS:");
             foreach (var estribo in Estribos)
             {
                 string tipo = estribo.Alternado ? " (Alternado)" : " (Uniforme)";
                 relatorio.AppendLine($"- Ø{estribo.Diametro}mm // {estribo.Espacamento}mm{tipo}");
-            }
-            relatorio.AppendLine();
-
-            // Cálculos estimativos para vigas
-            if (elementos.Count > 0)
-            {
-                relatorio.AppendLine("ESTIMATIVA DE MATERIAIS:");
-
-                double comprimentoMedioViga = 4000; // mm estimativa
-                double totalMetrosLongitudinal = 0;
-
-                foreach (var varao in Varoes)
-                {
-                    double comprimentoComAmarracao = comprimentoMedioViga + (2 * MultAmarracao * varao.Diametro);
-                    double metros = (elementos.Count * varao.Quantidade * comprimentoComAmarracao) / 1000.0;
-                    totalMetrosLongitudinal += metros;
-                    relatorio.AppendLine($"- {varao.TipoArmadura} Ø{varao.Diametro}: ~{metros:F1}m");
-                }
-
-                relatorio.AppendLine($"- Total armadura longitudinal: ~{totalMetrosLongitudinal:F1}m");
-
-                // Estribos
-                double totalMetrosEstribos = 0;
-                foreach (var estribo in Estribos)
-                {
-                    double perimetroMedio = 1.0; // m, estimativa para estribos de viga
-                    int estribosporViga = (int)(comprimentoMedioViga / estribo.Espacamento);
-                    double metrosEstribo = elementos.Count * estribosporViga * perimetroMedio;
-                    totalMetrosEstribos += metrosEstribo;
-                    relatorio.AppendLine($"- Estribos Ø{estribo.Diametro}mm: ~{metrosEstribo:F1}m ({elementos.Count * estribosporViga} unidades)");
-                }
-
-                relatorio.AppendLine($"- Total estribos: ~{totalMetrosEstribos:F1}m");
-                relatorio.AppendLine();
-                relatorio.AppendLine($"TOTAL GERAL: ~{totalMetrosLongitudinal + totalMetrosEstribos:F1}m de armadura");
-            }
-
-            // Definições aplicadas
-            if (Defs != null)
-            {
-                relatorio.AppendLine();
-                relatorio.AppendLine("DEFINIÇÕES APLICADAS:");
-                relatorio.AppendLine($"- Cobertura vigas: {Defs.CoberturaVigas}mm");
-                relatorio.AppendLine($"- Validação regulamentar: {(Defs.ValidarEurocodigo ? "Ativada" : "Desativada")}");
             }
 
             return relatorio.ToString();
@@ -536,7 +830,7 @@ namespace MacroArmaduraAvancado
     {
         public int Quantidade { get; set; }
         public double Diametro { get; set; }
-        public string TipoArmadura { get; set; } = "Superior"; // Superior, Inferior, Lateral
+        public string TipoArmadura { get; set; } = "Superior";
 
         public ArmVar(int quantidade, double diametro)
         {

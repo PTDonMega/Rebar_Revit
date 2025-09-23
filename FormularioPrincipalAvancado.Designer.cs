@@ -1,4 +1,4 @@
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     partial class FormularioPrincipalAvancado
     {
@@ -52,11 +52,11 @@ namespace MacroArmaduraAvancado
             this.labelInfoVisualizador = new System.Windows.Forms.Label();
             this.buttonModoEdicao = new System.Windows.Forms.Button();
             this.buttonAlternarVista = new System.Windows.Forms.Button();
-            this.numLarguraViga = new System.Windows.Forms.NumericUpDown();
+            this.lblLarguraVigaValor = new System.Windows.Forms.Label();
             this.labelLargura = new System.Windows.Forms.Label();
-            this.numAlturaViga = new System.Windows.Forms.NumericUpDown();
+            this.lblAlturaVigaValor = new System.Windows.Forms.Label();
             this.labelAltura = new System.Windows.Forms.Label();
-            this.numComprimentoViga = new System.Windows.Forms.NumericUpDown();
+            this.lblComprimentoVigaValor = new System.Windows.Forms.Label();
             this.labelComprimento = new System.Windows.Forms.Label();
             this.labelDimensoes = new System.Windows.Forms.Label();
             this.groupAmarracao = new System.Windows.Forms.GroupBox();
@@ -79,13 +79,11 @@ namespace MacroArmaduraAvancado
             this.buttonExecutar = new System.Windows.Forms.Button();
             this.buttonPreVisualizacao = new System.Windows.Forms.Button();
             this.buttonDefinicoes = new System.Windows.Forms.Button();
+            this.buttonSelecionarElementos = new System.Windows.Forms.Button();
             this.groupTipoElemento.SuspendLayout();
             this.groupFiltros.SuspendLayout();
             this.groupConfigArmadura.SuspendLayout();
             this.groupVisualizador.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numLarguraViga)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numAlturaViga)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numComprimentoViga)).BeginInit();
             this.groupAmarracao.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMultiplicadorAmarracao)).BeginInit();
             this.groupEstribos.SuspendLayout();
@@ -301,11 +299,11 @@ namespace MacroArmaduraAvancado
             this.groupVisualizador.Controls.Add(this.labelInfoVisualizador);
             this.groupVisualizador.Controls.Add(this.buttonModoEdicao);
             this.groupVisualizador.Controls.Add(this.buttonAlternarVista);
-            this.groupVisualizador.Controls.Add(this.numLarguraViga);
+            this.groupVisualizador.Controls.Add(this.lblLarguraVigaValor);
             this.groupVisualizador.Controls.Add(this.labelLargura);
-            this.groupVisualizador.Controls.Add(this.numAlturaViga);
+            this.groupVisualizador.Controls.Add(this.lblAlturaVigaValor);
             this.groupVisualizador.Controls.Add(this.labelAltura);
-            this.groupVisualizador.Controls.Add(this.numComprimentoViga);
+            this.groupVisualizador.Controls.Add(this.lblComprimentoVigaValor);
             this.groupVisualizador.Controls.Add(this.labelComprimento);
             this.groupVisualizador.Controls.Add(this.labelDimensoes);
             this.groupVisualizador.Location = new System.Drawing.Point(610, 95);
@@ -344,28 +342,14 @@ namespace MacroArmaduraAvancado
             this.buttonAlternarVista.UseVisualStyleBackColor = true;
             this.buttonAlternarVista.Click += new System.EventHandler(this.ButtonAlternarVista_Click);
             // 
-            // numLarguraViga
+            // lblLarguraVigaValor
             // 
-            this.numLarguraViga.Location = new System.Drawing.Point(240, 48);
-            this.numLarguraViga.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numLarguraViga.Minimum = new decimal(new int[] {
-            150,
-            0,
-            0,
-            0});
-            this.numLarguraViga.Name = "numLarguraViga";
-            this.numLarguraViga.Size = new System.Drawing.Size(70, 23);
-            this.numLarguraViga.TabIndex = 6;
-            this.numLarguraViga.Value = new decimal(new int[] {
-            300,
-            0,
-            0,
-            0});
-            this.numLarguraViga.ValueChanged += new System.EventHandler(this.DimensoesViga_ValueChanged);
+            this.lblLarguraVigaValor.Location = new System.Drawing.Point(240, 48);
+            this.lblLarguraVigaValor.Name = "lblLarguraVigaValor";
+            this.lblLarguraVigaValor.Size = new System.Drawing.Size(70, 23);
+            this.lblLarguraVigaValor.TabIndex = 6;
+            this.lblLarguraVigaValor.Text = "300";
+            this.lblLarguraVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelLargura
             // 
@@ -376,28 +360,14 @@ namespace MacroArmaduraAvancado
             this.labelLargura.TabIndex = 5;
             this.labelLargura.Text = "L:";
             // 
-            // numAlturaViga
+            // lblAlturaVigaValor
             // 
-            this.numAlturaViga.Location = new System.Drawing.Point(140, 48);
-            this.numAlturaViga.Maximum = new decimal(new int[] {
-            2000,
-            0,
-            0,
-            0});
-            this.numAlturaViga.Minimum = new decimal(new int[] {
-            200,
-            0,
-            0,
-            0});
-            this.numAlturaViga.Name = "numAlturaViga";
-            this.numAlturaViga.Size = new System.Drawing.Size(70, 23);
-            this.numAlturaViga.TabIndex = 4;
-            this.numAlturaViga.Value = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.numAlturaViga.ValueChanged += new System.EventHandler(this.DimensoesViga_ValueChanged);
+            this.lblAlturaVigaValor.Location = new System.Drawing.Point(140, 48);
+            this.lblAlturaVigaValor.Name = "lblAlturaVigaValor";
+            this.lblAlturaVigaValor.Size = new System.Drawing.Size(70, 23);
+            this.lblAlturaVigaValor.TabIndex = 4;
+            this.lblAlturaVigaValor.Text = "500";
+            this.lblAlturaVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelAltura
             // 
@@ -408,28 +378,14 @@ namespace MacroArmaduraAvancado
             this.labelAltura.TabIndex = 3;
             this.labelAltura.Text = "H:";
             // 
-            // numComprimentoViga
+            // lblComprimentoVigaValor
             // 
-            this.numComprimentoViga.Location = new System.Drawing.Point(40, 48);
-            this.numComprimentoViga.Maximum = new decimal(new int[] {
-            20000,
-            0,
-            0,
-            0});
-            this.numComprimentoViga.Minimum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numComprimentoViga.Name = "numComprimentoViga";
-            this.numComprimentoViga.Size = new System.Drawing.Size(70, 23);
-            this.numComprimentoViga.TabIndex = 2;
-            this.numComprimentoViga.Value = new decimal(new int[] {
-            5000,
-            0,
-            0,
-            0});
-            this.numComprimentoViga.ValueChanged += new System.EventHandler(this.DimensoesViga_ValueChanged);
+            this.lblComprimentoVigaValor.Location = new System.Drawing.Point(40, 48);
+            this.lblComprimentoVigaValor.Name = "lblComprimentoVigaValor";
+            this.lblComprimentoVigaValor.Size = new System.Drawing.Size(70, 23);
+            this.lblComprimentoVigaValor.TabIndex = 2;
+            this.lblComprimentoVigaValor.Text = "5000";
+            this.lblComprimentoVigaValor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelComprimento
             // 
@@ -663,6 +619,16 @@ namespace MacroArmaduraAvancado
             this.buttonDefinicoes.UseVisualStyleBackColor = true;
             this.buttonDefinicoes.Click += new System.EventHandler(this.ButtonDefinicoes_Click);
             // 
+            // buttonSelecionarElementos
+            // 
+            this.buttonSelecionarElementos.Location = new System.Drawing.Point(600, 670);
+            this.buttonSelecionarElementos.Name = "buttonSelecionarElementos";
+            this.buttonSelecionarElementos.Size = new System.Drawing.Size(200, 35);
+            this.buttonSelecionarElementos.TabIndex = 11;
+            this.buttonSelecionarElementos.Text = "Selecionar Elementos no Revit";
+            this.buttonSelecionarElementos.UseVisualStyleBackColor = true;
+            this.buttonSelecionarElementos.Click += new System.EventHandler(this.ButtonSelecionarElementos_Click);
+            // 
             // FormularioPrincipalAvancado
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -679,6 +645,7 @@ namespace MacroArmaduraAvancado
             this.Controls.Add(this.groupConfigArmadura);
             this.Controls.Add(this.groupFiltros);
             this.Controls.Add(this.groupTipoElemento);
+            this.Controls.Add(this.buttonSelecionarElementos);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "FormularioPrincipalAvancado";
@@ -692,9 +659,6 @@ namespace MacroArmaduraAvancado
             this.groupConfigArmadura.PerformLayout();
             this.groupVisualizador.ResumeLayout(false);
             this.groupVisualizador.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numLarguraViga)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numAlturaViga)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numComprimentoViga)).EndInit();
             this.groupAmarracao.ResumeLayout(false);
             this.groupAmarracao.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numMultiplicadorAmarracao)).EndInit();
@@ -730,11 +694,11 @@ namespace MacroArmaduraAvancado
         private System.Windows.Forms.Label labelInfoVisualizador;
         private System.Windows.Forms.Button buttonModoEdicao;
         private System.Windows.Forms.Button buttonAlternarVista;
-        private System.Windows.Forms.NumericUpDown numLarguraViga;
+        private System.Windows.Forms.Label lblLarguraVigaValor;
         private System.Windows.Forms.Label labelLargura;
-        private System.Windows.Forms.NumericUpDown numAlturaViga;
+        private System.Windows.Forms.Label lblAlturaVigaValor;
         private System.Windows.Forms.Label labelAltura;
-        private System.Windows.Forms.NumericUpDown numComprimentoViga;
+        private System.Windows.Forms.Label lblComprimentoVigaValor;
         private System.Windows.Forms.Label labelComprimento;
         private System.Windows.Forms.Label labelDimensoes;
         private System.Windows.Forms.GroupBox groupAmarracao;
@@ -757,5 +721,6 @@ namespace MacroArmaduraAvancado
         private System.Windows.Forms.Button buttonExecutar;
         private System.Windows.Forms.Button buttonPreVisualizacao;
         private System.Windows.Forms.Button buttonDefinicoes;
+        private System.Windows.Forms.Button buttonSelecionarElementos;
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Formulário de pré-visualização

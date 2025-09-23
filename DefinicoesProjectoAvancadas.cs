@@ -1,4 +1,4 @@
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Definições avançadas do projecto

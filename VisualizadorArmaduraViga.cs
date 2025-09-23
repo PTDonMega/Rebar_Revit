@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Controle visual para representação e edição interativa de armadura em vigas
@@ -14,14 +14,98 @@ namespace MacroArmaduraAvancado
     {
         public class InformacaoArmaduraViga
         {
-            public double Comprimento { get; set; } = 5000; // mm
-            public double Altura { get; set; } = 500; // mm
-            public double Largura { get; set; } = 300; // mm
+            public double Comprimento { get; set; } = 5000; // mm (comprimento real da instância)
+            public double Altura { get; set; } = 500; // mm (By do tipo)
+            public double Largura { get; set; } = 300; // mm (Bx do tipo)
             public double Cobertura { get; set; } = 25; // mm
             public List<ArmVar> VaroesLongitudinais { get; set; } = new List<ArmVar>();
             public List<ArmStirrup> Estribos { get; set; } = new List<ArmStirrup>();
             public double MultiplicadorAmarracao { get; set; } = 50;
             public bool AmarracaoAutomatica { get; set; } = true;
+            
+            // Informações da designação para interface
+            public string Designacao { get; set; } = "";
+            public string TipoFamilia { get; set; } = "";
+            
+            /// <summary>
+            /// Configura as dimensões baseadas numa viga específica do Revit
+            /// </summary>
+            public void ConfigurarDimensoesDeViga(Autodesk.Revit.DB.FamilyInstance viga, Autodesk.Revit.DB.Document doc)
+            {
+                try
+                {
+                    // COMPRIMENTO: usar da instância (pode variar)
+                    var locCurve = viga.Location as Autodesk.Revit.DB.LocationCurve;
+                    if (locCurve != null)
+                    {
+                        Comprimento = locCurve.Curve.Length * 304.8; // pés para mm
+                    }
+                    
+                    // Verificar se há parâmetro Length na instância
+                    var paramLength = viga.LookupParameter("Length");
+                    if (paramLength != null && paramLength.AsDouble() > 0)
+                    {
+                        double lengthFromParam = paramLength.AsDouble() * 304.8; // pés para mm
+                        Comprimento = Math.Max(Comprimento, lengthFromParam);
+                    }
+
+                    // ALTURA E LARGURA: priorizar tipo (Bx, By) - são fixas por designação
+                    var elementType = doc.GetElement(viga.GetTypeId()) as Autodesk.Revit.DB.ElementType;
+                    if (elementType != null)
+                    {
+                        // Altura (By)
+                        var paramBy = elementType.LookupParameter("By");
+                        if (paramBy != null && paramBy.AsDouble() > 0)
+                        {
+                            Altura = paramBy.AsDouble() * 304.8; // pés para mm
+                        }
+
+                        // Largura (Bx)
+                        var paramBx = elementType.LookupParameter("Bx");
+                        if (paramBx != null && paramBx.AsDouble() > 0)
+                        {
+                            Largura = paramBx.AsDouble() * 304.8; // pés para mm
+                        }
+                        
+                        TipoFamilia = elementType.Name;
+                    }
+
+                    // Se não encontrou Bx/By, tentar Properties da instância
+                    if (Altura <= 0)
+                    {
+                        var paramAltura = viga.LookupParameter("Altura") ?? viga.LookupParameter("Height");
+                        if (paramAltura != null && paramAltura.AsDouble() > 0)
+                        {
+                            Altura = paramAltura.AsDouble() * 304.8;
+                        }
+                    }
+
+                    if (Largura <= 0)
+                    {
+                        var paramLargura = viga.LookupParameter("Largura") ?? viga.LookupParameter("Width");
+                        if (paramLargura != null && paramLargura.AsDouble() > 0)
+                        {
+                            Largura = paramLargura.AsDouble() * 304.8;
+                        }
+                    }
+
+                    // Obter designação
+                    var paramDesignacao = viga.LookupParameter("Designacao");
+                    if (paramDesignacao != null && !string.IsNullOrEmpty(paramDesignacao.AsString()))
+                    {
+                        Designacao = paramDesignacao.AsString();
+                    }
+                    else
+                    {
+                        Designacao = viga.Symbol?.FamilyName ?? "N/A";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Em caso de erro, manter valores padrão
+                    System.Windows.Forms.MessageBox.Show($"Erro ao configurar dimensões: {ex.Message}", "Aviso");
+                }
+            }
         }
 
         public class PontoArmadura
@@ -510,28 +594,50 @@ namespace MacroArmaduraAvancado
 
         private void DesenharInformacoes(Graphics g)
         {
-            float x = this.Width - 200;
-            float y = this.Height - 100;
+            float x = this.Width - 220;
+            float y = this.Height - 120;
             
             using (var font = new Font("Arial", 8))
+            using (var fontBold = new Font("Arial", 8, FontStyle.Bold))
             using (var brush = new SolidBrush(Color.Black))
+            using (var brushTitle = new SolidBrush(Color.DarkBlue))
             {
-                g.DrawString($"Dimensões:", font, brush, x, y);
+                // Informações da viga
+                if (!string.IsNullOrEmpty(informacaoViga.Designacao))
+                {
+                    g.DrawString($"Designação: {informacaoViga.Designacao}", fontBold, brushTitle, x, y);
+                    y += 12;
+                }
+                
+                if (!string.IsNullOrEmpty(informacaoViga.TipoFamilia))
+                {
+                    g.DrawString($"Tipo: {informacaoViga.TipoFamilia}", font, brush, x, y);
+                    y += 12;
+                }
+                
+                y += 3;
+                g.DrawString($"Dimensões:", fontBold, brushTitle, x, y);
                 y += 12;
-                g.DrawString($"C: {informacaoViga.Comprimento:F0}mm", font, brush, x, y);
+                g.DrawString($"Comprimento: {informacaoViga.Comprimento:F0}mm", font, brush, x, y);
                 y += 12;
-                g.DrawString($"H: {informacaoViga.Altura:F0}mm", font, brush, x, y);
+                g.DrawString($"Altura (By): {informacaoViga.Altura:F0}mm", font, brush, x, y);
                 y += 12;
-                g.DrawString($"L: {informacaoViga.Largura:F0}mm", font, brush, x, y);
+                g.DrawString($"Largura (Bx): {informacaoViga.Largura:F0}mm", font, brush, x, y);
                 y += 12;
-                g.DrawString($"Cob: {informacaoViga.Cobertura:F0}mm", font, brush, x, y);
+                g.DrawString($"Cobertura: {informacaoViga.Cobertura:F0}mm", font, brush, x, y);
                 y += 15;
                 
-                g.DrawString($"Armadura:", font, brush, x, y);
+                g.DrawString($"Armadura:", fontBold, brushTitle, x, y);
                 y += 12;
                 g.DrawString($"Total: {informacaoViga.VaroesLongitudinais.Sum(v => v.Quantidade)} varões", font, brush, x, y);
                 y += 12;
                 g.DrawString($"Estribos: {informacaoViga.Estribos.Count} tipos", font, brush, x, y);
+                
+                if (informacaoViga.AmarracaoAutomatica)
+                {
+                    y += 12;
+                    g.DrawString($"Amarração: {informacaoViga.MultiplicadorAmarracao}?", font, brush, x, y);
+                }
             }
         }
 

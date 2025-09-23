@@ -1,4 +1,4 @@
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     partial class ConfiguracaoVarao
     {

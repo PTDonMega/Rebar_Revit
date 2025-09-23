@@ -1,10 +1,10 @@
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.Attributes;
-using MacroArmaduraAvancado; // Import the namespace for the form
+using Rebar_Revit; // Import the namespace for the form
 using System.Windows.Forms;
 
-namespace AFA_Armaduras
+namespace Rebar_Revit
 {
     [Transaction(TransactionMode.Manual)]
     public class CommandMain : IExternalCommand

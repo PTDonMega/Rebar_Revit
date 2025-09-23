@@ -11,7 +11,7 @@ using TextBox = System.Windows.Forms.TextBox;
 using Application = System.Windows.Forms.Application;
 using Form = System.Windows.Forms.Form;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     public partial class FormularioPrincipalAvancado : Form
     {
@@ -88,19 +88,19 @@ namespace MacroArmaduraAvancado
 
         private void ComboDesignacao_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ActualizarContagem();
+            AtualizarContagem();
         }
 
         private void ListNiveis_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            this.BeginInvoke(new MethodInvoker(() => ActualizarContagem()));
+            this.BeginInvoke(new MethodInvoker(() => AtualizarContagem()));
         }
 
         private void CheckSeleccaoActual_CheckedChanged(object sender, EventArgs e)
         {
             comboDesignacao.Enabled = !checkSeleccaoActual.Checked;
             listNiveis.Enabled = !checkSeleccaoActual.Checked;
-            ActualizarContagem();
+            AtualizarContagem();
         }
 
         private void ButtonDefinicoes_Click(object sender, EventArgs e)
@@ -181,12 +181,6 @@ namespace MacroArmaduraAvancado
             this.Close();
         }
 
-        // Novos event handlers para o visualizador
-        private void DimensoesViga_ValueChanged(object sender, EventArgs e)
-        {
-            AtualizarVisualizador();
-        }
-
         private void ButtonAlternarVista_Click(object sender, EventArgs e)
         {
             visualizadorArmadura.MostrarCorteTransversal = !visualizadorArmadura.MostrarCorteTransversal;
@@ -230,9 +224,16 @@ namespace MacroArmaduraAvancado
         {
             if (visualizadorArmadura?.InformacaoViga == null) return;
 
-            visualizadorArmadura.InformacaoViga.Comprimento = (double)numComprimentoViga.Value;
-            visualizadorArmadura.InformacaoViga.Altura = (double)numAlturaViga.Value;
-            visualizadorArmadura.InformacaoViga.Largura = (double)numLarguraViga.Value;
+            // Ler dimensões exibidas (labels) e aplicar ao visualizador
+            double comprimento = 5000, altura = 500, largura = 300;
+            double.TryParse(lblComprimentoVigaValor.Text, out comprimento);
+            double.TryParse(lblAlturaVigaValor.Text, out altura);
+            double.TryParse(lblLarguraVigaValor.Text, out largura);
+
+            visualizadorArmadura.InformacaoViga.Comprimento = comprimento;
+            visualizadorArmadura.InformacaoViga.Altura = altura;
+            visualizadorArmadura.InformacaoViga.Largura = largura;
+
             visualizadorArmadura.InformacaoViga.Cobertura = gestorDefinicoes?.ObterDefinicoes()?.CoberturaVigas ?? 25;
             visualizadorArmadura.InformacaoViga.MultiplicadorAmarracao = numMultiplicadorAmarracao?.Value != null ? (double)numMultiplicadorAmarracao.Value : 50.0;
             visualizadorArmadura.InformacaoViga.AmarracaoAutomatica = checkAmarracaoAutomatica?.Checked ?? true;
@@ -373,6 +374,42 @@ namespace MacroArmaduraAvancado
             }
         }
 
+        private void ButtonSelecionarElementos_Click(object sender, EventArgs e)
+        {
+            // Minimiza o formulário para facilitar a seleção
+            this.WindowState = FormWindowState.Minimized;
+            MessageBox.Show("Selecione os elementos desejados no Revit e pressione ESC para finalizar.", "Seleção de Elementos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Permite ao usuário selecionar elementos no Revit
+            ICollection<ElementId> selecionados = null;
+            try
+            {
+                selecionados = uidoc.Selection.PickElementsByRectangle("Selecione os elements desejados").Select(e => e.Id).ToList();
+            }
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+            {
+                // Usuário cancelou a seleção
+            }
+            finally
+            {
+                // Restaura o formulário
+                this.WindowState = FormWindowState.Normal;
+                this.Activate();
+            }
+
+            if (selecionados != null && selecionados.Count > 0)
+            {
+                // Atualiza a seleção atual
+                uidoc.Selection.SetElementIds(selecionados);
+                MessageBox.Show($"{selecionados.Count} elementos selecionados.", "Seleção", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                AtualizarContagem();
+            }
+            else
+            {
+                MessageBox.Show("Nenhum elemento selecionado.", "Seleção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         // Métodos principais
         private void ActualizarElementos()
         {
@@ -386,6 +423,9 @@ namespace MacroArmaduraAvancado
 
                 labelContagem.Text = $"Vigas encontradas: {elementos.Count}";
                 ActualizarInformacoesTipo(elementos);
+
+                // Atualizar dimensões exibidas com base nas vigas detectadas
+                AtualizarDimensoesExibicao(elementos);
             }
             catch (Exception ex)
             {
@@ -408,28 +448,96 @@ namespace MacroArmaduraAvancado
             }
         }
 
+        /// <summary>
+        /// Atualizar designações com mais robustez
+        /// </summary>
         private void ActualizarDesignacoes(List<Element> elementos)
         {
             comboDesignacao.Items.Clear();
 
-            HashSet<string> designacoes = new HashSet<string>();
-            foreach (Element elemento in elementos)
+            try
             {
-                string designacao = elemento.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString() ??
-                                   elemento.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM)?.AsValueString() ??
-                                   "Sem designação";
-                designacoes.Add(designacao);
-            }
+                HashSet<string> designacoes = new HashSet<string>();
+                foreach (Element elemento in elementos)
+                {
+                    // Usar método melhorado do detector
+                    string designacao = ObterDesignacaoElemento(elemento);
+                    designacoes.Add(designacao);
+                }
 
-            comboDesignacao.Items.Add("Todos os tipos");
-            foreach (string designacao in designacoes.OrderBy(d => d))
-            {
-                comboDesignacao.Items.Add(designacao);
-            }
+                comboDesignacao.Items.Add("Todos os tipos");
+                foreach (string designacao in designacoes.OrderBy(d => d))
+                {
+                    comboDesignacao.Items.Add(designacao);
+                }
 
-            if (comboDesignacao.Items.Count > 0)
+                if (comboDesignacao.Items.Count > 0)
+                {
+                    comboDesignacao.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
             {
+                comboDesignacao.Items.Add("Erro na detecção de tipos");
                 comboDesignacao.SelectedIndex = 0;
+                labelInfoElementos.Text = $"Erro ao carregar tipos: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Método auxiliar para obter designação de um elemento
+        /// </summary>
+        private string ObterDesignacaoElemento(Element elemento)
+        {
+            try
+            {
+                // Tentar múltiplas formas de obter a designação
+                string designacao = null;
+                
+                // Primeira tentativa: parâmetros de família
+                var paramFamily = elemento.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM);
+                if (paramFamily != null)
+                {
+                    designacao = paramFamily.AsValueString();
+                }
+                
+                // Segunda tentativa: parâmetros de tipo
+                if (string.IsNullOrEmpty(designacao))
+                {
+                    var paramType = elemento.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM);
+                    if (paramType != null)
+                    {
+                        designacao = paramType.AsValueString();
+                    }
+                }
+                
+                // Terceira tentativa: nome da família se for FamilyInstance
+                if (string.IsNullOrEmpty(designacao) && elemento is FamilyInstance fi)
+                {
+                    designacao = fi.Symbol?.FamilyName;
+                }
+                
+                // Quarta tentativa: nome do tipo
+                if (string.IsNullOrEmpty(designacao))
+                {
+                    ElementType elementType = doc.GetElement(elemento.GetTypeId()) as ElementType;
+                    if (elementType != null)
+                    {
+                        designacao = elementType.Name;
+                    }
+                }
+                
+                // Última tentativa: categoria
+                if (string.IsNullOrEmpty(designacao))
+                {
+                    designacao = elemento.Category?.Name ?? "Elemento sem identificação";
+                }
+                
+                return designacao ?? "Sem designação";
+            }
+            catch
+            {
+                return "Erro na identificação";
             }
         }
 
@@ -459,13 +567,16 @@ namespace MacroArmaduraAvancado
             }
         }
 
-        private void ActualizarContagem()
+        private void AtualizarContagem()
         {
             try
             {
                 List<Element> elementos = ObterElementosParaProcessar();
                 labelContagem.Text = $"Vigas encontradas: {elementos.Count}";
                 ActualizarInformacoesTipo(elementos);
+
+                // Atualizar dimensões exibidas com base na seleção/filtragem atual
+                AtualizarDimensoesExibicao(elementos);
             }
             catch (Exception ex)
             {
@@ -616,11 +727,23 @@ namespace MacroArmaduraAvancado
                 {
                     try
                     {
+                        // Informações mais detalhadas sobre o elemento
+                        string infoElemento = $"ID: {elemento.Id}";
+                        if (elemento is FamilyInstance fi)
+                        {
+                            infoElemento += $", Família: {fi.Symbol?.FamilyName ?? "N/A"}";
+                            infoElemento += $", Tipo: {fi.Symbol?.Name ?? "N/A"}";
+                        }
+
                         bool sucesso = config.ColocarArmadura(elemento);
                         if (sucesso)
+                        {
                             elementosComSucesso++;
+                        }
                         else
-                            erros.Add($"Viga {elemento.Id}: Falha na execução");
+                        {
+                            erros.Add($"Viga {infoElemento}: Falha na execução (método retornou false)");
+                        }
 
                         elementosProcessados++;
                         progressBar.Value = (elementosProcessados * 100) / totalElementos;
@@ -628,7 +751,19 @@ namespace MacroArmaduraAvancado
                     }
                     catch (Exception ex)
                     {
-                        erros.Add($"Viga {elemento.Id}: {ex.Message}");
+                        string infoElemento = $"ID: {elemento.Id}";
+                        if (elemento is FamilyInstance fi)
+                        {
+                            infoElemento += $", Família: {fi.Symbol?.FamilyName ?? "N/A"}";
+                        }
+                        
+                        string erroDetalhado = ex.Message;
+                        if (ex.InnerException != null)
+                        {
+                            erroDetalhado += $" (Detalhes: {ex.InnerException.Message})";
+                        }
+                        
+                        erros.Add($"Viga {infoElemento}: {erroDetalhado}");
                         elementosProcessados++;
                         progressBar.Value = (elementosProcessados * 100) / totalElementos;
                         Application.DoEvents();
@@ -640,24 +775,34 @@ namespace MacroArmaduraAvancado
 
             progressBar.Visible = false;
 
-            // Mostrar resultados
+            // Mostrar resultados detalhados
             string mensagemResultado = $"Processo concluído!\n\n" +
                                      $"Vigas processadas: {elementos.Count}\n" +
                                      $"Armaduras colocadas com sucesso: {elementosComSucesso}\n" +
                                      $"Vigas com erro: {erros.Count}";
 
-            if (erros.Count > 0 && erros.Count <= 5)
+            if (erros.Count > 0)
             {
-                mensagemResultado += "\n\nErros:\n" + string.Join("\n", erros.Take(5));
-            }
-            else if (erros.Count > 5)
-            {
-                mensagemResultado += $"\n\nPrimeiros 5 erros:\n" + string.Join("\n", erros.Take(5));
-                mensagemResultado += $"\n... e mais {erros.Count - 5} erros.";
+                mensagemResultado += "\n\nErros encontrados:";
+                int maxErros = Math.Min(erros.Count, 10); // Mostrar até 10 erros
+                for (int i = 0; i < maxErros; i++)
+                {
+                    mensagemResultado += $"\n• {erros[i]}";
+                }
+                
+                if (erros.Count > 10)
+                {
+                    mensagemResultado += $"\n... e mais {erros.Count - 10} erros.";
+                }
+                
+                mensagemResultado += "\n\nDicas para resolver:";
+                mensagemResultado += "\n• Verifique se as vigas têm dimensões definidas";
+                mensagemResultado += "\n• Confirme que existe pelo menos um tipo de armadura no projeto";
+                mensagemResultado += "\n• Verifique se as vigas são elementos estruturais válidos";
             }
 
             MessageBox.Show(mensagemResultado,
-                elementosComSucesso > 0 ? "Sucesso" : "Aviso",
+                elementosComSucesso > 0 ? "Processo Concluído" : "Aviso - Erros Encontrados",
                 MessageBoxButtons.OK,
                 elementosComSucesso > 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
@@ -666,6 +811,44 @@ namespace MacroArmaduraAvancado
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
+        }
+
+        /// <summary>
+        /// Atualiza as labels de dimensão (leitura apenas) com base no primeiro elemento encontrado
+        /// </summary>
+        private void AtualizarDimensoesExibicao(List<Element> elementos)
+        {
+            if (elementos == null || elementos.Count == 0)
+            {
+                lblComprimentoVigaValor.Text = "0";
+                lblAlturaVigaValor.Text = "0";
+                lblLarguraVigaValor.Text = "0";
+                return;
+            }
+
+            // Preferir uma FamilyInstance para obter parâmetros Bx/By
+            FamilyInstance fi = elementos.OfType<FamilyInstance>().FirstOrDefault();
+            if (fi == null)
+            {
+                // tentar qualquer elemento
+                var el = elementos.First();
+                // Não temos método genérico para extrair Bx/By, definir 0
+                lblComprimentoVigaValor.Text = "0";
+                lblAlturaVigaValor.Text = "0";
+                lblLarguraVigaValor.Text = "0";
+                return;
+            }
+
+            // Usar o método do Visualizador para configurar dimensões
+            var info = new VisualizadorArmaduraViga.InformacaoArmaduraViga();
+            info.ConfigurarDimensoesDeViga(fi, doc);
+
+            lblComprimentoVigaValor.Text = ((double)info.Comprimento).ToString("F0");
+            lblAlturaVigaValor.Text = ((double)info.Altura).ToString("F0");
+            lblLarguraVigaValor.Text = ((double)info.Largura).ToString("F0");
+
+            // Atualizar visualizador imediatamente
+            AtualizarVisualizador();
         }
     }
 }

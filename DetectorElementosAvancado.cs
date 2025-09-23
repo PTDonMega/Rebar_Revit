@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 
-namespace MacroArmaduraAvancado
+namespace Rebar_Revit
 {
     /// <summary>
     /// Detector avançado de elementos com análise de posicionamento - Versão Completa
@@ -48,11 +48,35 @@ namespace MacroArmaduraAvancado
                         break;
 
                     case TipoElementoEstruturalEnum.Vigas:
+                        // Primeira tentativa: vigas estruturais
                         elementos = collector
                             .OfCategory(BuiltInCategory.OST_StructuralFraming)
                             .OfClass(typeof(FamilyInstance))
                             .Where(e => EElementoEstruturalValidoViga(e))
                             .ToList();
+
+                        // Se não encontrar vigas estruturais, tentar em outras categorias
+                        if (elementos.Count == 0)
+                        {
+                            FilteredElementCollector collector2 = new FilteredElementCollector(doc);
+                            var vigasGenericas = collector2
+                                .WhereElementIsNotElementType()
+                                .OfClass(typeof(FamilyInstance))
+                                .Cast<FamilyInstance>()
+                                .Where(fi => 
+                                {
+                                    string familyName = fi.Symbol?.FamilyName?.ToLower() ?? "";
+                                    string typeName = fi.Symbol?.Name?.ToLower() ?? "";
+                                    
+                                    return (familyName.Contains("viga") || familyName.Contains("beam") ||
+                                           typeName.Contains("viga") || typeName.Contains("beam")) &&
+                                           EElementoEstruturalValidoViga(fi);
+                                })
+                                .Cast<Element>()
+                                .ToList();
+                            
+                            elementos.AddRange(vigasGenericas);
+                        }
                         break;
 
                     case TipoElementoEstruturalEnum.Fundacoes:
@@ -220,18 +244,73 @@ namespace MacroArmaduraAvancado
 
             try
             {
-                // Verificar se tem comprimento
-                var paramComprimento = viga.get_Parameter(BuiltInParameter.INSTANCE_LENGTH_PARAM);
-                if (paramComprimento == null) return false;
+                // Verificar múltiplos parâmetros de comprimento
+                Parameter paramComprimento = viga.get_Parameter(BuiltInParameter.INSTANCE_LENGTH_PARAM) ??
+                                            viga.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
 
-                double comprimento = paramComprimento.AsDouble();
-                double comprimentoMinimo = 0.5 / 0.3048; // 50cm mínimo
+                // Se não conseguir pelo parâmetro, tentar pela LocationCurve
+                double comprimento = 0;
+                if (paramComprimento != null)
+                {
+                    comprimento = paramComprimento.AsDouble();
+                }
+                else
+                {
+                    LocationCurve locCurve = viga.Location as LocationCurve;
+                    if (locCurve != null)
+                    {
+                        comprimento = locCurve.Curve.Length;
+                    }
+                }
 
-                return comprimento > comprimentoMinimo;
+                // Verificar dimensões básicas
+                var paramAltura = viga.get_Parameter(BuiltInParameter.FAMILY_HEIGHT_PARAM) ??
+                                 viga.LookupParameter("Height") ??
+                                 viga.LookupParameter("h");
+
+                var paramLargura = viga.get_Parameter(BuiltInParameter.FAMILY_WIDTH_PARAM) ??
+                                  viga.LookupParameter("Width") ??
+                                  viga.LookupParameter("b");
+
+                double comprimentoMinimo = 0.3 / 0.3048; // 30cm mínimo convertido para pés
+                bool temComprimento = comprimento > comprimentoMinimo;
+                
+                // Ser mais flexível - aceitar se tem comprimento mesmo sem dimensões
+                bool temDimensoes = (paramAltura != null && paramAltura.AsDouble() > 0) ||
+                                   (paramLargura != null && paramLargura.AsDouble() > 0);
+
+                // Verificar se é realmente estrutural - método mais seguro
+                bool eEstrutural = true;
+                try
+                {
+                    // Verificar categoria para determinar se é estrutural
+                    Category categoria = viga.Category;
+                    if (categoria != null)
+                    {
+                        BuiltInCategory catBuiltIn = (BuiltInCategory)categoria.Id.IntegerValue;
+                        eEstrutural = catBuiltIn == BuiltInCategory.OST_StructuralFraming;
+                    }
+                }
+                catch
+                {
+                    // Se não conseguir verificar, assumir que é estrutural
+                    eEstrutural = true;
+                }
+
+                return temComprimento && (temDimensoes || eEstrutural);
             }
             catch
             {
-                return false;
+                // Em caso de erro, tentar uma validação básica
+                try
+                {
+                    LocationCurve locCurve = viga.Location as LocationCurve;
+                    return locCurve != null && locCurve.Curve.Length > 0.1;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
@@ -657,11 +736,103 @@ namespace MacroArmaduraAvancado
         }
 
         /// <summary>
-        /// Filtra elementos por designação específica
+        /// Obtém todas as designações únicas de uma lista de elementos MELHORADO
+        /// Prioriza o parâmetro "Designacao" das Properties 
+        /// </summary>
+        public List<string> ObterDesignacoes(List<Element> elementos)
+        {
+            HashSet<string> designacoes = new HashSet<string>();
+
+            try
+            {
+                foreach (Element elemento in elementos)
+                {
+                    string designacao = ObterDesignacaoElemento(elemento);
+                    designacoes.Add(designacao);
+                }
+            }
+            catch
+            {
+                // Em caso de erro, retornar lista com designação genérica
+                designacoes.Add("Sem designação");
+            }
+
+            return designacoes.OrderBy(d => d).ToList();
+        }
+
+        /// <summary>
+        /// Obtém a designação de um elemento priorizando o parâmetro "Designacao"
+        /// </summary>
+        public string ObterDesignacaoElemento(Element elemento)
+        {
+            try
+            {
+                // PRIMEIRA PRIORIDADE: Parâmetro "Designacao" das Properties (como "V.2")
+                if (elemento is FamilyInstance fi)
+                {
+                    var paramDesignacao = fi.LookupParameter("Designacao");
+                    if (paramDesignacao != null && !string.IsNullOrEmpty(paramDesignacao.AsString()))
+                    {
+                        return paramDesignacao.AsString();
+                    }
+                }
+
+                // SEGUNDA PRIORIDADE: Outros parâmetros de designação
+                var paramDesignacaoAlt = elemento.LookupParameter("Designacao") ??
+                                        elemento.LookupParameter("Mark") ??
+                                        elemento.LookupParameter("Type Mark");
+
+                if (paramDesignacaoAlt != null && !string.IsNullOrEmpty(paramDesignacaoAlt.AsString()))
+                {
+                    return paramDesignacaoAlt.AsString();
+                }
+
+                // TERCEIRA PRIORIDADE: Parâmetros de família
+                var paramFamily = elemento.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM);
+                if (paramFamily != null && !string.IsNullOrEmpty(paramFamily.AsValueString()))
+                {
+                    return paramFamily.AsValueString();
+                }
+
+                // QUARTA PRIORIDADE: Parâmetros de tipo
+                var paramType = elemento.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM);
+                if (paramType != null && !string.IsNullOrEmpty(paramType.AsValueString()))
+                {
+                    return paramType.AsValueString();
+                }
+
+                // QUINTA PRIORIDADE: Nome da família se for FamilyInstance
+                if (elemento is FamilyInstance familyInst)
+                {
+                    string familyName = familyInst.Symbol?.FamilyName;
+                    if (!string.IsNullOrEmpty(familyName))
+                    {
+                        return familyName;
+                    }
+                }
+
+                // SEXTA PRIORIDADE: Nome do tipo
+                ElementType elementType = doc.GetElement(elemento.GetTypeId()) as ElementType;
+                if (elementType != null && !string.IsNullOrEmpty(elementType.Name))
+                {
+                    return elementType.Name;
+                }
+
+                // ÚLTIMA PRIORIDADE: Categoria
+                return elemento.Category?.Name ?? "Sem designação";
+            }
+            catch
+            {
+                return "Erro na identificação";
+            }
+        }
+
+        /// <summary>
+        /// Filtra elementos por designação específica MELHORADO
         /// </summary>
         public List<Element> FiltrarPorDesignacao(List<Element> elementos, string designacao)
         {
-            if (string.IsNullOrEmpty(designacao) || designacao == "Todas as designações")
+            if (string.IsNullOrEmpty(designacao) || designacao == "Todas as designações" || designacao == "Todos os tipos")
             {
                 return elementos;
             }
@@ -670,10 +841,7 @@ namespace MacroArmaduraAvancado
             {
                 return elementos.Where(e =>
                 {
-                    string designacaoElemento = e.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString() ??
-                                               e.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM)?.AsValueString() ??
-                                               "Sem designação";
-
+                    string designacaoElemento = ObterDesignacaoElemento(e);
                     return designacaoElemento.Equals(designacao, StringComparison.OrdinalIgnoreCase);
                 }).ToList();
             }
@@ -705,33 +873,6 @@ namespace MacroArmaduraAvancado
             {
                 return elementos;
             }
-        }
-
-        /// <summary>
-        /// Obtém todas as designações únicas de uma lista de elementos
-        /// </summary>
-        public List<string> ObterDesignacoes(List<Element> elementos)
-        {
-            HashSet<string> designacoes = new HashSet<string>();
-
-            try
-            {
-                foreach (Element elemento in elementos)
-                {
-                    string designacao = elemento.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM)?.AsValueString() ??
-                                       elemento.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM)?.AsValueString() ??
-                                       "Sem designação";
-
-                    designacoes.Add(designacao);
-                }
-            }
-            catch
-            {
-                // Em caso de erro, retornar lista com designação genérica
-                designacoes.Add("Sem designação");
-            }
-
-            return designacoes.OrderBy(d => d).ToList();
         }
 
         /// <summary>
