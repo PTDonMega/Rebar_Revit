@@ -14,7 +14,7 @@ namespace Rebar_Revit
             // Launch the main form for defining attributes
             var doc = commandData.Application.ActiveUIDocument.Document;
             var uidoc = commandData.Application.ActiveUIDocument;
-            FormularioPrincipalAvancado form = new FormularioPrincipalAvancado(doc, uidoc);
+            FormularioPrincipal form = new FormularioPrincipal(doc, uidoc);
             form.ShowDialog();
             return Result.Succeeded;
         }

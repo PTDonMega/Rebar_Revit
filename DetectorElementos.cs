@@ -8,11 +8,11 @@ namespace Rebar_Revit
     /// <summary>
     /// Detector avançado de elementos com análise de posicionamento - Versão Completa
     /// </summary>
-    public class DetectorElementosAvancado
+    public class DetectorElementos
     {
         private Document doc;
 
-        public DetectorElementosAvancado(Document documento)
+        public DetectorElementos(Document documento)
         {
             doc = documento;
         }

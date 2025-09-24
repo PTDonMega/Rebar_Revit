@@ -21,18 +21,18 @@ namespace Rebar_Revit
         public double MultAmarracao { get; set; } = 50;
         public string TipoAmarracao { get; set; } = "Automático";
         public TipoElementoEstruturalEnum TipoElemento { get; set; }
-        public DefinicoesProjectoAvancadas Defs { get; set; }
+        public DefinicoesProjecto Defs { get; set; }
 
         private Document doc;
         private CalculadorAmarracao calcAmarracao;
-        private DetectorElementosAvancado detector;
+        private DetectorElementos detector;
 
         public ArmConfigExec(Document documento)
         {
             doc = documento;
             calcAmarracao = new CalculadorAmarracao();
-            detector = new DetectorElementosAvancado(documento);
-            Defs = new DefinicoesProjectoAvancadas();
+            detector = new DetectorElementos(documento);
+            Defs = new DefinicoesProjecto();
         }
 
         public int QtdTotalVaroes() => Varoes.Sum(v => v.Quantidade);
@@ -408,18 +408,19 @@ namespace Rebar_Revit
                 double alturaUtil = props.Altura - 2 * recobrimento;
                 double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
                 double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
-                double alturaZ = recobrimento + diamEstribo / 2 + alturaUtil / 2; // Meia altura útil
+                double larguraUtil = props.Largura - 2 * recobrimento;
+
+                // Distribuir verticalmente os varoes por face
+                int quantidadePorFace = varao.Quantidade;
+                double espacamentoY = alturaUtil / (quantidadePorFace + 1);
 
                 // Lado esquerdo
                 double offsetYEsq = -(props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2);
-                // Lado direito
-                double offsetYDir = props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2;
-
-                for (int i = 0; i < varao.Quantidade; i++)
+                for (int i = 0; i < quantidadePorFace; i++)
                 {
-                    // Se quiser distribuir lateralmente, pode ajustar offsetYEsq/offsetYDir
-                    XYZ pontoInicialEsqLocal = new XYZ(0, offsetYEsq, alturaZ);
-                    XYZ pontoFinalEsqLocal = new XYZ(props.Comprimento, offsetYEsq, alturaZ);
+                    double z = recobrimento + diamEstribo / 2 + (i + 1) * espacamentoY;
+                    XYZ pontoInicialEsqLocal = new XYZ(0, offsetYEsq, z);
+                    XYZ pontoFinalEsqLocal = new XYZ(props.Comprimento, offsetYEsq, z);
 
                     XYZ pontoInicialEsq = transformViga.OfPoint(pontoInicialEsqLocal);
                     XYZ pontoFinalEsq = transformViga.OfPoint(pontoFinalEsqLocal);
@@ -427,9 +428,15 @@ namespace Rebar_Revit
                     List<XYZ> pontosEsq = CalcularPontosAmarracao(pontoInicialEsq, pontoFinalEsq, varao.Diametro, "lateral");
                     if (!CriarArmaduraIndividual(elemento, pontosEsq, tipoVarao, varao.Diametro))
                         return false;
+                }
 
-                    XYZ pontoInicialDirLocal = new XYZ(0, offsetYDir, alturaZ);
-                    XYZ pontoFinalDirLocal = new XYZ(props.Comprimento, offsetYDir, alturaZ);
+                // Lado direito
+                double offsetYDir = props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2;
+                for (int i = 0; i < quantidadePorFace; i++)
+                {
+                    double z = recobrimento + diamEstribo / 2 + (i + 1) * espacamentoY;
+                    XYZ pontoInicialDirLocal = new XYZ(0, offsetYDir, z);
+                    XYZ pontoFinalDirLocal = new XYZ(props.Comprimento, offsetYDir, z);
 
                     XYZ pontoInicialDir = transformViga.OfPoint(pontoInicialDirLocal);
                     XYZ pontoFinalDir = transformViga.OfPoint(pontoFinalDirLocal);

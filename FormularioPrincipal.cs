@@ -12,11 +12,11 @@ using Rebar_Revit;
 
 namespace Rebar_Revit
 {
-    public partial class FormularioPrincipalAvancado : Form
+    public partial class FormularioPrincipal : Form
     {
         private Document doc;
         private UIDocument uidoc;
-        private DetectorElementosAvancado detectorElementos;
+        private DetectorElementos detectorElementos;
         private CalculadorAmarracao calculadorAmarracao;
 
         // Dados carregados
@@ -24,11 +24,11 @@ namespace Rebar_Revit
         private Dictionary<string, List<Element>> vigasAgrupadas;
         private Element vigaSelecionada;
 
-        public FormularioPrincipalAvancado(Document documento, UIDocument uiDocumento)
+        public FormularioPrincipal(Document documento, UIDocument uiDocumento)
         {
             doc = documento;
             uidoc = uiDocumento;
-            detectorElementos = new DetectorElementosAvancado(doc);
+            detectorElementos = new DetectorElementos(doc);
             calculadorAmarracao = new CalculadorAmarracao();
 
             InitializeComponent();
@@ -492,9 +492,9 @@ namespace Rebar_Revit
             }
         }
 
-        private DefinicoesProjectoAvancadas ObterDefinicoesProjeto()
+        private DefinicoesProjecto ObterDefinicoesProjeto()
         {
-            return new DefinicoesProjectoAvancadas
+            return new DefinicoesProjecto
             {
                 RecobrimentoVigas = (double)numCobrimento.Value,
                 MultiplicadorAmarracaoMinimo = (double)numMultAmarracao.Value,

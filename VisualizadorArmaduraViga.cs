@@ -365,18 +365,36 @@ namespace Rebar_Revit
             foreach (var varao in informacaoViga.VaroesLongitudinais)
             {
                 Color cor = COR_DIAMETRO.ContainsKey((int)varao.Diametro) ? COR_DIAMETRO[(int)varao.Diametro] : Color.Gray;
-                for (int i = 0; i < varao.Quantidade; i++)
+                if (varao.TipoArmadura.ToLower() == "lateral")
                 {
-                    PointF posicao = CalcularPosicaoVarao(varao.TipoArmadura, i, varao.Quantidade, recobrimento);
-                    
-                    pontosArmadura.Add(new PontoArmadura
+                    // Novo: desenhar quantidade por face em cada lateral
+                    for (int i = 0; i < varao.Quantidade * 2; i++)
                     {
-                        Posicao = posicao,
-                        Diametro = varao.Diametro,
-                        Tipo = varao.TipoArmadura,
-                        Cor = cor,
-                        IndiceOriginal = indice
-                    });
+                        PointF posicao = CalcularPosicaoVarao(varao.TipoArmadura, i, varao.Quantidade, recobrimento);
+                        pontosArmadura.Add(new PontoArmadura
+                        {
+                            Posicao = posicao,
+                            Diametro = varao.Diametro,
+                            Tipo = varao.TipoArmadura,
+                            Cor = cor,
+                            IndiceOriginal = indice
+                        });
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < varao.Quantidade; i++)
+                    {
+                        PointF posicao = CalcularPosicaoVarao(varao.TipoArmadura, i, varao.Quantidade, recobrimento);
+                        pontosArmadura.Add(new PontoArmadura
+                        {
+                            Posicao = posicao,
+                            Diametro = varao.Diametro,
+                            Tipo = varao.TipoArmadura,
+                            Cor = cor,
+                            IndiceOriginal = indice
+                        });
+                    }
                 }
                 indice++;
             }
@@ -419,23 +437,25 @@ namespace Rebar_Revit
                     break;
 
                 case "lateral":
-                    // Corrigido: distribuir verticalmente entre superior e inferior e desenhar nas duas faces
+                    // Novo: quantidade por face
+                    // total = quantidade por face * 2
+                    int quantidadePorFace = total;
+                    int quantidadeTotal = quantidadePorFace * 2;
                     float alturaUtil = areaViga.Height - 2 * recobrimento;
-                    int metade = total / 2;
                     float diametroLat = (float)(informacaoViga.VaroesLongitudinais.FirstOrDefault(v => v.TipoArmadura.ToLower() == "lateral")?.Diametro ?? 0) * escalaDesenho / 2;
-                    if (indice < metade)
+                    if (indice < quantidadePorFace)
                     {
                         // Face esquerda
-                        float espacamentoY = alturaUtil / (metade + 1);
+                        float espacamentoY = alturaUtil / (quantidadePorFace + 1);
                         x = areaViga.X + recobrimento + diametroLat;
                         y = areaViga.Y + recobrimento + (indice + 1) * espacamentoY;
                     }
                     else
                     {
                         // Face direita
-                        float espacamentoY = alturaUtil / (total - metade + 1);
+                        float espacamentoY = alturaUtil / (quantidadePorFace + 1);
                         x = areaViga.X + areaViga.Width - recobrimento - diametroLat;
-                        y = areaViga.Y + recobrimento + (indice - metade + 1) * espacamentoY;
+                        y = areaViga.Y + recobrimento + (indice - quantidadePorFace + 1) * espacamentoY;
                     }
                     break;
 
@@ -493,30 +513,33 @@ namespace Rebar_Revit
 
             using (var pen = new Pen(corEstribo, 2))
             {
-                Rectangle estribosRect = new Rectangle(
-                    (int)(areaViga.X + recobrimento),
-                    (int)(areaViga.Y + recobrimento),
-                    (int)(areaViga.Width - 2 * recobrimento),
-                    (int)(areaViga.Height - 2 * recobrimento)
-                );
+                // Definir os 4 cantos internos do estribo
+                PointF p1 = new PointF(areaViga.X + recobrimento, areaViga.Y + recobrimento); // superior esquerdo
+                PointF p2 = new PointF(areaViga.X + areaViga.Width - recobrimento, areaViga.Y + recobrimento); // superior direito
+                PointF p3 = new PointF(areaViga.X + areaViga.Width - recobrimento, areaViga.Y + areaViga.Height - recobrimento); // inferior direito
+                PointF p4 = new PointF(areaViga.X + recobrimento, areaViga.Y + areaViga.Height - recobrimento); // inferior esquerdo
 
-                g.DrawRectangle(pen, estribosRect);
+                // Desenhar o estribo como polígono
+                g.DrawLine(pen, p1, p2);
+                g.DrawLine(pen, p2, p3);
+                g.DrawLine(pen, p3, p4);
+                g.DrawLine(pen, p4, p1);
 
-                // Desenhar dobras de 135° para dentro nas 2 faces superiores
+                // Desenhar gancho de 135° para dentro em cada canto superior
                 float tamanhoDobra = 20; // pixels
                 float anguloRad = 135 * (float)Math.PI / 180f;
-                // Canto superior esquerdo
+                // Gancho no canto superior esquerdo
                 g.DrawLine(pen,
-                    estribosRect.X,
-                    estribosRect.Y,
-                    estribosRect.X + (float)(Math.Cos(anguloRad) * tamanhoDobra),
-                    estribosRect.Y - (float)(Math.Sin(anguloRad) * tamanhoDobra));
-                // Canto superior direito
+                    p1.X,
+                    p1.Y,
+                    p1.X + (float)(Math.Cos(anguloRad) * tamanhoDobra),
+                    p1.Y + (float)(Math.Sin(anguloRad) * tamanhoDobra));
+                // Gancho no canto superior direito
                 g.DrawLine(pen,
-                    estribosRect.X + estribosRect.Width,
-                    estribosRect.Y,
-                    estribosRect.X + estribosRect.Width - (float)(Math.Cos(anguloRad) * tamanhoDobra),
-                    estribosRect.Y - (float)(Math.Sin(anguloRad) * tamanhoDobra));
+                    p2.X,
+                    p2.Y,
+                    p2.X - (float)(Math.Cos(anguloRad) * tamanhoDobra),
+                    p2.Y + (float)(Math.Sin(anguloRad) * tamanhoDobra));
             }
         }
 

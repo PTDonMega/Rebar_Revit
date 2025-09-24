@@ -3,7 +3,7 @@ namespace Rebar_Revit
     /// <summary>
     /// Definições avançadas do projecto
     /// </summary>
-    public class DefinicoesProjectoAvancadas
+    public class DefinicoesProjecto
     {
         // Recobrimentos em mm
         public double RecobrimentoPilares { get; set; } = 40;

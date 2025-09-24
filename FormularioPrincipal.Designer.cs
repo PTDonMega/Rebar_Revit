@@ -1,6 +1,6 @@
 namespace Rebar_Revit
 {
-    partial class FormularioPrincipalAvancado
+    partial class FormularioPrincipal
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@ namespace Rebar_Revit
         private void InitializeComponent()
         {
             VisualizadorArmaduraViga.InformacaoArmaduraViga informacaoArmaduraViga1 = new VisualizadorArmaduraViga.InformacaoArmaduraViga();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormularioPrincipalAvancado));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormularioPrincipal));
             panelEsquerdo = new Panel();
             groupSelecaoViga = new GroupBox();
             labelSelecionarViga = new Label();
@@ -644,7 +644,7 @@ namespace Rebar_Revit
             progressBar.TabIndex = 6;
             progressBar.Visible = false;
             // 
-            // FormularioPrincipalAvancado
+            // FormularioPrincipal
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -655,7 +655,7 @@ namespace Rebar_Revit
             Margin = new Padding(3, 4, 3, 4);
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "FormularioPrincipalAvancado";
+            Name = "FormularioPrincipal";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Armaduras em Vigas - v0.1_Alpha";
             panelEsquerdo.ResumeLayout(false);

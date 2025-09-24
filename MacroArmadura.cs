@@ -13,7 +13,7 @@ namespace Rebar_Revit
 {
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public partial class MacroArmaduraAvancado : IExternalCommand
+    public partial class MacroArmadura : IExternalCommand
     {
         private UIApplication uiapp;
         private Autodesk.Revit.ApplicationServices.Application app;
@@ -29,7 +29,7 @@ namespace Rebar_Revit
 
             try
             {
-                FormularioPrincipalAvancado formPrincipal = new FormularioPrincipalAvancado(doc, uidoc);
+                FormularioPrincipal formPrincipal = new FormularioPrincipal(doc, uidoc);
                 formPrincipal.ShowDialog();
                 
                 return Result.Succeeded;
