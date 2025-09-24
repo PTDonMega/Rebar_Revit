@@ -105,7 +105,7 @@ namespace Rebar_Revit
             panelEsquerdo.Margin = new Padding(3, 4, 3, 4);
             panelEsquerdo.Name = "panelEsquerdo";
             panelEsquerdo.Padding = new Padding(10, 12, 10, 12);
-            panelEsquerdo.Size = new Size(500, 812);
+            panelEsquerdo.Size = new Size(500, 759);
             panelEsquerdo.TabIndex = 0;
             // 
             // groupSelecaoViga
@@ -202,7 +202,7 @@ namespace Rebar_Revit
             groupVisualizacao.Margin = new Padding(3, 4, 3, 4);
             groupVisualizacao.Name = "groupVisualizacao";
             groupVisualizacao.Padding = new Padding(3, 4, 3, 4);
-            groupVisualizacao.Size = new Size(480, 788);
+            groupVisualizacao.Size = new Size(480, 735);
             groupVisualizacao.TabIndex = 1;
             groupVisualizacao.TabStop = false;
             groupVisualizacao.Text = "Pré-visualização (secção)";
@@ -220,7 +220,7 @@ namespace Rebar_Revit
             // labelAltura
             // 
             labelAltura.AutoSize = true;
-            labelAltura.Location = new Point(350, 198);
+            labelAltura.Location = new Point(350, 190);
             labelAltura.Name = "labelAltura";
             labelAltura.Size = new Size(52, 20);
             labelAltura.TabIndex = 3;
@@ -230,7 +230,7 @@ namespace Rebar_Revit
             // 
             lblAlturaValor.AutoSize = true;
             lblAlturaValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblAlturaValor.Location = new Point(408, 202);
+            lblAlturaValor.Location = new Point(408, 190);
             lblAlturaValor.Name = "lblAlturaValor";
             lblAlturaValor.Size = new Size(44, 18);
             lblAlturaValor.TabIndex = 4;
@@ -239,7 +239,7 @@ namespace Rebar_Revit
             // labelLargura
             // 
             labelLargura.AutoSize = true;
-            labelLargura.Location = new Point(185, 193);
+            labelLargura.Location = new Point(185, 190);
             labelLargura.Name = "labelLargura";
             labelLargura.Size = new Size(62, 20);
             labelLargura.TabIndex = 5;
@@ -249,7 +249,7 @@ namespace Rebar_Revit
             // 
             lblLarguraValor.AutoSize = true;
             lblLarguraValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLarguraValor.Location = new Point(253, 198);
+            lblLarguraValor.Location = new Point(253, 190);
             lblLarguraValor.Name = "lblLarguraValor";
             lblLarguraValor.Size = new Size(44, 18);
             lblLarguraValor.TabIndex = 6;
@@ -268,7 +268,7 @@ namespace Rebar_Revit
             informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
             informacaoArmaduraViga1.TipoFamilia = "";
             visualizador.InformacaoViga = informacaoArmaduraViga1;
-            visualizador.Location = new Point(15, 238);
+            visualizador.Location = new Point(15, 230);
             visualizador.Margin = new Padding(3, 4, 3, 4);
             visualizador.ModoEdicao = false;
             visualizador.MostrarCorteTransversal = true;
@@ -303,7 +303,7 @@ namespace Rebar_Revit
             panelDireito.Margin = new Padding(3, 4, 3, 4);
             panelDireito.Name = "panelDireito";
             panelDireito.Padding = new Padding(10, 12, 10, 12);
-            panelDireito.Size = new Size(400, 812);
+            panelDireito.Size = new Size(400, 759);
             panelDireito.TabIndex = 1;
             // 
             // groupArmaduraLongitudinal
@@ -587,9 +587,9 @@ namespace Rebar_Revit
             labelCobrimento.AutoSize = true;
             labelCobrimento.Location = new Point(15, 31);
             labelCobrimento.Name = "labelCobrimento";
-            labelCobrimento.Size = new Size(131, 20);
+            labelCobrimento.Size = new Size(146, 20);
             labelCobrimento.TabIndex = 0;
-            labelCobrimento.Text = "Cobrimento (mm):";
+            labelCobrimento.Text = "Recobrimento (mm):";
             // 
             // numCobrimento
             // 
@@ -605,7 +605,7 @@ namespace Rebar_Revit
             // labelAmarracao
             // 
             labelAmarracao.AutoSize = true;
-            labelAmarracao.Location = new Point(110, 31);
+            labelAmarracao.Location = new Point(162, 31);
             labelAmarracao.Name = "labelAmarracao";
             labelAmarracao.Size = new Size(178, 20);
             labelAmarracao.TabIndex = 2;
@@ -614,7 +614,7 @@ namespace Rebar_Revit
             // numMultAmarracao
             // 
             numMultAmarracao.Increment = new decimal(new int[] { 5, 0, 0, 0 });
-            numMultAmarracao.Location = new Point(110, 56);
+            numMultAmarracao.Location = new Point(163, 56);
             numMultAmarracao.Margin = new Padding(3, 4, 3, 4);
             numMultAmarracao.Minimum = new decimal(new int[] { 30, 0, 0, 0 });
             numMultAmarracao.Name = "numMultAmarracao";
@@ -657,7 +657,7 @@ namespace Rebar_Revit
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(900, 812);
+            ClientSize = new Size(900, 759);
             Controls.Add(panelDireito);
             Controls.Add(panelEsquerdo);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -666,7 +666,7 @@ namespace Rebar_Revit
             MinimizeBox = false;
             Name = "FormularioPrincipalAvancado";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Criação de Armaduras em Vigas - v2.0";
+            Text = "Armaduras em Vigas - v0.1_Alpha";
             panelEsquerdo.ResumeLayout(false);
             groupSelecaoViga.ResumeLayout(false);
             groupSelecaoViga.PerformLayout();

@@ -275,7 +275,6 @@ namespace Rebar_Revit
                 var propiedades = Uteis.ObterPropriedadesViga(vigaSelecionada, doc);
                 if (propiedades != null)
                 {
-                    lblComprimentoValor.Text = Uteis.FormatarMilimetros(propiedades.Comprimento);
                     lblAlturaValor.Text = Uteis.FormatarMilimetros(propiedades.Altura);
                     lblLarguraValor.Text = Uteis.FormatarMilimetros(propiedades.Largura);
 
@@ -339,7 +338,6 @@ namespace Rebar_Revit
 
         private void LimparVisualizacao()
         {
-            lblComprimentoValor.Text = "0";
             lblAlturaValor.Text = "0";
             lblLarguraValor.Text = "0";
             labelInfoViga.Text = "Selecione uma viga para visualizar as propriedades e configuração da armadura.";
