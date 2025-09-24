@@ -5,11 +5,11 @@ namespace Rebar_Revit
     /// </summary>
     public class DefinicoesProjectoAvancadas
     {
-        // Coberturas em mm
-        public double CoberturaPilares { get; set; } = 40;
-        public double CoberturaVigas { get; set; } = 25;
-        public double CoberturaFundacoes { get; set; } = 50;
-        public double CoberturaLajes { get; set; } = 20;
+        // Recobrimentos em mm
+        public double RecobrimentoPilares { get; set; } = 40;
+        public double RecobrimentoVigas { get; set; } = 25;
+        public double RecobrimentoFundacoes { get; set; } = 50;
+        public double RecobrimentoLajes { get; set; } = 20;
 
         // Configurações de amarração
         public double MultiplicadorAmarracaoMinimo { get; set; } = 30;

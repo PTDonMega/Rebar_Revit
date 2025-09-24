@@ -76,8 +76,8 @@ namespace Rebar_Revit
         {
             // Seleção de viga
             comboVigasDisponiveis.SelectedIndexChanged += ComboVigasDisponiveis_SelectedIndexChanged;
-            radioFiltrarPorDescricao.CheckedChanged += RadioFiltro_CheckedChanged; // agora representa "Type"
-            radioFiltrarPorDesignacao.CheckedChanged += RadioFiltro_CheckedChanged; // agora representa "Designacao"
+            radioFiltrarPorDescricao.CheckedChanged += RadioFiltro_CheckedChanged;
+            radioFiltrarPorDesignacao.CheckedChanged += RadioFiltro_CheckedChanged;
             buttonAtualizarLista.Click += ButtonAtualizarLista_Click;
 
             // Armadura lateral
@@ -308,8 +308,7 @@ namespace Rebar_Revit
                     Comprimento = propriedades.Comprimento,
                     Altura = propriedades.Altura,
                     Largura = propriedades.Largura,
-                    Cobertura = cfg.Cobrimento,
-                    MultiplicadorAmarracao = cfg.MultAmarracao,
+                    Recobrimento = cfg.Cobrimento,
                     AmarracaoAutomatica = true,
                     Designacao = propriedades.Designacao,
                     TipoFamilia = propriedades.Tipo
@@ -497,7 +496,7 @@ namespace Rebar_Revit
         {
             return new DefinicoesProjectoAvancadas
             {
-                CoberturaVigas = (double)numCobrimento.Value,
+                RecobrimentoVigas = (double)numCobrimento.Value,
                 MultiplicadorAmarracaoMinimo = (double)numMultAmarracao.Value,
                 MultiplicadorAmarracaoMaximo = (double)numMultAmarracao.Value,
                 AmarracaoAutomaticaGlobal = true,
@@ -556,7 +555,7 @@ namespace Rebar_Revit
             config.MultAmarracao = armaduraConfig.MultAmarracao;
             // Definições do projeto diretamente do formulário
             config.Defs = ObterDefinicoesProjeto();
-            config.Defs.CoberturaVigas = armaduraConfig.Cobrimento;
+            config.Defs.RecobrimentoVigas = armaduraConfig.Cobrimento;
             return config;
         }
 

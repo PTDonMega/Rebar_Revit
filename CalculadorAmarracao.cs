@@ -80,7 +80,7 @@ namespace Rebar_Revit
             try
             {
                 XYZ direcao = (pontoFinal - pontoInicial).Normalize();
-                double comprimentoAmarracaoPes = comprimentoAmarracao / 304.8; // Converter mm para pés
+                double comprimentoAmarracaoPes = Uteis.MilimetrosParaFeet(comprimentoAmarracao); // Converter mm para pés
 
                 switch (tipoAmarracao)
                 {
@@ -174,7 +174,7 @@ namespace Rebar_Revit
         {
             // Espaçamento mínimo = maior entre: diâmetro, 20mm, ou tamanho do agregado + 5mm
             double espacamentoMinimo = Math.Max(diametro, 20); // mm
-            return espacamentoMinimo / 304.8; // Converter para pés
+            return Uteis.MilimetrosParaFeet(espacamentoMinimo); // Converter para pés
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace Rebar_Revit
                 foreach (var varao in varoes)
                 {
                     double espacamentoMinimo = CalcularEspacamentoMinimo(varao.Diametro);
-                    double larguraUtil = larguraViga - (50 / 304.8); // 50mm de cobertura total
+                    double larguraUtil = larguraViga - Uteis.MilimetrosParaFeet(50);
                     double espacamentoDisponivel = larguraUtil / (varao.Quantidade + 1);
 
                     if (espacamentoDisponivel < espacamentoMinimo)

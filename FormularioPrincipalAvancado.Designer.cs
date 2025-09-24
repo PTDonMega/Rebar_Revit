@@ -39,12 +39,12 @@ namespace Rebar_Revit
             radioFiltrarPorDesignacao = new RadioButton();
             buttonAtualizarLista = new Button();
             groupVisualizacao = new GroupBox();
+            visualizador = new VisualizadorArmaduraViga();
             labelDimensoes = new Label();
             labelAltura = new Label();
             lblAlturaValor = new Label();
             labelLargura = new Label();
             lblLarguraValor = new Label();
-            visualizador = new VisualizadorArmaduraViga();
             labelInfoViga = new Label();
             panelDireito = new Panel();
             groupArmaduraLongitudinal = new GroupBox();
@@ -190,12 +190,12 @@ namespace Rebar_Revit
             // 
             // groupVisualizacao
             // 
+            groupVisualizacao.Controls.Add(visualizador);
             groupVisualizacao.Controls.Add(labelDimensoes);
             groupVisualizacao.Controls.Add(labelAltura);
             groupVisualizacao.Controls.Add(lblAlturaValor);
             groupVisualizacao.Controls.Add(labelLargura);
             groupVisualizacao.Controls.Add(lblLarguraValor);
-            groupVisualizacao.Controls.Add(visualizador);
             groupVisualizacao.Controls.Add(labelInfoViga);
             groupVisualizacao.Dock = DockStyle.Fill;
             groupVisualizacao.Location = new Point(10, 12);
@@ -206,6 +206,19 @@ namespace Rebar_Revit
             groupVisualizacao.TabIndex = 1;
             groupVisualizacao.TabStop = false;
             groupVisualizacao.Text = "Pré-visualização (secção)";
+            // 
+            // visualizador
+            // 
+            visualizador.BackColor = Color.White;
+            visualizador.BorderStyle = BorderStyle.FixedSingle;
+            visualizador.Location = new Point(15, 230);
+            visualizador.Margin = new Padding(3, 4, 3, 4);
+            visualizador.ModoEdicao = false;
+            visualizador.MostrarCorteTransversal = true;
+            visualizador.Name = "visualizador";
+            visualizador.Size = new Size(450, 478);
+            visualizador.TabIndex = 8;
+            visualizador.Load += visualizador_Load;
             // 
             // labelDimensoes
             // 
@@ -254,28 +267,6 @@ namespace Rebar_Revit
             lblLarguraValor.Size = new Size(44, 18);
             lblLarguraValor.TabIndex = 6;
             lblLarguraValor.Text = "0000";
-            // 
-            // visualizador
-            // 
-            visualizador.BackColor = Color.White;
-            visualizador.BorderStyle = BorderStyle.FixedSingle;
-            informacaoArmaduraViga1.Altura = 500D;
-            informacaoArmaduraViga1.AmarracaoAutomatica = true;
-            informacaoArmaduraViga1.Cobertura = 25D;
-            informacaoArmaduraViga1.Comprimento = 5000D;
-            informacaoArmaduraViga1.Designacao = "";
-            informacaoArmaduraViga1.Largura = 300D;
-            informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
-            informacaoArmaduraViga1.TipoFamilia = "";
-            visualizador.InformacaoViga = informacaoArmaduraViga1;
-            visualizador.Location = new Point(15, 230);
-            visualizador.Margin = new Padding(3, 4, 3, 4);
-            visualizador.ModoEdicao = false;
-            visualizador.MostrarCorteTransversal = true;
-            visualizador.Name = "visualizador";
-            visualizador.Size = new Size(450, 478);
-            visualizador.TabIndex = 8;
-            visualizador.Load += visualizador_Load;
             // 
             // labelInfoViga
             // 
@@ -600,7 +591,7 @@ namespace Rebar_Revit
             numCobrimento.Name = "numCobrimento";
             numCobrimento.Size = new Size(70, 27);
             numCobrimento.TabIndex = 1;
-            numCobrimento.Value = new decimal(new int[] { 25, 0, 0, 0 });
+            numCobrimento.Value = new decimal(new int[] { 30, 0, 0, 0 });
             // 
             // labelAmarracao
             // 
@@ -707,40 +698,40 @@ namespace Rebar_Revit
 
         // PAINEL DIREITO - CONFIGURAÇÃO DE ARMADURA
         private Panel panelDireito;
-        
+
         private GroupBox groupArmaduraLongitudinal;
         private GroupBox groupArmaduraSuperior;
         private Label labelQuantSuperior;
         private NumericUpDown numQuantSuperior;
         private Label labelDiamSuperior;
         private ComboBox comboDiamSuperior;
-        
+
         private GroupBox groupArmaduraInferior;
         private Label labelQuantInferior;
         private NumericUpDown numQuantInferior;
         private Label labelDiamInferior;
         private ComboBox comboDiamInferior;
-        
+
         private GroupBox groupArmaduraLateral;
         private CheckBox checkArmaduraLateral;
         private Label labelQuantLateral;
         private NumericUpDown numQuantLateral;
         private Label labelDiamLateral;
         private ComboBox comboDiamLateral;
-        
+
         private GroupBox groupEstribos;
         private Label labelDiamEstribo;
         private ComboBox comboDiamEstribo;
         private Label labelEspacamentoEstribo;
         private NumericUpDown numEspacamentoEstribo;
         private CheckBox checkEspacamentoVariavel;
-        
+
         private GroupBox groupParametros;
         private Label labelCobrimento;
         private NumericUpDown numCobrimento;
         private Label labelAmarracao;
         private NumericUpDown numMultAmarracao;
-        
+
         // BOTÕES DE AÇÃO
         private Button buttonExecutar;
         private Button buttonCancelar;

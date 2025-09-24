@@ -18,7 +18,7 @@ namespace Rebar_Revit
         public List<ArmStirrup> Estribos { get; set; } = new List<ArmStirrup>();
         public TipoDistribuicaoArmaduraEnum TipoDistribuicao { get; set; } = TipoDistribuicaoArmaduraEnum.MistaComMaioresNasBordas;
         public bool AmarracaoAuto { get; set; } = true;
-        public double MultAmarracao { get; set; } = 50; // Padrão para vigas
+        public double MultAmarracao { get; set; } = 50;
         public string TipoAmarracao { get; set; } = "Automático";
         public TipoElementoEstruturalEnum TipoElemento { get; set; }
         public DefinicoesProjectoAvancadas Defs { get; set; }
@@ -75,7 +75,7 @@ namespace Rebar_Revit
                     throw new Exception($"Não foi possível obter as propriedades geométricas da viga {familyName} - {typeName}");
                 }
 
-                double cobertura = (Defs?.CoberturaVigas ?? 25) / 304.8; // Converter mm para pés
+                double recobrimento = Uteis.MilimetrosParaFeet(Defs?.RecobrimentoVigas ?? 25); // Converter mm para pés
 
                 // Verificar se existem configurações de armadura
                 if (Varoes.Count == 0 && Estribos.Count == 0)
@@ -91,12 +91,12 @@ namespace Rebar_Revit
                 }
 
                 // Validação dimensional crítica
-                if (!ValidarDimensoesCriticas(propriedades, cobertura))
+                if (!ValidarDimensoesCriticas(propriedades, recobrimento))
                 {
-                    string dimensoesInfo = $"Dimensões: L={propriedades.Comprimento * 304.8:F0}mm, " +
-                                          $"B={propriedades.Largura * 304.8:F0}mm, " +
-                                          $"H={propriedades.Altura * 304.8:F0}mm, " +
-                                          $"Cobertura={cobertura * 304.8:F0}mm";
+                    string dimensoesInfo = $"Dimensões: L={Uteis.FeetParaMilimetros(propriedades.Comprimento):F0}mm, " +
+                                          $"B={Uteis.FeetParaMilimetros(propriedades.Largura):F0}mm, " +
+                                          $"H={Uteis.FeetParaMilimetros(propriedades.Altura):F0}mm, " +
+                                          $"Recobrimento={Uteis.FeetParaMilimetros(recobrimento):F0}mm";
                     throw new Exception($"Dimensões insuficientes para colocação de armadura. {dimensoesInfo}");
                 }
 
@@ -108,7 +108,7 @@ namespace Rebar_Revit
                 {
                     try
                     {
-                        sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, propriedades, cobertura);
+                        sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, propriedades, recobrimento);
                         if (!sucessoLongitudinal)
                         {
                             throw new Exception("Falha na criação de armadura longitudinal");
@@ -125,7 +125,7 @@ namespace Rebar_Revit
                 {
                     try
                     {
-                        sucessoEstribos = CriarEstribosViga(inst, propriedades, cobertura);
+                        sucessoEstribos = CriarEstribosViga(inst, propriedades, recobrimento);
                         if (!sucessoEstribos)
                         {
                             throw new Exception("Falha na criação de estribos");
@@ -145,7 +145,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool ValidarDimensoesCriticas(PropriedadesViga props, double cobertura)
+        private bool ValidarDimensoesCriticas(PropriedadesViga props, double recobrimento)
         {
             double larguraMinima = Uteis.MilimetrosParaFeet(50); // 5cm em pés
             double alturaMinima = Uteis.MilimetrosParaFeet(100); // 10cm em pés
@@ -158,8 +158,8 @@ namespace Rebar_Revit
                 return false;
             }
 
-            double larguraUtil = props.Largura - 2 * cobertura;
-            double alturaUtil = props.Altura - 2 * cobertura;
+            double larguraUtil = props.Largura - 2 * recobrimento;
+            double alturaUtil = props.Altura - 2 * recobrimento;
 
             if (larguraUtil <= Uteis.MilimetrosParaFeet(20) || alturaUtil <= Uteis.MilimetrosParaFeet(20))
             {
@@ -279,7 +279,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarArmaduraVigaLongitudinal(FamilyInstance elemento, PropriedadesViga props, double cobertura)
+        private bool CriarArmaduraVigaLongitudinal(FamilyInstance elemento, PropriedadesViga props, double recobrimento)
         {
             try
             {
@@ -295,17 +295,17 @@ namespace Rebar_Revit
 
                     if (tipoLower == "superior")
                     {
-                        if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, cobertura))
+                        if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, recobrimento))
                             return false;
                     }
                     else if (tipoLower == "inferior")
                     {
-                        if (!CriarArmaduraInferior(elemento, props, varao, tipoVarao, cobertura))
+                        if (!CriarArmaduraInferior(elemento, props, varao, tipoVarao, recobrimento))
                             return false;
                     }
                     else if (tipoLower == "lateral")
                     {
-                        if (!CriarArmaduraLateral(elemento, props, varao, tipoVarao, cobertura))
+                        if (!CriarArmaduraLateral(elemento, props, varao, tipoVarao, recobrimento))
                             return false;
                     }
                 }
@@ -319,20 +319,20 @@ namespace Rebar_Revit
         }
 
         private bool CriarArmaduraSuperior(FamilyInstance elemento, PropriedadesViga props,
-                                         ArmVar varao, RebarBarType tipoVarao, double cobertura)
+                                         ArmVar varao, RebarBarType tipoVarao, double recobrimento)
         {
             try
             {
                 if (varao.Quantidade <= 0) return true;
 
                 Transform transformViga = ObterTransformViga(props);
-                double larguraUtil = props.Largura - 2 * cobertura;
+                double larguraUtil = props.Largura - 2 * recobrimento;
                 double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
 
-                // Obter diâmetro do estribo
-                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
-                double diamVarao = varao.Diametro / 304.8;
-                double alturaZ = props.Altura - cobertura - diamEstribo / 2 - diamVarao / 2;
+                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
+                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
+                double alturaZ = recobrimento + larguraUtil - diamEstribo / 2 - diamVarao / 2;
+                double alturaUtil = props.Altura - 2 * recobrimento;
 
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
@@ -359,19 +359,19 @@ namespace Rebar_Revit
         }
 
         private bool CriarArmaduraInferior(FamilyInstance elemento, PropriedadesViga props,
-                                         ArmVar varao, RebarBarType tipoVarao, double cobertura)
+                                         ArmVar varao, RebarBarType tipoVarao, double recobrimento)
         {
             try
             {
                 if (varao.Quantidade <= 0) return true;
 
                 Transform transformViga = ObterTransformViga(props);
-                double larguraUtil = props.Largura - 2 * cobertura;
+                double larguraUtil = props.Largura - 2 * recobrimento;
                 double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
 
-                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
-                double diamVarao = varao.Diametro / 304.8;
-                double alturaZ = cobertura + diamEstribo / 2 + diamVarao / 2;
+                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
+                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
+                double alturaZ = recobrimento + diamEstribo / 2 + diamVarao / 2;
 
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
@@ -398,22 +398,22 @@ namespace Rebar_Revit
         }
 
         private bool CriarArmaduraLateral(FamilyInstance elemento, PropriedadesViga props,
-                                        ArmVar varao, RebarBarType tipoVarao, double cobertura)
+                                        ArmVar varao, RebarBarType tipoVarao, double recobrimento)
         {
             try
             {
                 if (varao.Quantidade <= 0) return true;
 
                 Transform transformViga = ObterTransformViga(props);
-                double alturaUtil = props.Altura - 2 * cobertura;
-                double diamEstribo = Estribos.Count > 0 ? Estribos[0].Diametro / 304.8 : 0;
-                double diamVarao = varao.Diametro / 304.8;
-                double alturaZ = cobertura + diamEstribo / 2 + alturaUtil / 2; // Meia altura útil
+                double alturaUtil = props.Altura - 2 * recobrimento;
+                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
+                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
+                double alturaZ = recobrimento + diamEstribo / 2 + alturaUtil / 2; // Meia altura útil
 
                 // Lado esquerdo
-                double offsetYEsq = -(props.Largura / 2 - cobertura - diamEstribo / 2 - diamVarao / 2);
+                double offsetYEsq = -(props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2);
                 // Lado direito
-                double offsetYDir = props.Largura / 2 - cobertura - diamEstribo / 2 - diamVarao / 2;
+                double offsetYDir = props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2;
 
                 for (int i = 0; i < varao.Quantidade; i++)
                 {
@@ -632,7 +632,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double cobertura)
+        private bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double recobrimento)
         {
             try
             {
@@ -643,7 +643,7 @@ namespace Rebar_Revit
                     var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
                     if (tipoEstribo == null) continue;
 
-                    double espacamento = estribo.Espacamento / 304.8;
+                    double espacamento = Uteis.MilimetrosParaFeet(estribo.Espacamento);
                     int numeroEstribos = Math.Max(1, (int)(props.Comprimento / espacamento) - 1);
 
                     Transform transformViga = ObterTransformViga(props);
@@ -654,7 +654,7 @@ namespace Rebar_Revit
 
                         if (posicaoX >= props.Comprimento) break;
 
-                        CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, cobertura, transformViga);
+                        CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, recobrimento, transformViga);
                     }
                 }
 
@@ -668,19 +668,20 @@ namespace Rebar_Revit
 
         private bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX,
                                               PropriedadesViga props, RebarBarType tipoEstribo,
-                                              double cobertura, Transform transformViga)
+                                              double recobrimento, Transform transformViga)
         {
             try
             {
-                double larguraUtil = props.Largura - 2 * cobertura;
-                double alturaUtil = props.Altura - 2 * cobertura;
+                double larguraUtil = props.Largura - 2 * recobrimento;
+                double alturaUtil = props.Altura - 2 * recobrimento;
 
                 if (larguraUtil <= 0 || alturaUtil <= 0) return false;
 
+                // Corrigir offsets para garantir que o estribo fique dentro da viga
                 double y1 = -larguraUtil / 2;
                 double y2 = larguraUtil / 2;
-                double z1 = cobertura;
-                double z2 = props.Altura - cobertura;
+                double z1 = recobrimento;
+                double z2 = recobrimento + alturaUtil;
 
                 List<XYZ> pontosLocais = new List<XYZ>
                 {
@@ -706,7 +707,8 @@ namespace Rebar_Revit
 
                 if (curvasEstribo.Count < 3) return false;
 
-                XYZ vetorNormal = (props.PontoFinal - props.PontoInicial).Normalize();
+                // Corrigir vetor normal: deve ser perpendicular ao plano do estribo
+                XYZ vetorNormal = transformViga.BasisY;
 
                 Rebar estriboCriado = Rebar.CreateFromCurves(
                     doc,
@@ -753,7 +755,6 @@ namespace Rebar_Revit
             var relatorio = new System.Text.StringBuilder();
 
             relatorio.AppendLine("=== RELATÓRIO DE PRÉ-VISUALIZAÇÃO - VIGAS ===");
-            relatorio.AppendLine($"Data/Hora: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
             relatorio.AppendLine($"Total de Vigas: {elementos.Count}");
             relatorio.AppendLine();
 
