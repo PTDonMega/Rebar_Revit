@@ -7,12 +7,12 @@ using Autodesk.Revit.DB.Structure;
 namespace Rebar_Revit
 {
     /// <summary>
-    /// Calculadora especializada para amarra√ß√µes de vigas
+    /// Calculadora especializada para amarraÁıes de vigas
     /// </summary>
     public class Amarracao
     {
         /// <summary>
-        /// Calcula comprimento de amarra√ß√£o baseado no di√¢metro e regulamento
+        /// Calcula comprimento de amarraÁ„o baseado no di‚metro e regulamento
         /// </summary>
         public double CalcularComprimentoAmarracao(double diametro, double multiplicador = 50)
         {
@@ -21,7 +21,7 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Determina o tipo de gancho baseado na posi√ß√£o do elemento
+        /// Determina o tipo de gancho baseado na posiÁ„o do elemento
         /// </summary>
         public RebarHookType DeterminarTipoGancho(Document doc, TipoAmarracaoEnum tipoAmarracao)
         {
@@ -39,7 +39,7 @@ namespace Rebar_Revit
                 switch (tipoAmarracao)
                 {
                     case TipoAmarracaoEnum.Dobrada90:
-                        // Procurar gancho de 90¬∞ primeiro
+                        // Procurar gancho de 90∞ primeiro
                         var gancho90 = ganchos.FirstOrDefault(g =>
                             g.Name.Contains("90") ||
                             g.Name.ToLower().Contains("standard") ||
@@ -48,7 +48,7 @@ namespace Rebar_Revit
                         return gancho90 ?? ganchos.FirstOrDefault();
 
                     case TipoAmarracaoEnum.Gancho135:
-                        // Procurar gancho de 135¬∞
+                        // Procurar gancho de 135∞
                         var gancho135 = ganchos.FirstOrDefault(g =>
                             g.Name.Contains("135") ||
                             g.Name.ToLower().Contains("seismic"));
@@ -58,7 +58,7 @@ namespace Rebar_Revit
                     case TipoAmarracaoEnum.Reta:
                     case TipoAmarracaoEnum.Automatico:
                     default:
-                        return null; // Sem gancho para amarra√ß√£o reta
+                        return null; // Sem gancho para amarraÁ„o reta
                 }
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Calcula pontos de ancoragem para diferentes tipos de amarra√ß√£o em vigas
+        /// Calcula pontos de ancoragem para diferentes tipos de amarraÁ„o em vigas
         /// </summary>
         public List<XYZ> CalcularPontosAncoragem(XYZ pontoInicial, XYZ pontoFinal,
                                                 TipoAmarracaoEnum tipoAmarracao,
@@ -79,12 +79,12 @@ namespace Rebar_Revit
             try
             {
                 XYZ direcao = (pontoFinal - pontoInicial).Normalize();
-                double comprimentoAmarracaoPes = Uteis.MilimetrosParaFeet(comprimentoAmarracao); // Converter mm para p√©s
+                double comprimentoAmarracaoPes = Uteis.MilimetrosParaFeet(comprimentoAmarracao); // Converter mm para pÈs
 
                 switch (tipoAmarracao)
                 {
                     case TipoAmarracaoEnum.Reta:
-                        // Amarra√ß√£o reta - estender nas duas extremidades
+                        // AmarraÁ„o reta - estender nas duas extremidades
                         XYZ pontoInicialReta = pontoInicial - direcao * comprimentoAmarracaoPes;
                         XYZ pontoFinalReta = pontoFinal + direcao * comprimentoAmarracaoPes;
                         
@@ -95,7 +95,7 @@ namespace Rebar_Revit
                         break;
 
                     case TipoAmarracaoEnum.Dobrada90:
-                        // Amarra√ß√£o com dobra de 90¬∞ (ganchos verticais)
+                        // AmarraÁ„o com dobra de 90∞ (ganchos verticais)
                         XYZ pontoInicialDobrado = pontoInicial - direcao * comprimentoAmarracaoPes;
                         XYZ ganchoInicial = pontoInicialDobrado + new XYZ(0, 0, comprimentoAmarracaoPes * 0.5);
                         
@@ -111,7 +111,7 @@ namespace Rebar_Revit
                         break;
 
                     case TipoAmarracaoEnum.Gancho135:
-                        // Amarra√ß√£o com gancho de 135¬∞
+                        // AmarraÁ„o com gancho de 135∞
                         XYZ pontoInicialGancho = pontoInicial - direcao * comprimentoAmarracaoPes;
                         XYZ ganchoInicial135 = pontoInicialGancho + new XYZ(0, 0, comprimentoAmarracaoPes * 0.7);
                         
@@ -128,7 +128,7 @@ namespace Rebar_Revit
 
                     case TipoAmarracaoEnum.Automatico:
                     default:
-                        // Comportamento autom√°tico - usar amarra√ß√£o reta como padr√£o
+                        // Comportamento autom·tico - usar amarraÁ„o reta como padr„o
                         pontos.Add(pontoInicial);
                         pontos.Add(pontoFinal);
                         break;
@@ -136,7 +136,7 @@ namespace Rebar_Revit
             }
             catch (Exception ex)
             {
-                // Em caso de erro, retornar pontos b√°sicos
+                // Em caso de erro, retornar pontos b·sicos
                 pontos.Clear();
                 pontos.Add(pontoInicial);
                 pontos.Add(pontoFinal);
@@ -146,7 +146,7 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Determina o tipo de amarra√ß√£o autom√°tico baseado na posi√ß√£o da armadura na viga
+        /// Determina o tipo de amarraÁ„o autom·tico baseado na posiÁ„o da armadura na viga
         /// </summary>
         public TipoAmarracaoEnum DeterminarTipoAmarracaoViga(string posicaoArmadura)
         {
@@ -167,34 +167,34 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Calcula espa√ßamento m√≠nimo entre var√µes baseado no di√¢metro
+        /// Calcula espaÁamento mÌnimo entre varıes baseado no di‚metro
         /// </summary>
         public double CalcularEspacamentoMinimo(double diametro)
         {
-            // Espa√ßamento m√≠nimo = maior entre: di√¢metro, 20mm, ou tamanho do agregado + 5mm
+            // EspaÁamento mÌnimo = maior entre: di‚metro, 20mm, ou tamanho do agregado + 5mm
             double espacamentoMinimo = Math.Max(diametro, 20); // mm
-            return Uteis.MilimetrosParaFeet(espacamentoMinimo); // Converter para p√©s
+            return Uteis.MilimetrosParaFeet(espacamentoMinimo); // Converter para pÈs
         }
 
         /// <summary>
-        /// Verifica se a configura√ß√£o de armadura atende aos requisitos m√≠nimos
+        /// Verifica se a configuraÁ„o de armadura atende aos requisitos mÌnimos
         /// </summary>
         public bool ValidarConfiguracaoArmadura(List<ArmVar> varoes, double larguraViga, double alturaViga)
         {
             try
             {
-                // Verificar se h√° armadura m√≠nima
+                // Verificar se h· armadura mÌnima
                 if (varoes == null || varoes.Count == 0)
                     return false;
 
-                // Verificar se h√° pelo menos armadura superior e inferior
+                // Verificar se h· pelo menos armadura superior e inferior
                 bool temSuperior = varoes.Any(v => v.TipoArmadura.ToLower() == "superior");
                 bool temInferior = varoes.Any(v => v.TipoArmadura.ToLower() == "inferior");
 
                 if (!temSuperior || !temInferior)
                     return false;
 
-                // Verificar espa√ßamento m√≠nimo
+                // Verificar espaÁamento mÌnimo
                 foreach (var varao in varoes)
                 {
                     double espacamentoMinimo = CalcularEspacamentoMinimo(varao.Diametro);
@@ -203,7 +203,7 @@ namespace Rebar_Revit
 
                     if (espacamentoDisponivel < espacamentoMinimo)
                     {
-                        return false; // Espa√ßamento insuficiente
+                        return false; // EspaÁamento insuficiente
                     }
                 }
 
@@ -216,7 +216,7 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Calcula a taxa de armadura para verifica√ß√£o regulamentar
+        /// Calcula a taxa de armadura para verificaÁ„o regulamentar
         /// </summary>
         public double CalcularTaxaArmadura(List<ArmVar> varoes, double larguraViga, double alturaViga)
         {
@@ -227,12 +227,12 @@ namespace Rebar_Revit
                 foreach (var varao in varoes)
                 {
                     double raio = varao.Diametro / 2000; // Converter mm para m
-                    double areaVarao = Math.PI * raio * raio; // m¬≤
+                    double areaVarao = Math.PI * raio * raio; // m≤
                     areaTotal += varao.Quantidade * areaVarao;
                 }
 
-                double larguraM = larguraViga * 0.3048; // Converter p√©s para m
-                double alturaM = alturaViga * 0.3048; // Converter p√©s para m
+                double larguraM = larguraViga * 0.3048; // Converter pÈs para m
+                double alturaM = alturaViga * 0.3048; // Converter pÈs para m
                 double areaSecao = larguraM * alturaM;
 
                 return (areaTotal / areaSecao) * 100; // Percentagem
@@ -244,7 +244,7 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Sugere configura√ß√£o de estribos baseada nas dimens√µes da viga
+        /// Sugere configuraÁ„o de estribos baseada nas dimensıes da viga
         /// </summary>
         public List<ArmStirrup> SugerirEstribos(double alturaViga, double comprimentoViga)
         {
@@ -255,12 +255,12 @@ namespace Rebar_Revit
                 double alturaM = alturaViga * 0.3048; // Converter para metros
                 double comprimentoM = comprimentoViga * 0.3048;
 
-                // Determinar di√¢metro do estribo baseado na altura
-                double diametroEstribo = 8; // mm, padr√£o
+                // Determinar di‚metro do estribo baseado na altura
+                double diametroEstribo = 8; // mm, padr„o
                 if (alturaM > 0.6) diametroEstribo = 10;
                 if (alturaM > 1.0) diametroEstribo = 12;
 
-                // Determinar espa√ßamento
+                // Determinar espaÁamento
                 double espacamentoZonaCorte = Math.Min(alturaM * 1000 / 4, 150); // mm
                 double espacamentoZonaCentral = Math.Min(alturaM * 1000 / 2, 300); // mm
 
@@ -277,7 +277,7 @@ namespace Rebar_Revit
             }
             catch
             {
-                // Configura√ß√£o padr√£o em caso de erro
+                // ConfiguraÁ„o padr„o em caso de erro
                 estribos.Add(new ArmStirrup(6, 125));
                 return estribos;
             }

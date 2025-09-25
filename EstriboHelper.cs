@@ -57,20 +57,26 @@ namespace Rebar_Revit
                 double alturaUtil = props.Altura - 2 * recobrimento;
                 if (larguraUtil <= 0 || alturaUtil <= 0)
                     return false;
-                // Gera pontos e curvas do estribo
-                double y1 = -larguraUtil / 2;
-                double y2 = larguraUtil / 2;
-                double z1 = recobrimento;
-                double z2 = recobrimento + alturaUtil;
-                List<XYZ> pontosLocais = new List<XYZ>
+
+                // Calcular vetor direção da viga (face inferior)
+                XYZ eixoViga = (props.PontoFinal - props.PontoInicial).Normalize();
+                // Ponto base na face inferior, com recobrimento aplicado
+                XYZ baseInferior = props.PontoInicial + eixoViga * posicaoX + new XYZ(0, 0, recobrimento);
+                // Vetor perpendicular à viga (largura)
+                XYZ larguraDir = transformViga.BasisY.Normalize();
+                // Vetor altura (vertical)
+                XYZ alturaDir = transformViga.BasisZ.Normalize();
+
+                // Gerar pontos do estribo em coordenadas globais
+                List<XYZ> pontosGlobais = new List<XYZ>
                 {
-                    new XYZ(posicaoX, y1, z1),
-                    new XYZ(posicaoX, y2, z1),
-                    new XYZ(posicaoX, y2, z2),
-                    new XYZ(posicaoX, y1, z2),
-                    new XYZ(posicaoX, y1, z1)
+                    baseInferior - larguraDir * (larguraUtil / 2),
+                    baseInferior + larguraDir * (larguraUtil / 2),
+                    baseInferior + larguraDir * (larguraUtil / 2) + alturaDir * alturaUtil,
+                    baseInferior - larguraDir * (larguraUtil / 2) + alturaDir * alturaUtil,
+                    baseInferior - larguraDir * (larguraUtil / 2)
                 };
-                List<XYZ> pontosGlobais = Uteis.ConverterPontosParaGlobais(pontosLocais, transformViga);
+
                 List<Curve> curvasEstribo = new List<Curve>();
                 for (int i = 0; i < pontosGlobais.Count - 1; i++)
                 {
@@ -108,7 +114,7 @@ namespace Rebar_Revit
                             gancho135,
                             gancho135,
                             elemento,
-                            transformViga.BasisY,
+                            alturaDir, // vetor normal correto
                             curvasEstribo,
                             orient,
                             orient,
@@ -122,9 +128,9 @@ namespace Rebar_Revit
                 if (!criado)
                 {
                     XYZ[] vetoresNormais = new[] {
-                        transformViga.BasisY,
-                        transformViga.BasisZ,
-                        transformViga.BasisX
+                        alturaDir,
+                        larguraDir,
+                        eixoViga
                     };
                     foreach (var vetor in vetoresNormais)
                     {
