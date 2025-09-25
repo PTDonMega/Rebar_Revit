@@ -13,7 +13,7 @@ namespace Rebar_Revit
 {
     [Transaction(TransactionMode.Manual)]
     [Regeneration(RegenerationOption.Manual)]
-    public partial class MacroArmadura : IExternalCommand
+    public partial class Identificador : IExternalCommand
     {
         private UIApplication uiapp;
         private Autodesk.Revit.ApplicationServices.Application app;

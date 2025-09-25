@@ -510,36 +510,27 @@ namespace Rebar_Revit
             var estribo = informacaoViga.Estribos.First();
             Color corEstribo = COR_DIAMETRO.ContainsKey((int)estribo.Diametro) ? COR_DIAMETRO[(int)estribo.Diametro] : Color.Gray;
             float recobrimento = (float)informacaoViga.Recobrimento * escalaDesenho;
+            float raioCanto = 18f * escalaDesenho; // Raio para arredondar os cantos
 
             using (var pen = new Pen(corEstribo, 2))
             {
                 // Definir os 4 cantos internos do estribo
-                PointF p1 = new PointF(areaViga.X + recobrimento, areaViga.Y + recobrimento); // superior esquerdo
-                PointF p2 = new PointF(areaViga.X + areaViga.Width - recobrimento, areaViga.Y + recobrimento); // superior direito
-                PointF p3 = new PointF(areaViga.X + areaViga.Width - recobrimento, areaViga.Y + areaViga.Height - recobrimento); // inferior direito
-                PointF p4 = new PointF(areaViga.X + recobrimento, areaViga.Y + areaViga.Height - recobrimento); // inferior esquerdo
+                float x = areaViga.X + recobrimento;
+                float y = areaViga.Y + recobrimento;
+                float largura = areaViga.Width - 2 * recobrimento;
+                float altura = areaViga.Height - 2 * recobrimento;
 
-                // Desenhar o estribo como polígono
-                g.DrawLine(pen, p1, p2);
-                g.DrawLine(pen, p2, p3);
-                g.DrawLine(pen, p3, p4);
-                g.DrawLine(pen, p4, p1);
-
-                // Desenhar gancho de 135° para dentro em cada canto superior
-                float tamanhoDobra = 20; // pixels
-                float anguloRad = 135 * (float)Math.PI / 180f;
-                // Gancho no canto superior esquerdo
-                g.DrawLine(pen,
-                    p1.X,
-                    p1.Y,
-                    p1.X + (float)(Math.Cos(anguloRad) * tamanhoDobra),
-                    p1.Y + (float)(Math.Sin(anguloRad) * tamanhoDobra));
-                // Gancho no canto superior direito
-                g.DrawLine(pen,
-                    p2.X,
-                    p2.Y,
-                    p2.X - (float)(Math.Cos(anguloRad) * tamanhoDobra),
-                    p2.Y + (float)(Math.Sin(anguloRad) * tamanhoDobra));
+                // Desenhar estribo com cantos arredondados
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    path.AddArc(x, y, raioCanto, raioCanto, 180, 90); // superior esquerdo
+                    path.AddArc(x + largura - raioCanto, y, raioCanto, raioCanto, 270, 90); // superior direito
+                    path.AddArc(x + largura - raioCanto, y + altura - raioCanto, raioCanto, raioCanto, 0, 90); // inferior direito
+                    path.AddArc(x, y + altura - raioCanto, raioCanto, raioCanto, 90, 90); // inferior esquerdo
+                    path.CloseFigure();
+                    g.DrawPath(pen, path);
+                }
+                // Gancho removido
             }
         }
 

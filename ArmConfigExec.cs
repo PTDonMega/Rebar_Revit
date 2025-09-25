@@ -24,15 +24,19 @@ namespace Rebar_Revit
         public DefinicoesProjecto Defs { get; set; }
 
         private Document doc;
-        private CalculadorAmarracao calcAmarracao;
+        private Amarracao calcAmarracao;
         private DetectorElementos detector;
+        private EstriboHelper estriboHelper;
+        private ArmaduraLongitudinalHelper armaduraHelper;
 
         public ArmConfigExec(Document documento)
         {
             doc = documento;
-            calcAmarracao = new CalculadorAmarracao();
+            calcAmarracao = new Amarracao();
             detector = new DetectorElementos(documento);
             Defs = new DefinicoesProjecto();
+            estriboHelper = new EstriboHelper(doc, this);
+            armaduraHelper = new ArmaduraLongitudinalHelper(doc, this);
         }
 
         public int QtdTotalVaroes() => Varoes.Sum(v => v.Quantidade);
@@ -108,7 +112,7 @@ namespace Rebar_Revit
                 {
                     try
                     {
-                        sucessoLongitudinal = CriarArmaduraVigaLongitudinal(inst, propriedades, recobrimento);
+                        sucessoLongitudinal = armaduraHelper.CriarArmaduraVigaLongitudinal(inst, propriedades, recobrimento);
                         if (!sucessoLongitudinal)
                         {
                             throw new Exception("Falha na criação de armadura longitudinal");
@@ -125,7 +129,7 @@ namespace Rebar_Revit
                 {
                     try
                     {
-                        sucessoEstribos = CriarEstribosViga(inst, propriedades, recobrimento);
+                        sucessoEstribos = estriboHelper.CriarEstribosViga(inst, propriedades, recobrimento, Estribos);
                         if (!sucessoEstribos)
                         {
                             throw new Exception("Falha na criação de estribos");
@@ -279,182 +283,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarArmaduraVigaLongitudinal(FamilyInstance elemento, PropriedadesViga props, double recobrimento)
-        {
-            try
-            {
-                var tiposArmadura = ObterTiposArmaduraDisponiveis();
-                if (tiposArmadura.Count == 0) return false;
-
-                foreach (var varao in Varoes)
-                {
-                    var tipoVarao = tiposArmadura.FirstOrDefault(t =>
-                        t.Name.Contains(varao.Diametro.ToString("F0"))) ?? tiposArmadura.First();
-
-                    string tipoLower = varao.TipoArmadura.ToLower();
-
-                    if (tipoLower == "superior")
-                    {
-                        if (!CriarArmaduraSuperior(elemento, props, varao, tipoVarao, recobrimento))
-                            return false;
-                    }
-                    else if (tipoLower == "inferior")
-                    {
-                        if (!CriarArmaduraInferior(elemento, props, varao, tipoVarao, recobrimento))
-                            return false;
-                    }
-                    else if (tipoLower == "lateral")
-                    {
-                        if (!CriarArmaduraLateral(elemento, props, varao, tipoVarao, recobrimento))
-                            return false;
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro na criação de armadura longitudinal: {ex.Message}");
-            }
-        }
-
-        private bool CriarArmaduraSuperior(FamilyInstance elemento, PropriedadesViga props,
-                                         ArmVar varao, RebarBarType tipoVarao, double recobrimento)
-        {
-            try
-            {
-                if (varao.Quantidade <= 0) return true;
-
-                Transform transformViga = ObterTransformViga(props);
-                double larguraUtil = props.Largura - 2 * recobrimento;
-                double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
-
-                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
-                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
-                double alturaZ = recobrimento + larguraUtil - diamEstribo / 2 - diamVarao / 2;
-                double alturaUtil = props.Altura - 2 * recobrimento;
-
-                for (int i = 0; i < varao.Quantidade; i++)
-                {
-                    double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
-
-                    XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
-                    XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
-
-                    XYZ pontoInicial = transformViga.OfPoint(pontoInicialLocal);
-                    XYZ pontoFinal = transformViga.OfPoint(pontoFinalLocal);
-
-                    List<XYZ> pontosComAmarracao = CalcularPontosAmarracao(pontoInicial, pontoFinal, varao.Diametro, "superior");
-
-                    if (!CriarArmaduraIndividual(elemento, pontosComAmarracao, tipoVarao, varao.Diametro))
-                        return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro na armadura superior: {ex.Message}");
-            }
-        }
-
-        private bool CriarArmaduraInferior(FamilyInstance elemento, PropriedadesViga props,
-                                         ArmVar varao, RebarBarType tipoVarao, double recobrimento)
-        {
-            try
-            {
-                if (varao.Quantidade <= 0) return true;
-
-                Transform transformViga = ObterTransformViga(props);
-                double larguraUtil = props.Largura - 2 * recobrimento;
-                double espacamento = varao.Quantidade > 1 ? larguraUtil / (varao.Quantidade - 1) : 0;
-
-                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
-                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
-                double alturaZ = recobrimento + diamEstribo / 2 + diamVarao / 2;
-
-                for (int i = 0; i < varao.Quantidade; i++)
-                {
-                    double offsetY = varao.Quantidade == 1 ? 0 : -larguraUtil / 2 + (i * espacamento);
-
-                    XYZ pontoInicialLocal = new XYZ(0, offsetY, alturaZ);
-                    XYZ pontoFinalLocal = new XYZ(props.Comprimento, offsetY, alturaZ);
-
-                    XYZ pontoInicial = transformViga.OfPoint(pontoInicialLocal);
-                    XYZ pontoFinal = transformViga.OfPoint(pontoFinalLocal);
-
-                    List<XYZ> pontosComAmarracao = CalcularPontosAmarracao(pontoInicial, pontoFinal, varao.Diametro, "inferior");
-
-                    if (!CriarArmaduraIndividual(elemento, pontosComAmarracao, tipoVarao, varao.Diametro))
-                        return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro na armadura inferior: {ex.Message}");
-            }
-        }
-
-        private bool CriarArmaduraLateral(FamilyInstance elemento, PropriedadesViga props,
-                                        ArmVar varao, RebarBarType tipoVarao, double recobrimento)
-        {
-            try
-            {
-                if (varao.Quantidade <= 0) return true;
-
-                Transform transformViga = ObterTransformViga(props);
-                double alturaUtil = props.Altura - 2 * recobrimento;
-                double diamEstribo = Estribos.Count > 0 ? Uteis.MilimetrosParaFeet(Estribos[0].Diametro) : 0;
-                double diamVarao = Uteis.MilimetrosParaFeet(varao.Diametro);
-                double larguraUtil = props.Largura - 2 * recobrimento;
-
-                // Distribuir verticalmente os varoes por face
-                int quantidadePorFace = varao.Quantidade;
-                double espacamentoY = alturaUtil / (quantidadePorFace + 1);
-
-                // Lado esquerdo
-                double offsetYEsq = -(props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2);
-                for (int i = 0; i < quantidadePorFace; i++)
-                {
-                    double z = recobrimento + diamEstribo / 2 + (i + 1) * espacamentoY;
-                    XYZ pontoInicialEsqLocal = new XYZ(0, offsetYEsq, z);
-                    XYZ pontoFinalEsqLocal = new XYZ(props.Comprimento, offsetYEsq, z);
-
-                    XYZ pontoInicialEsq = transformViga.OfPoint(pontoInicialEsqLocal);
-                    XYZ pontoFinalEsq = transformViga.OfPoint(pontoFinalEsqLocal);
-
-                    List<XYZ> pontosEsq = CalcularPontosAmarracao(pontoInicialEsq, pontoFinalEsq, varao.Diametro, "lateral");
-                    if (!CriarArmaduraIndividual(elemento, pontosEsq, tipoVarao, varao.Diametro))
-                        return false;
-                }
-
-                // Lado direito
-                double offsetYDir = props.Largura / 2 - recobrimento - diamEstribo / 2 - diamVarao / 2;
-                for (int i = 0; i < quantidadePorFace; i++)
-                {
-                    double z = recobrimento + diamEstribo / 2 + (i + 1) * espacamentoY;
-                    XYZ pontoInicialDirLocal = new XYZ(0, offsetYDir, z);
-                    XYZ pontoFinalDirLocal = new XYZ(props.Comprimento, offsetYDir, z);
-
-                    XYZ pontoInicialDir = transformViga.OfPoint(pontoInicialDirLocal);
-                    XYZ pontoFinalDir = transformViga.OfPoint(pontoFinalDirLocal);
-
-                    List<XYZ> pontosDir = CalcularPontosAmarracao(pontoInicialDir, pontoFinalDir, varao.Diametro, "lateral");
-                    if (!CriarArmaduraIndividual(elemento, pontosDir, tipoVarao, varao.Diametro))
-                        return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro na armadura lateral: {ex.Message}");
-            }
-        }
-
-        private Transform ObterTransformViga(PropriedadesViga props)
+        public Transform ObterTransformViga(PropriedadesViga props)
         {
             // Baseado apenas em Z global para evitar rotações inesperadas.
             XYZ x = (props.PontoFinal - props.PontoInicial).Normalize();
@@ -479,7 +308,16 @@ namespace Rebar_Revit
             return transform;
         }
 
-        private List<XYZ> CalcularPontosAmarracao(XYZ pontoInicial, XYZ pontoFinal, double diametro, string posicao)
+        public List<RebarBarType> ObterTiposArmaduraDisponiveis()
+        {
+            var collector = new FilteredElementCollector(doc);
+            return collector.OfClass(typeof(RebarBarType))
+                          .Cast<RebarBarType>()
+                          .OrderBy(t => t.Name)
+                          .ToList();
+        }
+
+        public List<XYZ> CalcularPontosAmarracao(XYZ pontoInicial, XYZ pontoFinal, double diametro, string posicao)
         {
             try
             {
@@ -541,7 +379,7 @@ namespace Rebar_Revit
             }
         }
 
-        private bool CriarArmaduraIndividual(FamilyInstance elemento, List<XYZ> pontos,
+        public bool CriarArmaduraIndividual(FamilyInstance elemento, List<XYZ> pontos,
                                            RebarBarType tipoArmadura, double diametro)
         {
             try
@@ -637,124 +475,6 @@ namespace Rebar_Revit
             {
                 // Ignorar erros
             }
-        }
-
-        private bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double recobrimento)
-        {
-            try
-            {
-                if (Estribos.Count == 0) return true;
-
-                foreach (var estribo in Estribos)
-                {
-                    var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
-                    if (tipoEstribo == null) continue;
-
-                    double espacamento = Uteis.MilimetrosParaFeet(estribo.Espacamento);
-                    int numeroEstribos = Math.Max(1, (int)(props.Comprimento / espacamento) - 1);
-
-                    Transform transformViga = ObterTransformViga(props);
-
-                    for (int i = 1; i <= numeroEstribos; i++)
-                    {
-                        double posicaoX = i * espacamento;
-
-                        if (posicaoX >= props.Comprimento) break;
-
-                        CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, recobrimento, transformViga);
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Erro na criação de estribos: {ex.Message}");
-            }
-        }
-
-        private bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX,
-                                              PropriedadesViga props, RebarBarType tipoEstribo,
-                                              double recobrimento, Transform transformViga)
-        {
-            try
-            {
-                double larguraUtil = props.Largura - 2 * recobrimento;
-                double alturaUtil = props.Altura - 2 * recobrimento;
-
-                if (larguraUtil <= 0 || alturaUtil <= 0) return false;
-
-                // Corrigir offsets para garantir que o estribo fique dentro da viga
-                double y1 = -larguraUtil / 2;
-                double y2 = larguraUtil / 2;
-                double z1 = recobrimento;
-                double z2 = recobrimento + alturaUtil;
-
-                List<XYZ> pontosLocais = new List<XYZ>
-                {
-                    new XYZ(posicaoX, y1, z1),
-                    new XYZ(posicaoX, y2, z1),
-                    new XYZ(posicaoX, y2, z2),
-                    new XYZ(posicaoX, y1, z2),
-                    new XYZ(posicaoX, y1, z1) // Fechar o estribo
-                };
-
-                List<XYZ> pontosGlobais = Uteis.ConverterPontosParaGlobais(pontosLocais, transformViga);
-
-                List<Curve> curvasEstribo = new List<Curve>();
-                for (int i = 0; i < pontosGlobais.Count - 1; i++)
-                {
-                    double distancia = pontosGlobais[i].DistanceTo(pontosGlobais[i + 1]);
-                    if (distancia > 1e-6)
-                    {
-                        Line linha = Line.CreateBound(pontosGlobais[i], pontosGlobais[i + 1]);
-                        curvasEstribo.Add(linha);
-                    }
-                }
-
-                if (curvasEstribo.Count < 3) return false;
-
-                // Corrigir vetor normal: deve ser perpendicular ao plano do estribo
-                XYZ vetorNormal = transformViga.BasisY;
-
-                Rebar estriboCriado = Rebar.CreateFromCurves(
-                    doc,
-                    RebarStyle.StirrupTie,
-                    tipoEstribo,
-                    null, // sem gancho
-                    null, // sem gancho
-                    elemento,
-                    vetorNormal,
-                    curvasEstribo,
-                    RebarHookOrientation.Right,
-                    RebarHookOrientation.Right,
-                    true,
-                    true);
-
-                return estriboCriado != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private List<RebarBarType> ObterTiposArmaduraDisponiveis()
-        {
-            var collector = new FilteredElementCollector(doc);
-            return collector.OfClass(typeof(RebarBarType))
-                          .Cast<RebarBarType>()
-                          .OrderBy(t => t.Name)
-                          .ToList();
-        }
-
-        private RebarBarType ObterTipoArmaduraPorDiametro(double diametro)
-        {
-            var tipos = ObterTiposArmaduraDisponiveis();
-            string diametroStr = diametro.ToString("F0");
-
-            return tipos.FirstOrDefault(t => t.Name.Contains(diametroStr)) ??
-                   tipos.FirstOrDefault();
         }
 
         public string GerarRelatorioPreVisualizacao(List<Element> elementos)

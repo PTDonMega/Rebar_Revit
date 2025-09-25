@@ -17,7 +17,7 @@ namespace Rebar_Revit
         private Document doc;
         private UIDocument uidoc;
         private DetectorElementos detectorElementos;
-        private CalculadorAmarracao calculadorAmarracao;
+        private Amarracao calculadorAmarracao;
 
         // Dados carregados
         private List<Element> vigasDisponiveis;
@@ -29,7 +29,7 @@ namespace Rebar_Revit
             doc = documento;
             uidoc = uiDocumento;
             detectorElementos = new DetectorElementos(doc);
-            calculadorAmarracao = new CalculadorAmarracao();
+            calculadorAmarracao = new Amarracao();
 
             InitializeComponent();
             InicializarFormulario();
@@ -567,6 +567,11 @@ namespace Rebar_Revit
         }
 
         private void visualizador_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupArmaduraLateral_Enter(object sender, EventArgs e)
         {
 
         }

@@ -211,6 +211,15 @@ namespace Rebar_Revit
             // 
             visualizador.BackColor = Color.White;
             visualizador.BorderStyle = BorderStyle.FixedSingle;
+            informacaoArmaduraViga1.Altura = 500D;
+            informacaoArmaduraViga1.AmarracaoAutomatica = true;
+            informacaoArmaduraViga1.Comprimento = 5000D;
+            informacaoArmaduraViga1.Designacao = "";
+            informacaoArmaduraViga1.Largura = 300D;
+            informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
+            informacaoArmaduraViga1.Recobrimento = 25D;
+            informacaoArmaduraViga1.TipoFamilia = "";
+            visualizador.InformacaoViga = informacaoArmaduraViga1;
             visualizador.Location = new Point(15, 230);
             visualizador.Margin = new Padding(3, 4, 3, 4);
             visualizador.ModoEdicao = false;
@@ -243,7 +252,7 @@ namespace Rebar_Revit
             // 
             lblAlturaValor.AutoSize = true;
             lblAlturaValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblAlturaValor.Location = new Point(408, 190);
+            lblAlturaValor.Location = new Point(408, 191);
             lblAlturaValor.Name = "lblAlturaValor";
             lblAlturaValor.Size = new Size(44, 18);
             lblAlturaValor.TabIndex = 4;
@@ -262,7 +271,7 @@ namespace Rebar_Revit
             // 
             lblLarguraValor.AutoSize = true;
             lblLarguraValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLarguraValor.Location = new Point(253, 190);
+            lblLarguraValor.Location = new Point(253, 191);
             lblLarguraValor.Name = "lblLarguraValor";
             lblLarguraValor.Size = new Size(44, 18);
             lblLarguraValor.TabIndex = 6;
@@ -303,7 +312,7 @@ namespace Rebar_Revit
             groupArmaduraLongitudinal.Controls.Add(groupArmaduraInferior);
             groupArmaduraLongitudinal.Controls.Add(groupArmaduraLateral);
             groupArmaduraLongitudinal.Dock = DockStyle.Top;
-            groupArmaduraLongitudinal.Location = new Point(10, 262);
+            groupArmaduraLongitudinal.Location = new Point(10, 238);
             groupArmaduraLongitudinal.Margin = new Padding(3, 4, 3, 4);
             groupArmaduraLongitudinal.Name = "groupArmaduraLongitudinal";
             groupArmaduraLongitudinal.Padding = new Padding(3, 4, 3, 4);
@@ -434,7 +443,8 @@ namespace Rebar_Revit
             groupArmaduraLateral.Size = new Size(350, 94);
             groupArmaduraLateral.TabIndex = 2;
             groupArmaduraLateral.TabStop = false;
-            groupArmaduraLateral.Text = "Armadura Lateral (Opcional)";
+            groupArmaduraLateral.Text = "Armadura Alma";
+            groupArmaduraLateral.Enter += groupArmaduraLateral_Enter;
             // 
             // checkArmaduraLateral
             // 
@@ -497,7 +507,7 @@ namespace Rebar_Revit
             groupEstribos.Controls.Add(numEspacamentoEstribo);
             groupEstribos.Controls.Add(checkEspacamentoVariavel);
             groupEstribos.Dock = DockStyle.Top;
-            groupEstribos.Location = new Point(10, 137);
+            groupEstribos.Location = new Point(10, 113);
             groupEstribos.Margin = new Padding(3, 4, 3, 4);
             groupEstribos.Name = "groupEstribos";
             groupEstribos.Padding = new Padding(3, 4, 3, 4);
@@ -544,7 +554,7 @@ namespace Rebar_Revit
             numEspacamentoEstribo.Name = "numEspacamentoEstribo";
             numEspacamentoEstribo.Size = new Size(80, 27);
             numEspacamentoEstribo.TabIndex = 3;
-            numEspacamentoEstribo.Value = new decimal(new int[] { 150, 0, 0, 0 });
+            numEspacamentoEstribo.Value = new decimal(new int[] { 125, 0, 0, 0 });
             // 
             // checkEspacamentoVariavel
             // 
@@ -568,7 +578,7 @@ namespace Rebar_Revit
             groupParametros.Margin = new Padding(3, 4, 3, 4);
             groupParametros.Name = "groupParametros";
             groupParametros.Padding = new Padding(3, 4, 3, 4);
-            groupParametros.Size = new Size(380, 125);
+            groupParametros.Size = new Size(380, 101);
             groupParametros.TabIndex = 2;
             groupParametros.TabStop = false;
             groupParametros.Text = "Parâmetros";

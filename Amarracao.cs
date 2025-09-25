@@ -9,14 +9,13 @@ namespace Rebar_Revit
     /// <summary>
     /// Calculadora especializada para amarrações de vigas
     /// </summary>
-    public class CalculadorAmarracao
+    public class Amarracao
     {
         /// <summary>
         /// Calcula comprimento de amarração baseado no diâmetro e regulamento
         /// </summary>
         public double CalcularComprimentoAmarracao(double diametro, double multiplicador = 50)
         {
-            // Para vigas, usar multiplicadores menores que pilares
             double multiplicadorFinal = Math.Max(30, Math.Min(80, multiplicador));
             return multiplicadorFinal * diametro; // resultado em mm
         }
@@ -279,7 +278,7 @@ namespace Rebar_Revit
             catch
             {
                 // Configuração padrão em caso de erro
-                estribos.Add(new ArmStirrup(8, 150));
+                estribos.Add(new ArmStirrup(6, 125));
                 return estribos;
             }
         }
