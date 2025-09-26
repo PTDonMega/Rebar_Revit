@@ -17,7 +17,7 @@ namespace Rebar_Revit
             public double Comprimento { get; set; } = 5000; // mm (comprimento real da instância)
             public double Altura { get; set; } = 500; // mm (By do tipo)
             public double Largura { get; set; } = 300; // mm (Bx do tipo)
-            public double Recobrimento { get; set; } = 25; // mm 
+            public double Recobrimento { get; set; } = 30; // mm 
             public List<ArmVar> VaroesLongitudinais { get; set; } = new List<ArmVar>();
             public List<ArmStirrup> Estribos { get; set; } = new List<ArmStirrup>();
             public double MultiplicadorAmarracao { get; set; } = 50;
@@ -89,6 +89,76 @@ namespace Rebar_Revit
                         }
                     }
 
+                    // Fallback adicional: se ainda não houver altura válida, tentar determinar a altura da secção
+                    // a partir do bounding box do tipo/instância projetado para o sistema de coordenadas local da viga.
+                    if (Altura <= 0 || double.IsNaN(Altura))
+                    {
+                        try
+                        {
+                            // Preferir bounding box do tipo (symbol) senão usar da instância
+                            Autodesk.Revit.DB.BoundingBoxXYZ bbox = null;
+                            if (elementType != null)
+                                bbox = elementType.get_BoundingBox(null);
+                            if (bbox == null)
+                                bbox = viga.get_BoundingBox(null);
+
+                            if (bbox != null)
+                            {
+                                // obter transform da instância para converter pontos world->local da viga
+                                Autodesk.Revit.DB.Transform tf = null;
+                                try { tf = viga.GetTransform(); } catch { tf = null; }
+
+                                // criar os 8 cantos do bounding box (em coordenadas world)
+                                var min = bbox.Min;
+                                var max = bbox.Max;
+                                var corners = new List<Autodesk.Revit.DB.XYZ>
+                                {
+                                    new Autodesk.Revit.DB.XYZ(min.X, min.Y, min.Z),
+                                    new Autodesk.Revit.DB.XYZ(min.X, min.Y, max.Z),
+                                    new Autodesk.Revit.DB.XYZ(min.X, max.Y, min.Z),
+                                    new Autodesk.Revit.DB.XYZ(min.X, max.Y, max.Z),
+                                    new Autodesk.Revit.DB.XYZ(max.X, min.Y, min.Z),
+                                    new Autodesk.Revit.DB.XYZ(max.X, min.Y, max.Z),
+                                    new Autodesk.Revit.DB.XYZ(max.X, max.Y, min.Z),
+                                    new Autodesk.Revit.DB.XYZ(max.X, max.Y, max.Z),
+                                };
+
+                                // transformar para coordenadas locais da viga (se possível)
+                                List<Autodesk.Revit.DB.XYZ> localCorners = new List<Autodesk.Revit.DB.XYZ>();
+                                if (tf != null)
+                                {
+                                    var inv = tf.Inverse;
+                                    foreach (var c in corners)
+                                        localCorners.Add(inv.OfPoint(c));
+                                }
+                                else
+                                {
+                                    // sem transform, assumir que bbox já está em coords locais
+                                    localCorners.AddRange(corners);
+                                }
+
+                                // calcular extents nas direções locais Y e Z
+                                double minY = localCorners.Min(p => p.Y);
+                                double maxY = localCorners.Max(p => p.Y);
+                                double minZ = localCorners.Min(p => p.Z);
+                                double maxZ = localCorners.Max(p => p.Z);
+
+                                double alturaLocal = Math.Abs(maxZ - minZ);
+                                if (alturaLocal <= 0)
+                                    alturaLocal = Math.Abs(maxY - minY);
+
+                                if (alturaLocal > 0)
+                                {
+                                    Altura = Uteis.FeetParaMilimetros(alturaLocal);
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // se falhar, manter valores padrão
+                        }
+                    }
+
                     // Obter designação
                     var paramDesignacao = viga.LookupParameter("Designacao");
                     if (paramDesignacao != null && !string.IsNullOrEmpty(paramDesignacao.AsString()))
@@ -151,7 +221,7 @@ namespace Rebar_Revit
 
         public class InformacaoDistanciasUltimas
         {
-            // spacing between bars (mm)
+            // Espaço entre varões (mm)
             public double Superior_mm { get; set; }
             public int CountSuperior { get; set; }
             public double Inferior_mm { get; set; }
@@ -234,30 +304,32 @@ namespace Rebar_Revit
             }
             
             DesenharLegenda(g);
-            // Removido: DesenharInformacoes(g);
         }
 
         private void CalcularEscalaEPosicao()
         {
-            // Reduce margins and use a larger scale so the viga occupies more of the control
-            float margemX = 40; // reduced from 80
-            float margemY = 40; // reduced from 80
+            // Margens da representação da Viga
+            float margemX = 40;
+            float margemY = 30;
             float areaDisponivelX = this.Width - 2 * margemX;
-            float areaDisponivelY = this.Height - 2 * margemY - 40; // less reserved space for infos
+            float areaDisponivelY = this.Height - 2 * margemY - 40; // Margem para legendas
 
             if (mostrarCorteTransversal)
             {
+                float reservedBottom = 110f; // Distancia para legenda
+                if (reservedBottom > this.Height / 3f) reservedBottom = this.Height / 6f; // avoid reserving too much
+
                 float escalaX = areaDisponivelX / (float)informacaoViga.Largura;
-                float escalaY = areaDisponivelY / (float)informacaoViga.Altura;
-                // Use a slightly larger fraction (was 0.8f) to occupy more space
+                float escalaY = (this.Height - 2 * margemY - reservedBottom) / (float)informacaoViga.Altura;
                 escalaDesenho = Math.Min(escalaX, escalaY) * 0.92f;
 
                 float larguraDesenho = (float)informacaoViga.Largura * escalaDesenho;
                 float alturaDesenho = (float)informacaoViga.Altura * escalaDesenho;
 
+                // Center beam horizontally, and vertically in the top area (above reserved bottom)
                 offsetDesenho = new PointF(
-                    (this.Width - larguraDesenho) / 2,
-                    margemY + (areaDisponivelY - alturaDesenho) / 2
+                    margemX + (areaDisponivelX - larguraDesenho) / 2f,
+                    margemY + ((this.Height - 2 * margemY - reservedBottom) - alturaDesenho) / 2f
                 );
 
                 areaViga = new Rectangle(
@@ -338,7 +410,6 @@ namespace Rebar_Revit
                 g.DrawString(titulo, font, brush, 
                     (this.Width - tamanhoTexto.Width) / 2, 10);
             }
-            // Removido: informações de dimensões/armadura
         }
 
         private void DesenharIndicadoresEntreVaroes(Graphics g)
@@ -375,8 +446,6 @@ namespace Rebar_Revit
 
                 DrawArrowHead(g, pen, centerX, top + 4, centerX, top);
                 DrawArrowHead(g, pen, centerX, bottom - 4, centerX, bottom);
-
-                // (Dimension labels removed as requested)
              }
          }
 
@@ -426,7 +495,6 @@ namespace Rebar_Revit
                 g.DrawString(titulo, font, brush, 
                     (this.Width - tamanhoTexto.Width) / 2, 10);
             }
-            // Removido: informações de dimensões/armadura
         }
 
         private void AtualizarPontosArmaduraCorteTransversal()
@@ -440,7 +508,7 @@ namespace Rebar_Revit
                 Color cor = COR_DIAMETRO.ContainsKey((int)varao.Diametro) ? COR_DIAMETRO[(int)varao.Diametro] : Color.Gray;
                 if (varao.TipoArmadura.ToLower() == "lateral")
                 {
-                    // Novo: desenhar quantidade por face em cada lateral
+                    // Desenhar quantidade por face em cada lateral
                     for (int i = 0; i < varao.Quantidade * 2; i++)
                     {
                         PointF posicao = CalcularPosicaoVarao(varao.TipoArmadura, i, varao.Quantidade, recobrimento);
@@ -564,24 +632,25 @@ namespace Rebar_Revit
             if (diametrosPresentes == null || diametrosPresentes.Count == 0) return;
 
             float totalLegendaLargura = diametrosPresentes.Count * 70 + 60;
-            float x = (this.Width - totalLegendaLargura) / 2;
-            float y = this.Height - 35;
+            // Legend stays at the very bottom, centered
+            float legendX = (this.Width - totalLegendaLargura) / 2;
+            float legendY = this.Height - 28; // small margin from bottom
             float espacamentoX = 70;
 
             using (var font = new Font("Arial", 8))
             using (var brush = new SolidBrush(Color.Black))
             {
-                g.DrawString("Legenda:", font, brush, x, y);
-                x += 60;
+                g.DrawString("Legenda:", font, brush, legendX, legendY);
+                float x = legendX + 60;
                 foreach (var diam in diametrosPresentes)
                 {
                     Color cor = COR_DIAMETRO.ContainsKey((int)diam) ? COR_DIAMETRO[(int)diam] : Color.Gray;
-                    DesenharItemLegendaDiametro(g, font, x, y, cor, $"Ø{diam}");
+                    DesenharItemLegendaDiametro(g, font, x, legendY, cor, $"Ø{diam}");
                     x += espacamentoX;
                 }
             }
 
-            // Novo: desenhar lista de distâncias
+            // Draw distances block centered between beam bottom and legend top
             DesenharListaDistancias(g);
         }
 
@@ -603,31 +672,111 @@ namespace Rebar_Revit
 
         private void DesenharListaDistancias(Graphics g)
         {
-            // Pequena lista no lado esquerdo antes do corte
-            int boxWidth = 160;
-            int boxHeight = 80;
-            int x = 8;
-            int y = 36;
+            // Caixa horizontal compacta de distâncias centrada abaixo da viga
+            int boxWidth = Math.Min(420, this.Width - 40);
+            // aumentar um pouco a altura para acomodar melhor as linhas e deixar tudo visualmente centrado
+            int boxHeight = 80; // título + uma linha de valores (aumentado)
+
+            // Posicionar a caixa abaixo da viga e acima da área da legenda
+            float boxX = areaViga.X + (areaViga.Width - boxWidth) / 2f;
+            if (boxX < 8) boxX = 8;
+            float boxY = areaViga.Y + areaViga.Height + 12; // pequeno espaço abaixo da viga
 
             using (var brushBg = new SolidBrush(Color.FromArgb(240, 240, 240)))
             using (var penBorder = new Pen(Color.Gray))
-            using (var font = new Font("Arial", 9, FontStyle.Regular))
+            using (var fontTitle = new Font("Arial", 9, FontStyle.Bold))
+            using (var fontLabel = new Font("Arial", 8, FontStyle.Regular))
+            using (var fontValue = new Font("Arial", 8, FontStyle.Regular))
             using (var brush = new SolidBrush(Color.Black))
             {
-                var rect = new Rectangle(x, y, boxWidth, boxHeight);
+                var rect = new Rectangle((int)boxX, (int)boxY, boxWidth, boxHeight);
                 g.FillRectangle(brushBg, rect);
                 g.DrawRectangle(penBorder, rect);
 
-                string linha1 = $"Superior (esp.): {distanciasUltimas.Superior_mm} mm ({distanciasUltimas.CountSuperior})";
-                string linha2 = $"Inferior (esp.):  {distanciasUltimas.Inferior_mm} mm ({distanciasUltimas.CountInferior})";
-                string linha3 = $"Lateral (esp.):   {distanciasUltimas.Lateral_mm} mm ({distanciasUltimas.CountLateral})";
+                // Título centrado no topo da caixa
+                string title = "Distâncias ao eixo:";
+                var sizeTitle = g.MeasureString(title, fontTitle);
+                g.DrawString(title, fontTitle, brush, boxX + (boxWidth - sizeTitle.Width) / 2f, boxY + 6);
 
-                g.DrawString("Distâncias ao eixo:", font, brush, x + 6, y + 6);
-                g.DrawString(linha1, font, brush, x + 6, y + 26);
-                g.DrawString(linha2, font, brush, x + 6, y + 42);
-                g.DrawString(linha3, font, brush, x + 6, y + 58);
+                // Preparar três colunas para Superior, Inferior, Lateral
+                int cols = 3;
+                float colWidth = boxWidth / (float)cols;
+
+                string valSup = $"{distanciasUltimas.Superior_mm} mm ({distanciasUltimas.CountSuperior})";
+                string valInf = $"{distanciasUltimas.Inferior_mm} mm ({distanciasUltimas.CountInferior})";
+                string valLat = $"{distanciasUltimas.Lateral_mm} mm ({distanciasUltimas.CountLateral})";
+
+                // Calcular posições verticais centradas para etiqueta e valor
+                float contentAreaTop = boxY + 6 + sizeTitle.Height + 6; // logo abaixo do título
+                float contentAreaHeight = boxY + boxHeight - contentAreaTop;
+                float contentCenterY = contentAreaTop + contentAreaHeight / 2f;
+
+                // Ajustes de posicionamento para ficar visualmente centrado dentro da caixa maior
+                float labelOffset = -10f; // deslocamento relativo para etiqueta (um pouco mais acima)
+                float valueOffset = 8f;  // deslocamento relativo para valor (um pouco mais abaixo)
+
+                // Superior
+                float col0X = boxX + 0 * colWidth;
+                var lblSup = g.MeasureString("Superior", fontLabel);
+                var mSup = g.MeasureString(valSup, fontValue);
+                g.DrawString("Superior", fontLabel, brush, col0X + colWidth / 2f - lblSup.Width / 2f, contentCenterY + labelOffset);
+                g.DrawString(valSup, fontValue, brush, col0X + colWidth / 2f - mSup.Width / 2f, contentCenterY + valueOffset);
+
+                // Inferior
+                float col1X = boxX + 1 * colWidth;
+                var lblInf = g.MeasureString("Inferior", fontLabel);
+                var mInf = g.MeasureString(valInf, fontValue);
+                g.DrawString("Inferior", fontLabel, brush, col1X + colWidth / 2f - lblInf.Width / 2f, contentCenterY + labelOffset);
+                g.DrawString(valInf, fontValue, brush, col1X + colWidth / 2f - mInf.Width / 2f, contentCenterY + valueOffset);
+
+                // Lateral
+                float col2X = boxX + 2 * colWidth;
+                var lblLat = g.MeasureString("Lateral", fontLabel);
+                var mLat = g.MeasureString(valLat, fontValue);
+                g.DrawString("Lateral", fontLabel, brush, col2X + colWidth / 2f - lblLat.Width / 2f, contentCenterY + labelOffset);
+                g.DrawString(valLat, fontValue, brush, col2X + colWidth / 2f - mLat.Width / 2f, contentCenterY + valueOffset);
             }
         }
+
+         private void DesenharInformacoes(Graphics g)
+         {
+            // Exibir informações detalhadas da armadura (diâmetro, quantidade, materiais, etc.)
+            float margem = 10;
+            float posX = areaViga.X + areaViga.Width + margem;
+            float posY = areaViga.Y;
+            float largura = 200 - margem;
+            float alturaLinha = 15;
+
+            using (var brush = new SolidBrush(Color.Black))
+            using (var font = new Font("Arial", 8))
+            {
+                // Título da seção
+                g.DrawString("Informações da Armadura", font, brush, posX, posY);
+                posY += alturaLinha + 4;
+
+                // Mostrar varões longitudinais
+                g.DrawString("Varões Longitudinais:", font, brush, posX, posY);
+                posY += alturaLinha;
+                foreach (var varao in informacaoViga.VaroesLongitudinais)
+                {
+                    string infoVarao = $"Ø{varao.Diametro} mm - {varao.Quantidade} unid.";
+                    g.DrawString(infoVarao, font, brush, posX, posY);
+                    posY += alturaLinha;
+                }
+
+                posY += 4;
+
+                // Mostrar estribos
+                g.DrawString("Estribos:", font, brush, posX, posY);
+                posY += alturaLinha;
+                foreach (var estribo in informacaoViga.Estribos)
+                {
+                    string infoEstribo = $"Ø{estribo.Diametro} mm - Espaçamento: {estribo.Espacamento} mm";
+                    g.DrawString(infoEstribo, font, brush, posX, posY);
+                    posY += alturaLinha;
+                }
+            }
+         }
 
         public void AtualizarVisualizacao()
         {

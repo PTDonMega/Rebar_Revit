@@ -22,6 +22,8 @@ namespace Rebar_Revit
         // Dados carregados
         private List<Element> vigasDisponiveis;
         private Dictionary<string, List<Element>> vigasAgrupadas;
+        // Ordered list of group keys matching the combo items order
+        private List<string> gruposOrdenados;
         private Element vigaSelecionada;
 
         // last assumed element id to avoid repeated work
@@ -61,6 +63,10 @@ namespace Rebar_Revit
             // Create the ExternalEvent and handler so we can raise it from the modeless form
             createHandler = new CreateArmaduraHandler();
             createEvent = ExternalEvent.Create(createHandler);
+
+            // Subscribe to progress events from the external handler to update UI
+            createHandler.ProgressChanged += CreateHandler_ProgressChanged;
+            createHandler.ExecutionCompleted += CreateHandler_ExecutionCompleted;
 
             // The controls for using the currently selected Revit element are
             // created in the designer (checkUsarVigaSelecionada, btnAssumirVigaSelecionada, selectionTimer)
@@ -125,7 +131,7 @@ namespace Rebar_Revit
 
             checkEspacamentoVariavel.CheckedChanged += ParametroArmadura_Changed;
 
-            // The designer wires the handlers for checkUsarVigaSelecionada, btnAssumirVigaSelecionada and selectionTimer.
+            // The designer wires the handlers for checkUsarVigaSelecionada and selectionTimer.
         }
 
         #region Carregamento e Filtros de Vigas
@@ -173,9 +179,13 @@ namespace Rebar_Revit
                     }
                 }
 
-                foreach (var grupo in vigasAgrupadas.OrderBy(g => g.Key))
+                // Build ordered list of keys to ensure combo order matches group mapping
+                gruposOrdenados = vigasAgrupadas.Keys.OrderBy(k => k).ToList();
+
+                foreach (var chave in gruposOrdenados)
                 {
-                    string itemTexto = $"{grupo.Key} ({grupo.Value.Count} vigas)";
+                    var grupo = vigasAgrupadas[chave];
+                    string itemTexto = $"{chave} ({grupo.Count} vigas)";
                     comboVigasDisponiveis.Items.Add(itemTexto);
                 }
 
@@ -214,9 +224,9 @@ namespace Rebar_Revit
 
         private void ComboVigasDisponiveis_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboVigasDisponiveis.SelectedIndex >= 0)
+            if (comboVigasDisponiveis.SelectedIndex >= 0 && gruposOrdenados != null)
             {
-                string grupoSelecionado = vigasAgrupadas.Keys.ElementAt(comboVigasDisponiveis.SelectedIndex);
+                string grupoSelecionado = gruposOrdenados[comboVigasDisponiveis.SelectedIndex];
                 List<Element> vigasDoGrupo = vigasAgrupadas[grupoSelecionado];
 
                 // Selecionar a primeira viga do grupo
@@ -288,6 +298,14 @@ namespace Rebar_Revit
                     createHandler.Data.TipoElemento = TipoElementoEstruturalEnum.Vigas;
 
                     // Raise ExternalEvent to perform transaction inside Revit API context
+                    // Prepare UI for background processing
+                    progressBar.Visible = true;
+                    progressBar.Value = 0;
+                    buttonExecutar.Enabled = false;
+                    buttonCancelar.Enabled = false;
+                    buttonAtualizarLista.Enabled = false;
+                    comboVigasDisponiveis.Enabled = false;
+
                     createEvent.Raise();
                 }
             }
@@ -319,11 +337,11 @@ namespace Rebar_Revit
                 // Clear last assumed id so next check can re-detect
                 lastAssumedElementId = null;
             }
-        }
 
-        private void BtnAssumirVigaSelecionada_Click(object sender, EventArgs e)
-        {
-            TryAssumirVigaSelecionada(true);
+            // Disable the dropdown when using Revit selection to avoid conflicting input
+            comboVigasDisponiveis.Enabled = !checkUsarVigaSelecionada.Checked;
+            // optional: also disable update button while using selection
+            buttonAtualizarLista.Enabled = !checkUsarVigaSelecionada.Checked;
         }
 
         private void SelectionTimer_Tick(object sender, EventArgs e)
@@ -402,13 +420,13 @@ namespace Rebar_Revit
         {
             try
             {
-                if (vigasAgrupadas == null || vigasAgrupadas.Count == 0) return;
+                if (vigasAgrupadas == null || vigasAgrupadas.Count == 0 || gruposOrdenados == null) return;
 
                 foreach (var kvp in vigasAgrupadas)
                 {
                     if (kvp.Value.Any(v => v.Id == el.Id))
                     {
-                        int index = vigasAgrupadas.Keys.ToList().IndexOf(kvp.Key);
+                        int index = gruposOrdenados.IndexOf(kvp.Key);
                         if (index >= 0 && index < comboVigasDisponiveis.Items.Count)
                         {
                             comboVigasDisponiveis.SelectedIndex = index;
@@ -577,7 +595,9 @@ namespace Rebar_Revit
         {
             if (vigaSelecionada == null) return new List<Element>();
 
-            string grupoSelecionado = vigasAgrupadas.Keys.ElementAt(comboVigasDisponiveis.SelectedIndex);
+            if (gruposOrdenados == null || comboVigasDisponiveis.SelectedIndex < 0) return new List<Element>();
+
+            string grupoSelecionado = gruposOrdenados[comboVigasDisponiveis.SelectedIndex];
             return vigasAgrupadas[grupoSelecionado];
         }
 
@@ -744,6 +764,54 @@ namespace Rebar_Revit
         private void ButtonMinimize_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void CreateHandler_ProgressChanged(object sender, CreateArmaduraHandler.ProgressEventArgs e)
+        {
+            if (this.IsDisposed) return;
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => CreateHandler_ProgressChanged(sender, e)));
+                return;
+            }
+
+            try
+            {
+                progressBar.Visible = true;
+                if (e.Total > 0)
+                {
+                    int value = (int)Math.Min(100, (e.Processed * 100) / e.Total);
+                    progressBar.Value = value;
+                }
+                else
+                {
+                    progressBar.Value = 0;
+                }
+            }
+            catch { }
+        }
+
+        private void CreateHandler_ExecutionCompleted(object sender, CreateArmaduraHandler.ExecutionCompletedEventArgs e)
+        {
+            if (this.IsDisposed) return;
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => CreateHandler_ExecutionCompleted(sender, e)));
+                return;
+            }
+
+            try
+            {
+                progressBar.Value = 100;
+                progressBar.Visible = false;
+
+                // Re-enable UI controls
+                buttonExecutar.Enabled = true;
+                buttonCancelar.Enabled = true;
+                buttonAtualizarLista.Enabled = !checkUsarVigaSelecionada.Checked;
+                comboVigasDisponiveis.Enabled = !checkUsarVigaSelecionada.Checked;
+            }
+            catch { }
         }
     }
 }

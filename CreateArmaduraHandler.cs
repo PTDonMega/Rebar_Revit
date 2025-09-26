@@ -34,6 +34,33 @@ namespace Rebar_Revit
     {
         public ExternalExecutionData Data { get; set; } = new ExternalExecutionData();
 
+        // Events to report progress and completion back to the UI form
+        public event EventHandler<ProgressEventArgs> ProgressChanged;
+        public event EventHandler<ExecutionCompletedEventArgs> ExecutionCompleted;
+
+        public class ProgressEventArgs : EventArgs
+        {
+            public int Processed { get; }
+            public int Total { get; }
+            public ProgressEventArgs(int processed, int total)
+            {
+                Processed = processed;
+                Total = total;
+            }
+        }
+
+        public class ExecutionCompletedEventArgs : EventArgs
+        {
+            public int Total { get; }
+            public int Success { get; }
+            public int Errors { get; }
+            public string Message { get; }
+            public ExecutionCompletedEventArgs(int total, int success, int errors, string message)
+            {
+                Total = total; Success = success; Errors = errors; Message = message;
+            }
+        }
+
         public void Execute(UIApplication app)
         {
             try
@@ -89,13 +116,13 @@ namespace Rebar_Revit
                             Element el = doc.GetElement(id);
                             if (el == null)
                             {
-                                errors.Add($"Elemento ID {id} não encontrado");
+                                errors.Add($"Elemento ID {id} n?o encontrado");
                                 continue;
                             }
 
                             bool res = config.ColocarArmadura(el);
                             if (res) success++;
-                            else errors.Add($"Falha na colocação em Element {id}");
+                            else errors.Add($"Falha na coloca??o em Element {id}");
                         }
                         catch (Exception ex)
                         {
@@ -104,18 +131,23 @@ namespace Rebar_Revit
                         finally
                         {
                             processed++;
+                            // report progress after each element
+                            try { ProgressChanged?.Invoke(this, new ProgressEventArgs(processed, total)); } catch { }
                         }
                     }
 
                     trans.Commit();
                 }
 
-                string mensagem = $"Processo concluído!\n\nVigas processadas: {total}\nArmaduras criadas: {success}\nErros: {errors.Count}";
+                string mensagem = $"Processo conclu?do!\n\nVigas processadas: {total}\nArmaduras criadas: {success}\nErros: {errors.Count}";
                 if (errors.Count > 0)
                 {
                     mensagem += "\n\nPrimeiros erros:";
-                    for (int i = 0; i < Math.Min(errors.Count, 5); i++) mensagem += $"\n• {errors[i]}";
+                    for (int i = 0; i < Math.Min(errors.Count, 5); i++) mensagem += $"\n? {errors[i]}";
                 }
+
+                // notify UI that processing is complete
+                try { ExecutionCompleted?.Invoke(this, new ExecutionCompletedEventArgs(total, success, errors.Count, mensagem)); } catch { }
 
                 Autodesk.Revit.UI.TaskDialog.Show("Resultado", mensagem);
             }

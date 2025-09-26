@@ -110,7 +110,54 @@ namespace Rebar_Revit
                 RebarHookType gancho135 = ObterOuCriarRebarHookType135(tipoEstribo.BarNominalDiameter);
                 if (gancho135 == null) return false;
 
-                // Tentar criar o estribo com orientação de gancho 'Right' e, se falhar, tentar 'Left'.
+                // Determinar orientações dos ganchos com base na geometria real das curvas.
+                RebarHookOrientation startOrient = RebarHookOrientation.Right;
+                RebarHookOrientation endOrient = RebarHookOrientation.Right;
+
+                try
+                {
+                    // Calcular centroid do retângulo
+                    XYZ centroid = new XYZ((p0.X + p1.X + p2.X + p3.X) / 4.0,
+                                           (p0.Y + p1.Y + p2.Y + p3.Y) / 4.0,
+                                           (p0.Z + p1.Z + p2.Z + p3.Z) / 4.0);
+
+                    // Obter pontos exactos onde os ganchos serão colocados: início da primeira curva e fim da última curva
+                    XYZ hookStartPoint = curvas.First().GetEndPoint(0);
+                    XYZ hookStartTangent = (curvas.First().GetEndPoint(1) - curvas.First().GetEndPoint(0)).Normalize();
+
+                    XYZ hookEndPoint = curvas.Last().GetEndPoint(1);
+                    XYZ hookEndTangent = (curvas.Last().GetEndPoint(1) - curvas.Last().GetEndPoint(0)).Normalize();
+
+                    // Determinar normal seguro para o estribo: usar eixoViga (normal ao plano do estribo)
+                    XYZ normal = eixoViga;
+
+                    // Função local para determinar Left/Right relativo ao tangent e normal
+                    Func<XYZ, XYZ, XYZ, RebarHookOrientation> OrientacaoRelativa = (hookPoint, tangent, nrm) =>
+                    {
+                        XYZ toCentroid = (centroid - hookPoint);
+                        if (toCentroid.GetLength() == 0) return RebarHookOrientation.Right;
+                        toCentroid = toCentroid.Normalize();
+
+                        XYZ side = nrm.CrossProduct(tangent);
+                        if (side.GetLength() == 0) return RebarHookOrientation.Right;
+                        side = side.Normalize();
+
+                        double dot = toCentroid.DotProduct(side);
+                        // Nota: dependendo da convenção do Revit, o sinal pode estar invertido.
+                        // Se os ganchos continuarem virados para fora, inverter a condição abaixo (dot > 0 => Left).
+                        return dot > 0 ? RebarHookOrientation.Left : RebarHookOrientation.Right;
+                    };
+
+                    startOrient = OrientacaoRelativa(hookStartPoint, hookStartTangent, normal);
+                    endOrient = OrientacaoRelativa(hookEndPoint, hookEndTangent, normal);
+                }
+                catch
+                {
+                    startOrient = RebarHookOrientation.Right;
+                    endOrient = RebarHookOrientation.Right;
+                }
+
+                // Tentar criar o estribo com as orientações calculadas; se falhar tentar inverter as orientações (fallback).
                 try
                 {
                     var estribo = Rebar.CreateFromCurves(
@@ -122,8 +169,8 @@ namespace Rebar_Revit
                         elemento,
                         eixoViga,
                         curvas,
-                        RebarHookOrientation.Right,
-                        RebarHookOrientation.Right,
+                        startOrient,
+                        endOrient,
                         true,
                         true);
 
@@ -132,7 +179,7 @@ namespace Rebar_Revit
                 }
                 catch
                 {
-                    // Se a criação com Right falhar, tentar Left.
+                    // Fallback: inverter orientações e tentar novamente
                     try
                     {
                         var estribo = Rebar.CreateFromCurves(
@@ -144,8 +191,8 @@ namespace Rebar_Revit
                             elemento,
                             eixoViga,
                             curvas,
-                            RebarHookOrientation.Left,
-                            RebarHookOrientation.Left,
+                            startOrient == RebarHookOrientation.Left ? RebarHookOrientation.Right : RebarHookOrientation.Left,
+                            endOrient == RebarHookOrientation.Left ? RebarHookOrientation.Right : RebarHookOrientation.Left,
                             true,
                             true);
 

@@ -40,7 +40,6 @@ namespace Rebar_Revit
             radioFiltrarPorDesignacao = new RadioButton();
             buttonAtualizarLista = new Button();
             checkUsarVigaSelecionada = new CheckBox();
-            btnAssumirVigaSelecionada = new Button();
             groupVisualizacao = new GroupBox();
             visualizador = new VisualizadorArmaduraViga();
             labelDimensoes = new Label();
@@ -121,16 +120,15 @@ namespace Rebar_Revit
             groupSelecaoViga.Controls.Add(radioFiltrarPorDesignacao);
             groupSelecaoViga.Controls.Add(buttonAtualizarLista);
             groupSelecaoViga.Controls.Add(checkUsarVigaSelecionada);
-            groupSelecaoViga.Controls.Add(btnAssumirVigaSelecionada);
             groupSelecaoViga.Dock = DockStyle.Top;
             groupSelecaoViga.Location = new Point(10, 12);
             groupSelecaoViga.Margin = new Padding(3, 4, 3, 4);
             groupSelecaoViga.Name = "groupSelecaoViga";
             groupSelecaoViga.Padding = new Padding(3, 4, 3, 4);
-            groupSelecaoViga.Size = new Size(480, 180);
+            groupSelecaoViga.Size = new Size(480, 153);
             groupSelecaoViga.TabIndex = 0;
             groupSelecaoViga.TabStop = false;
-            groupSelecaoViga.Text = "Seleção de Viga";
+            groupSelecaoViga.Text = "Selecione a Viga a Detalhar";
             // 
             // labelSelecionarViga
             // 
@@ -154,7 +152,7 @@ namespace Rebar_Revit
             // labelFiltrarPor
             // 
             labelFiltrarPor.AutoSize = true;
-            labelFiltrarPor.Location = new Point(15, 133);
+            labelFiltrarPor.Location = new Point(15, 101);
             labelFiltrarPor.Name = "labelFiltrarPor";
             labelFiltrarPor.Size = new Size(77, 20);
             labelFiltrarPor.TabIndex = 2;
@@ -164,7 +162,7 @@ namespace Rebar_Revit
             // 
             radioFiltrarPorDescricao.AutoSize = true;
             radioFiltrarPorDescricao.Checked = true;
-            radioFiltrarPorDescricao.Location = new Point(100, 131);
+            radioFiltrarPorDescricao.Location = new Point(100, 101);
             radioFiltrarPorDescricao.Margin = new Padding(3, 4, 3, 4);
             radioFiltrarPorDescricao.Name = "radioFiltrarPorDescricao";
             radioFiltrarPorDescricao.Size = new Size(61, 24);
@@ -176,7 +174,7 @@ namespace Rebar_Revit
             // radioFiltrarPorDesignacao
             // 
             radioFiltrarPorDesignacao.AutoSize = true;
-            radioFiltrarPorDesignacao.Location = new Point(170, 131);
+            radioFiltrarPorDesignacao.Location = new Point(185, 101);
             radioFiltrarPorDesignacao.Margin = new Padding(3, 4, 3, 4);
             radioFiltrarPorDesignacao.Name = "radioFiltrarPorDesignacao";
             radioFiltrarPorDesignacao.Size = new Size(108, 24);
@@ -197,23 +195,13 @@ namespace Rebar_Revit
             // checkUsarVigaSelecionada
             // 
             checkUsarVigaSelecionada.AutoSize = true;
-            checkUsarVigaSelecionada.Location = new Point(15, 95);
+            checkUsarVigaSelecionada.Location = new Point(190, 27);
             checkUsarVigaSelecionada.Name = "checkUsarVigaSelecionada";
             checkUsarVigaSelecionada.Size = new Size(175, 24);
             checkUsarVigaSelecionada.TabIndex = 6;
             checkUsarVigaSelecionada.Text = "Usar viga selecionada";
             checkUsarVigaSelecionada.UseVisualStyleBackColor = true;
             checkUsarVigaSelecionada.CheckedChanged += CheckUsarVigaSelecionada_CheckedChanged;
-            // 
-            // btnAssumirVigaSelecionada
-            // 
-            btnAssumirVigaSelecionada.Location = new Point(210, 92);
-            btnAssumirVigaSelecionada.Name = "btnAssumirVigaSelecionada";
-            btnAssumirVigaSelecionada.Size = new Size(150, 30);
-            btnAssumirVigaSelecionada.TabIndex = 7;
-            btnAssumirVigaSelecionada.Text = "Assumir viga";
-            btnAssumirVigaSelecionada.UseVisualStyleBackColor = true;
-            btnAssumirVigaSelecionada.Click += BtnAssumirVigaSelecionada_Click;
             // 
             // groupVisualizacao
             // 
@@ -252,7 +240,7 @@ namespace Rebar_Revit
             visualizador.ModoEdicao = false;
             visualizador.MostrarCorteTransversal = true;
             visualizador.Name = "visualizador";
-            visualizador.Size = new Size(450, 483);
+            visualizador.Size = new Size(450, 461);
             visualizador.TabIndex = 8;
             visualizador.Load += visualizador_Load;
             // 
@@ -260,7 +248,7 @@ namespace Rebar_Revit
             // 
             labelDimensoes.AutoSize = true;
             labelDimensoes.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            labelDimensoes.Location = new Point(18, 193);
+            labelDimensoes.Location = new Point(18, 167);
             labelDimensoes.Name = "labelDimensoes";
             labelDimensoes.Size = new Size(143, 18);
             labelDimensoes.TabIndex = 0;
@@ -269,7 +257,7 @@ namespace Rebar_Revit
             // labelAltura
             // 
             labelAltura.AutoSize = true;
-            labelAltura.Location = new Point(350, 192);
+            labelAltura.Location = new Point(350, 168);
             labelAltura.Name = "labelAltura";
             labelAltura.Size = new Size(52, 20);
             labelAltura.TabIndex = 3;
@@ -279,7 +267,7 @@ namespace Rebar_Revit
             // 
             lblAlturaValor.AutoSize = true;
             lblAlturaValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblAlturaValor.Location = new Point(408, 193);
+            lblAlturaValor.Location = new Point(408, 170);
             lblAlturaValor.Name = "lblAlturaValor";
             lblAlturaValor.Size = new Size(44, 18);
             lblAlturaValor.TabIndex = 4;
@@ -288,7 +276,7 @@ namespace Rebar_Revit
             // labelLargura
             // 
             labelLargura.AutoSize = true;
-            labelLargura.Location = new Point(185, 192);
+            labelLargura.Location = new Point(185, 167);
             labelLargura.Name = "labelLargura";
             labelLargura.Size = new Size(62, 20);
             labelLargura.TabIndex = 5;
@@ -298,7 +286,7 @@ namespace Rebar_Revit
             // 
             lblLarguraValor.AutoSize = true;
             lblLarguraValor.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblLarguraValor.Location = new Point(253, 193);
+            lblLarguraValor.Location = new Point(253, 169);
             lblLarguraValor.Name = "lblLarguraValor";
             lblLarguraValor.Size = new Size(44, 18);
             lblLarguraValor.TabIndex = 6;
@@ -310,7 +298,7 @@ namespace Rebar_Revit
             labelInfoViga.BorderStyle = BorderStyle.FixedSingle;
             labelInfoViga.Location = new Point(15, 269);
             labelInfoViga.Name = "labelInfoViga";
-            labelInfoViga.Size = new Size(450, 437);
+            labelInfoViga.Size = new Size(450, 422);
             labelInfoViga.TabIndex = 7;
             labelInfoViga.Text = "Pré-visualização 2D da secção da viga com armaduras";
             labelInfoViga.TextAlign = ContentAlignment.MiddleCenter;
@@ -734,7 +722,6 @@ namespace Rebar_Revit
 
         // NEW: Controls to allow using current Revit selection
         private CheckBox checkUsarVigaSelecionada;
-        private Button btnAssumirVigaSelecionada;
         private System.Windows.Forms.Timer selectionTimer;
 
         // PAINEL DIREITO - CONFIGURAÇÃO DE ARMADURA
