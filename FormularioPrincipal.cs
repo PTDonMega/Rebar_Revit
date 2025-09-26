@@ -24,6 +24,13 @@ namespace Rebar_Revit
         private Dictionary<string, List<Element>> vigasAgrupadas;
         private Element vigaSelecionada;
 
+        // last assumed element id to avoid repeated work
+        private ElementId lastAssumedElementId = null;
+
+        // ExternalEvent handler and event to run transactions in Revit API context
+        private CreateArmaduraHandler createHandler;
+        private ExternalEvent createEvent;
+
         public FormularioPrincipal(Document documento, UIDocument uiDocumento)
         {
             doc = documento;
@@ -50,6 +57,14 @@ namespace Rebar_Revit
             this.TopMost = false;
             this.ShowInTaskbar = true;
             this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Create the ExternalEvent and handler so we can raise it from the modeless form
+            createHandler = new CreateArmaduraHandler();
+            createEvent = ExternalEvent.Create(createHandler);
+
+            // The controls for using the currently selected Revit element are
+            // created in the designer (checkUsarVigaSelecionada, btnAssumirVigaSelecionada, selectionTimer)
+            // so no dynamic creation is needed here.
         }
 
         private void ConfigurarCombosDiametros()
@@ -86,6 +101,12 @@ namespace Rebar_Revit
             // Botões de ação
             buttonExecutar.Click += ButtonExecutar_Click;
             buttonCancelar.Click += ButtonCancelar_Click;
+            // Minimize button (designer added)
+            if (this.Controls.ContainsKey("buttonMinimize"))
+            {
+                var btn = this.Controls.Find("buttonMinimize", true).FirstOrDefault() as Button;
+                if (btn != null) btn.Click += ButtonMinimize_Click;
+            }
 
             // Atualização automática da visualização
             foreach (var control in new Control[] { numQuantSuperior, numQuantInferior, numQuantLateral,
@@ -103,6 +124,8 @@ namespace Rebar_Revit
             }
 
             checkEspacamentoVariavel.CheckedChanged += ParametroArmadura_Changed;
+
+            // The designer wires the handlers for checkUsarVigaSelecionada, btnAssumirVigaSelecionada and selectionTimer.
         }
 
         #region Carregamento e Filtros de Vigas
@@ -242,7 +265,30 @@ namespace Rebar_Revit
 
                 if (confirmacao == DialogResult.Yes)
                 {
-                    ExecutarCriacaoArmaduras(vigasParaProcessar);
+                    // Preencher dados na handler e disparar evento (passar ElementId e configurações)
+                    var cfg = ObterConfiguracaoArmadura();
+                    createHandler.Data.ElementIds = vigasParaProcessar.Select(v => v.Id).ToList();
+                    createHandler.Data.Varoes = new List<ArmVar>();
+                    createHandler.Data.Estribos = new List<ArmStirrup>();
+
+                    // populate varoes from cfg
+                    createHandler.Data.Varoes.Add(new ArmVar(cfg.QuantSuperior, cfg.DiamSuperior) { TipoArmadura = "Superior" });
+                    createHandler.Data.Varoes.Add(new ArmVar(cfg.QuantInferior, cfg.DiamInferior) { TipoArmadura = "Inferior" });
+                    if (cfg.ArmaduraLateral)
+                    {
+                        createHandler.Data.Varoes.Add(new ArmVar(cfg.QuantLateral, cfg.DiamLateral) { TipoArmadura = "Lateral" });
+                    }
+
+                    // populate estribos
+                    createHandler.Data.Estribos.Add(new ArmStirrup(cfg.DiamEstribo, cfg.EspacamentoEstribo) { Alternado = cfg.EspacamentoVariavel });
+
+                    createHandler.Data.MultAmarracao = cfg.MultAmarracao;
+                    createHandler.Data.AmarracaoAuto = true;
+                    createHandler.Data.Defs = ObterDefinicoesProjeto();
+                    createHandler.Data.TipoElemento = TipoElementoEstruturalEnum.Vigas;
+
+                    // Raise ExternalEvent to perform transaction inside Revit API context
+                    createEvent.Raise();
                 }
             }
             catch (Exception ex)
@@ -256,6 +302,125 @@ namespace Rebar_Revit
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void CheckUsarVigaSelecionada_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkUsarVigaSelecionada.Checked)
+            {
+                // Start polling selection
+                selectionTimer.Start();
+                // Try immediate assume
+                TryAssumirVigaSelecionada(false);
+            }
+            else
+            {
+                selectionTimer.Stop();
+                // Clear last assumed id so next check can re-detect
+                lastAssumedElementId = null;
+            }
+        }
+
+        private void BtnAssumirVigaSelecionada_Click(object sender, EventArgs e)
+        {
+            TryAssumirVigaSelecionada(true);
+        }
+
+        private void SelectionTimer_Tick(object sender, EventArgs e)
+        {
+            // Poll selection silently
+            TryAssumirVigaSelecionada(false);
+        }
+
+        /// <summary>
+        /// Attempts to take the current Revit selection as the beam to work with.
+        /// If showMessages is true, user-facing messages will be shown on failures.
+        /// </summary>
+        private void TryAssumirVigaSelecionada(bool showMessages)
+        {
+            try
+            {
+                if (uidoc == null)
+                {
+                    if (showMessages) MessageBox.Show("UIDocument não disponível", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var sel = uidoc.Selection.GetElementIds();
+                if (sel == null || sel.Count == 0)
+                {
+                    if (showMessages) MessageBox.Show("Nenhum elemento selecionado no Revit.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var firstId = sel.First();
+                if (lastAssumedElementId != null && firstId == lastAssumedElementId)
+                {
+                    // same as last assumed - nothing to do
+                    return;
+                }
+
+                Element el = doc.GetElement(firstId);
+                if (el == null)
+                {
+                    if (showMessages) MessageBox.Show("Elemento selecionado não encontrado no documento.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Verify element is a beam (Structural Framing) or FamilyInstance
+                bool isBeam = false;
+                if (el is FamilyInstance) isBeam = true;
+                if (el.Category != null && el.Category.Id.IntegerValue == (int)BuiltInCategory.OST_StructuralFraming) isBeam = true;
+
+                if (!isBeam)
+                {
+                    if (showMessages) MessageBox.Show("O elemento selecionado não parece ser uma viga estrutural.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Assign and update UI
+                vigaSelecionada = el;
+                lastAssumedElementId = firstId;
+
+                // If this viga exists in our grouped list, select corresponding group in combo
+                TrySelecionarGrupoDaViga(el);
+
+                AtualizarVisualizacaoViga();
+
+                if (showMessages) MessageBox.Show("Viga assumida com sucesso.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                if (showMessages) MessageBox.Show($"Erro ao assumir viga selecionada: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// If the assumed element exists in vigasAgrupadas, selects the corresponding group in the combo box.
+        /// </summary>
+        private void TrySelecionarGrupoDaViga(Element el)
+        {
+            try
+            {
+                if (vigasAgrupadas == null || vigasAgrupadas.Count == 0) return;
+
+                foreach (var kvp in vigasAgrupadas)
+                {
+                    if (kvp.Value.Any(v => v.Id == el.Id))
+                    {
+                        int index = vigasAgrupadas.Keys.ToList().IndexOf(kvp.Key);
+                        if (index >= 0 && index < comboVigasDisponiveis.Items.Count)
+                        {
+                            comboVigasDisponiveis.SelectedIndex = index;
+                        }
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore errors
+            }
         }
 
         #endregion
@@ -574,6 +739,11 @@ namespace Rebar_Revit
         private void groupArmaduraLateral_Enter(object sender, EventArgs e)
         {
 
+        }
+
+        private void ButtonMinimize_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
         }
     }
 }

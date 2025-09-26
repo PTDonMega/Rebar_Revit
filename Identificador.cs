@@ -30,8 +30,11 @@ namespace Rebar_Revit
             try
             {
                 FormularioPrincipal formPrincipal = new FormularioPrincipal(doc, uidoc);
-                formPrincipal.ShowDialog();
-                
+
+                // Show modeless using Revit main window as owner so user can still interact with Revit
+                var owner = new Win32WindowWrapper(commandData.Application.MainWindowHandle);
+                formPrincipal.Show(owner);
+
                 return Result.Succeeded;
             }
             catch (Exception ex)

@@ -6,6 +6,11 @@ using System.Linq;
 
 namespace Rebar_Revit
 {
+    /// <summary>
+    /// Helper responsável pela criação e configuração de estribos em vigas.
+    /// Contém métodos para gerar estribos em posições ao longo da viga e criar um estribo individual.
+    /// Comentários e descrições em pt-pt.
+    /// </summary>
     public class EstriboHelper
     {
         private Document doc;
@@ -16,7 +21,14 @@ namespace Rebar_Revit
             config = configExec;
         }
 
-        // Classe auxiliar para criação de estribos em vigas
+        /// <summary>
+        /// Cria estribos ao longo da viga conforme a lista fornecida.
+        /// Retorna true se o processo terminar sem lançar uma excepção; os estribos individuais podem falhar silenciosamente.
+        /// </summary>
+        /// <param name="elemento">Instância da família da viga onde os estribos serão criados.</param>
+        /// <param name="props">Propriedades geométricas e posicionais da viga.</param>
+        /// <param name="recobrimento">Recobrimento interior a considerar (unidades em feet).</param>
+        /// <param name="estribos">Lista de definições de estribo (diâmetro, espaçamento, ...).</param>
         public bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double recobrimento, List<ArmStirrup> estribos)
         {
             try
@@ -45,8 +57,11 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Cria um estribo individual numa viga, testando diferentes orientações e vetores normais
+        /// Cria um estribo individual numa posição X ao longo da viga.
+        /// A geometria do estribo é construída considerando o recobrimento interno e usando o mesmo sistema de coordenadas
+        /// da armadura longitudinal, de forma a manter coerência com as barras longitudinais.
         /// </summary>
+        /// <returns>True se o estribo for criado com sucesso, false em caso contrário.</returns>
         public bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX,
                                               PropriedadesViga props, RebarBarType tipoEstribo,
                                               double recobrimento, Transform transformViga)
@@ -58,110 +73,92 @@ namespace Rebar_Revit
                 if (larguraUtil <= 0 || alturaUtil <= 0)
                     return false;
 
-                // Calcular vetor direção da viga (face inferior)
+                // Vetores base da viga: eixo longitudinal, direção da largura e direção da altura.
+                // Usar o mesmo sistema de coordenadas que a armadura longitudinal garante alinhamento correto.
                 XYZ eixoViga = (props.PontoFinal - props.PontoInicial).Normalize();
-                // Ponto base na face inferior, com recobrimento aplicado
-                XYZ baseInferior = props.PontoInicial + eixoViga * posicaoX + new XYZ(0, 0, recobrimento);
-                // Vetor perpendicular à viga (largura)
                 XYZ larguraDir = transformViga.BasisY.Normalize();
-                // Vetor altura (vertical)
                 XYZ alturaDir = transformViga.BasisZ.Normalize();
 
-                // Gerar pontos do estribo em coordenadas globais
-                List<XYZ> pontosGlobais = new List<XYZ>
+                // A lógica segue a mesma convenção utilizada nas barras longitudinais.
+                // props.PontoInicial e props.PontoFinal referem-se ao topo/linha de referência da viga;
+                // para obter a base (face inferior) deslocamos pela altura total.
+                XYZ pontoInicialBase = props.PontoInicial - alturaDir * props.Altura;
+                XYZ pontoFinalBase = props.PontoFinal - alturaDir * props.Altura;
+
+                // Calcular o ponto na base correspondente à posição X desejada ao longo da viga.
+                XYZ pontoBasePosicao = pontoInicialBase + eixoViga * posicaoX;
+
+                // Face inferior interna do estribo (considerando o recobrimento).
+                XYZ faceInferiorInterna = pontoBasePosicao + alturaDir * recobrimento;
+
+                // Construir o retângulo interno do estribo (considerando recobrimento em todas as direções relevantes).
+                XYZ p0 = faceInferiorInterna - larguraDir * (larguraUtil / 2.0);  // canto inferior esquerdo
+                XYZ p1 = faceInferiorInterna + larguraDir * (larguraUtil / 2.0);  // canto inferior direito
+                XYZ p2 = p1 + alturaDir * alturaUtil;                               // canto superior direito
+                XYZ p3 = p0 + alturaDir * alturaUtil;                               // canto superior esquerdo
+
+                // Curvas que definem o contorno fechado do estribo (retângulo).
+                var curvas = new List<Curve>
                 {
-                    baseInferior - larguraDir * (larguraUtil / 2),
-                    baseInferior + larguraDir * (larguraUtil / 2),
-                    baseInferior + larguraDir * (larguraUtil / 2) + alturaDir * alturaUtil,
-                    baseInferior - larguraDir * (larguraUtil / 2) + alturaDir * alturaUtil,
-                    baseInferior - larguraDir * (larguraUtil / 2)
+                    Line.CreateBound(p0, p1),  // base inferior
+                    Line.CreateBound(p1, p2),  // lateral direita
+                    Line.CreateBound(p2, p3),  // base superior
+                    Line.CreateBound(p3, p0)   // lateral esquerda
                 };
 
-                List<Curve> curvasEstribo = new List<Curve>();
-                for (int i = 0; i < pontosGlobais.Count - 1; i++)
-                {
-                    double distancia = pontosGlobais[i].DistanceTo(pontosGlobais[i + 1]);
-                    if (distancia > 1e-6)
-                        curvasEstribo.Add(Line.CreateBound(pontosGlobais[i], pontosGlobais[i + 1]));
-                }
-                if (curvasEstribo.Count < 3)
-                    return false;
-                // Obtém o tipo de gancho 135° pré-definido
-                RebarHookType gancho135 = null;
+                // Obter tipo de gancho 135° presente no projeto.
+                RebarHookType gancho135 = ObterOuCriarRebarHookType135(tipoEstribo.BarNominalDiameter);
+                if (gancho135 == null) return false;
+
+                // Tentar criar o estribo com orientação de gancho 'Right' e, se falhar, tentar 'Left'.
                 try
                 {
-                    gancho135 = ObterOuCriarRebarHookType135(tipoEstribo.BarNominalDiameter);
+                    var estribo = Rebar.CreateFromCurves(
+                        doc,
+                        RebarStyle.StirrupTie,
+                        tipoEstribo,
+                        gancho135,
+                        gancho135,
+                        elemento,
+                        eixoViga,
+                        curvas,
+                        RebarHookOrientation.Right,
+                        RebarHookOrientation.Right,
+                        true,
+                        true);
+
+                    if (estribo != null)
+                        return true;
                 }
                 catch
                 {
-                    return false;
-                }
-                // Tenta criar o estribo com diferentes orientações e vetores normais
-                RebarHookOrientation[] orientacoes = new[] {
-                    RebarHookOrientation.Left,
-                    RebarHookOrientation.Right
-                };
-                bool criado = false;
-                Rebar estriboCriado = null;
-                foreach (var orient in orientacoes)
-                {
+                    // Se a criação com Right falhar, tentar Left.
                     try
                     {
-                        estriboCriado = Rebar.CreateFromCurves(
+                        var estribo = Rebar.CreateFromCurves(
                             doc,
                             RebarStyle.StirrupTie,
                             tipoEstribo,
                             gancho135,
                             gancho135,
                             elemento,
-                            alturaDir, // vetor normal correto
-                            curvasEstribo,
-                            orient,
-                            orient,
+                            eixoViga,
+                            curvas,
+                            RebarHookOrientation.Left,
+                            RebarHookOrientation.Left,
                             true,
                             true);
-                        criado = estriboCriado != null;
-                        if (criado) break;
+
+                        if (estribo != null)
+                            return true;
                     }
-                    catch { }
-                }
-                if (!criado)
-                {
-                    XYZ[] vetoresNormais = new[] {
-                        alturaDir,
-                        larguraDir,
-                        eixoViga
-                    };
-                    foreach (var vetor in vetoresNormais)
+                    catch
                     {
-                        foreach (var orient in orientacoes)
-                        {
-                            try
-                            {
-                                estriboCriado = Rebar.CreateFromCurves(
-                                    doc,
-                                    RebarStyle.StirrupTie,
-                                    tipoEstribo,
-                                    gancho135,
-                                    gancho135,
-                                    elemento,
-                                    vetor,
-                                    curvasEstribo,
-                                    orient,
-                                    orient,
-                                    true,
-                                    true);
-                                criado = estriboCriado != null;
-                                if (criado) break;
-                            }
-                            catch { }
-                        }
-                        if (criado) break;
+                        return false;
                     }
                 }
-                if (estriboCriado == null)
-                    return false;
-                return true;
+
+                return false;
             }
             catch
             {
@@ -170,8 +167,10 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Obtém o tipo de gancho 135° pré-definido do projeto
+        /// Procura no projecto um tipo de gancho de 135° predefinido (Stirrup/Tie Hook - 135 deg.).
+        /// Se não for encontrado, mostra uma mensagem ao utilizador e devolve null.
         /// </summary>
+        /// <param name="diametro">Diâmetro nominal usado apenas para eventual seleção (não utilizado na pesquisa atual).</param>
         public RebarHookType ObterOuCriarRebarHookType135(double diametro)
         {
             try
@@ -187,13 +186,14 @@ namespace Rebar_Revit
                     "Erro Gancho - Revit");
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
+                // Propagar ou tratar conforme necessário; por agora retorna null para manter comportamento resiliente.
+                return null;
             }
         }
 
-        // Obtém o tipo de armadura pelo diâmetro
+        // Obtém o tipo de armadura pelo diâmetro (procura por string que contenha o diâmetro).
         private RebarBarType ObterTipoArmaduraPorDiametro(double diametro)
         {
             var collector = new FilteredElementCollector(doc);
