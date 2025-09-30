@@ -7,14 +7,13 @@ using System.Linq;
 namespace Rebar_Revit
 {
     /// <summary>
-    /// Helper responsável pela criação e configuração de estribos em vigas.
-    /// Contém métodos para gerar estribos em posições ao longo da viga e criar um estribo individual.
-    /// Comentários e descrições em pt-pt.
+    /// Helper para criação de estribos em vigas.
     /// </summary>
     public class EstriboHelper
     {
         private Document doc;
         private ArmConfigExec config;
+
         public EstriboHelper(Document documento, ArmConfigExec configExec)
         {
             doc = documento;
@@ -22,32 +21,77 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Cria estribos ao longo da viga conforme a lista fornecida.
-        /// Retorna true se o processo terminar sem lançar uma excepção; os estribos individuais podem falhar silenciosamente.
+        /// Cria estribos conforme definicoes; aceita combinações.
         /// </summary>
-        /// <param name="elemento">Instância da família da viga onde os estribos serão criados.</param>
-        /// <param name="props">Propriedades geométricas e posicionais da viga.</param>
-        /// <param name="recobrimento">Recobrimento interior a considerar (unidades em feet).</param>
-        /// <param name="estribos">Lista de definições de estribo (diâmetro, espaçamento, ...).</param>
         public bool CriarEstribosViga(FamilyInstance elemento, PropriedadesViga props, double recobrimento, List<ArmStirrup> estribos)
         {
             try
             {
                 if (estribos.Count == 0) return true;
+
+                Transform transformViga = config.ObterTransformViga(props);
+
                 foreach (var estribo in estribos)
                 {
-                    var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
-                    if (tipoEstribo == null) continue;
-                    double espacamento = Uteis.MilimetrosParaFeet(estribo.Espacamento);
-                    int numeroEstribos = Math.Max(1, (int)(props.Comprimento / espacamento) - 1);
-                    Transform transformViga = config.ObterTransformViga(props);
-                    for (int i = 1; i <= numeroEstribos; i++)
+                    if (estribo.UsaCombinacao && estribo.Combinacao != null)
                     {
-                        double posicaoX = i * espacamento;
-                        if (posicaoX >= props.Comprimento) break;
-                        CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, recobrimento, transformViga);
+                        double comprimentoMm = Uteis.FeetParaMilimetros(props.Comprimento);
+                        var sequencia = estribo.Combinacao.GerarSequenciaEstribos(comprimentoMm);
+
+                        var diametrosOrdem = estribo.Combinacao.Estribos.Select(e => e.Diametro).ToList();
+                        var sequenciaAlternada = new List<PosicaoEstribo>();
+
+                        if (diametrosOrdem.Count >= 1 && sequencia.Count > 0)
+                        {
+                            for (int i = 0; i < sequencia.Count; i++)
+                            {
+                                var pos = sequencia[i];
+                                var diam = diametrosOrdem[i % diametrosOrdem.Count];
+                                sequenciaAlternada.Add(new PosicaoEstribo { Posicao = pos.Posicao, Diametro = diam, EspacamentoOriginal = pos.EspacamentoOriginal });
+                            }
+                        }
+                        else
+                        {
+                            sequenciaAlternada = sequencia.ToList();
+                        }
+
+                        var diametrosDistintos = sequenciaAlternada.Select(s => s.Diametro).Distinct().ToList();
+                        var tiposPorDiam = new Dictionary<double, RebarBarType>();
+
+                        foreach (var d in diametrosDistintos)
+                        {
+                            var tipo = ObterTipoArmaduraPorDiametro(d);
+                            if (tipo != null) tiposPorDiam[d] = tipo;
+                        }
+
+                        foreach (var pos in sequenciaAlternada)
+                        {
+                            if (!tiposPorDiam.TryGetValue(pos.Diametro, out var tipoEstribo))
+                                continue;
+
+                            double posicaoFeet = Uteis.MilimetrosParaFeet(pos.Posicao);
+                            if (posicaoFeet <= 0 || posicaoFeet >= props.Comprimento) continue;
+
+                            CriarEstriboVigaIndividual(elemento, posicaoFeet, props, tipoEstribo, recobrimento, transformViga);
+                        }
+                    }
+                    else
+                    {
+                        var tipoEstribo = ObterTipoArmaduraPorDiametro(estribo.Diametro);
+                        if (tipoEstribo == null) continue;
+                        double espacamentoFeet = Uteis.MilimetrosParaFeet(estribo.Espacamento);
+                        if (espacamentoFeet <= 0) continue;
+
+                        int numeroEstribos = Math.Max(1, (int)(props.Comprimento / espacamentoFeet) - 1);
+                        for (int i = 1; i <= numeroEstribos; i++)
+                        {
+                            double posicaoX = i * espacamentoFeet;
+                            if (posicaoX >= props.Comprimento) break;
+                            CriarEstriboVigaIndividual(elemento, posicaoX, props, tipoEstribo, recobrimento, transformViga);
+                        }
                     }
                 }
+
                 return true;
             }
             catch (Exception ex)
@@ -58,10 +102,7 @@ namespace Rebar_Revit
 
         /// <summary>
         /// Cria um estribo individual numa posição X ao longo da viga.
-        /// A geometria do estribo é construída considerando o recobrimento interno e usando o mesmo sistema de coordenadas
-        /// da armadura longitudinal, de forma a manter coerência com as barras longitudinais.
         /// </summary>
-        /// <returns>True se o estribo for criado com sucesso, false em caso contrário.</returns>
         public bool CriarEstriboVigaIndividual(FamilyInstance elemento, double posicaoX,
                                               PropriedadesViga props, RebarBarType tipoEstribo,
                                               double recobrimento, Transform transformViga)
@@ -73,65 +114,58 @@ namespace Rebar_Revit
                 if (larguraUtil <= 0 || alturaUtil <= 0)
                     return false;
 
-                // Vetores base da viga: eixo longitudinal, direção da largura e direção da altura.
-                // Usar o mesmo sistema de coordenadas que a armadura longitudinal garante alinhamento correto.
                 XYZ eixoViga = (props.PontoFinal - props.PontoInicial).Normalize();
                 XYZ larguraDir = transformViga.BasisY.Normalize();
                 XYZ alturaDir = transformViga.BasisZ.Normalize();
 
-                // A lógica segue a mesma convenção utilizada nas barras longitudinais.
-                // props.PontoInicial e props.PontoFinal referem-se ao topo/linha de referência da viga;
-                // para obter a base (face inferior) deslocamos pela altura total.
                 XYZ pontoInicialBase = props.PontoInicial - alturaDir * props.Altura;
                 XYZ pontoFinalBase = props.PontoFinal - alturaDir * props.Altura;
 
-                // Calcular o ponto na base correspondente à posição X desejada ao longo da viga.
                 XYZ pontoBasePosicao = pontoInicialBase + eixoViga * posicaoX;
 
-                // Face inferior interna do estribo (considerando o recobrimento).
                 XYZ faceInferiorInterna = pontoBasePosicao + alturaDir * recobrimento;
 
-                // Construir o retângulo interno do estribo (considerando recobrimento em todas as direções relevantes).
-                XYZ p0 = faceInferiorInterna - larguraDir * (larguraUtil / 2.0);  // canto inferior esquerdo
-                XYZ p1 = faceInferiorInterna + larguraDir * (larguraUtil / 2.0);  // canto inferior direito
-                XYZ p2 = p1 + alturaDir * alturaUtil;                               // canto superior direito
-                XYZ p3 = p0 + alturaDir * alturaUtil;                               // canto superior esquerdo
+                XYZ p0 = faceInferiorInterna - larguraDir * (larguraUtil / 2.0);
+                XYZ p1 = faceInferiorInterna + larguraDir * (larguraUtil / 2.0);
+                XYZ p2 = p1 + alturaDir * alturaUtil;
+                XYZ p3 = p0 + alturaDir * alturaUtil;
 
-                // Curvas que definem o contorno fechado do estribo (retângulo).
-                var curvas = new List<Curve>
+                var curvasOrig = new List<Curve>
                 {
-                    Line.CreateBound(p0, p1),  // base inferior
-                    Line.CreateBound(p1, p2),  // lateral direita
-                    Line.CreateBound(p2, p3),  // base superior
-                    Line.CreateBound(p3, p0)   // lateral esquerda
+                    Line.CreateBound(p0, p1),
+                    Line.CreateBound(p1, p2),
+                    Line.CreateBound(p2, p3),
+                    Line.CreateBound(p3, p0)
                 };
 
-                // Obter tipo de gancho 135° presente no projeto.
+                var curvas = new List<Curve>
+                {
+                    Line.CreateBound(p3, p0),
+                    Line.CreateBound(p0, p1),
+                    Line.CreateBound(p1, p2),
+                    Line.CreateBound(p2, p3)
+                };
+
                 RebarHookType gancho135 = ObterOuCriarRebarHookType135(tipoEstribo.BarNominalDiameter);
                 if (gancho135 == null) return false;
 
-                // Determinar orientações dos ganchos com base na geometria real das curvas.
                 RebarHookOrientation startOrient = RebarHookOrientation.Right;
                 RebarHookOrientation endOrient = RebarHookOrientation.Right;
 
                 try
                 {
-                    // Calcular centroid do retângulo
                     XYZ centroid = new XYZ((p0.X + p1.X + p2.X + p3.X) / 4.0,
                                            (p0.Y + p1.Y + p2.Y + p3.Y) / 4.0,
                                            (p0.Z + p1.Z + p2.Z + p3.Z) / 4.0);
 
-                    // Obter pontos exactos onde os ganchos serão colocados: início da primeira curva e fim da última curva
-                    XYZ hookStartPoint = curvas.First().GetEndPoint(0);
-                    XYZ hookStartTangent = (curvas.First().GetEndPoint(1) - curvas.First().GetEndPoint(0)).Normalize();
+                    XYZ hookStartPoint = curvas.First().GetEndPoint(0); // p3
+                    XYZ hookStartTangent = (curvas.First().GetEndPoint(1) - curvas.First().GetEndPoint(0)).Normalize(); // p3->p0
 
-                    XYZ hookEndPoint = curvas.Last().GetEndPoint(1);
-                    XYZ hookEndTangent = (curvas.Last().GetEndPoint(1) - curvas.Last().GetEndPoint(0)).Normalize();
+                    XYZ hookEndPoint = curvas.Last().GetEndPoint(1); // p3
+                    XYZ hookEndTangent = (curvas.Last().GetEndPoint(1) - curvas.Last().GetEndPoint(0)).Normalize(); // p2->p3
 
-                    // Determinar normal seguro para o estribo: usar eixoViga (normal ao plano do estribo)
                     XYZ normal = eixoViga;
 
-                    // Função local para determinar Left/Right relativo ao tangent e normal
                     Func<XYZ, XYZ, XYZ, RebarHookOrientation> OrientacaoRelativa = (hookPoint, tangent, nrm) =>
                     {
                         XYZ toCentroid = (centroid - hookPoint);
@@ -143,8 +177,6 @@ namespace Rebar_Revit
                         side = side.Normalize();
 
                         double dot = toCentroid.DotProduct(side);
-                        // Nota: dependendo da convenção do Revit, o sinal pode estar invertido.
-                        // Se os ganchos continuarem virados para fora, inverter a condição abaixo (dot > 0 => Left).
                         return dot > 0 ? RebarHookOrientation.Left : RebarHookOrientation.Right;
                     };
 
@@ -157,7 +189,6 @@ namespace Rebar_Revit
                     endOrient = RebarHookOrientation.Right;
                 }
 
-                // Tentar criar o estribo com as orientações calculadas; se falhar tentar inverter as orientações (fallback).
                 try
                 {
                     var estribo = Rebar.CreateFromCurves(
@@ -179,7 +210,6 @@ namespace Rebar_Revit
                 }
                 catch
                 {
-                    // Fallback: inverter orientações e tentar novamente
                     try
                     {
                         var estribo = Rebar.CreateFromCurves(
@@ -214,10 +244,8 @@ namespace Rebar_Revit
         }
 
         /// <summary>
-        /// Procura no projecto um tipo de gancho de 135° predefinido (Stirrup/Tie Hook - 135 deg.).
-        /// Se não for encontrado, mostra uma mensagem ao utilizador e devolve null.
+        /// Procura gancho 135° no projeto.
         /// </summary>
-        /// <param name="diametro">Diâmetro nominal usado apenas para eventual seleção (não utilizado na pesquisa atual).</param>
         public RebarHookType ObterOuCriarRebarHookType135(double diametro)
         {
             try
@@ -228,25 +256,62 @@ namespace Rebar_Revit
                     .FirstOrDefault(h => h.Name.Equals("Stirrup/Tie Hook - 135 deg.", StringComparison.OrdinalIgnoreCase));
                 if (gancho135 != null)
                     return gancho135;
-                System.Windows.Forms.MessageBox.Show(
-                    "Não foi encontrado um gancho com 135° definido no projeto (Stirrup/Tie Hook - 135 deg.).\nCarregue-o se estiver ausente do varão do estribo.",
-                    "Erro Gancho - Revit");
+                try { Autodesk.Revit.UI.TaskDialog.Show("Erro Gancho - Revit", "Não foi encontrado um gancho com 135° definido no projeto (Stirrup/Tie Hook - 135 deg.).\nCarregue-o se estiver ausente do varão do estribo."); }
+                catch { }
                 return null;
             }
             catch (Exception)
             {
-                // Propagar ou tratar conforme necessário; por agora retorna null para manter comportamento resiliente.
                 return null;
             }
         }
 
-        // Obtém o tipo de armadura pelo diâmetro (procura por string que contenha o diâmetro).
+        // Obtém RebarBarType pelo diâmetro.
         private RebarBarType ObterTipoArmaduraPorDiametro(double diametro)
         {
             var collector = new FilteredElementCollector(doc);
             var tipos = collector.OfClass(typeof(RebarBarType)).Cast<RebarBarType>().ToList();
+            if (tipos == null || tipos.Count == 0) return null;
+
             string diametroStr = diametro.ToString("F0");
-            return tipos.FirstOrDefault(t => t.Name.Contains(diametroStr)) ?? tipos.FirstOrDefault();
+
+            try
+            {
+                var rxToken = new System.Text.RegularExpressions.Regex($"(?<!\\d){System.Text.RegularExpressions.Regex.Escape(diametroStr)}(?!\\d)");
+                var matchByToken = tipos.FirstOrDefault(t => !string.IsNullOrEmpty(t.Name) && rxToken.IsMatch(t.Name));
+                if (matchByToken != null) { return matchByToken; }
+
+                var patterns = new[] { $"[Ff]\\s*{diametroStr}", $"[?]\\s*{diametroStr}", $"[Ø??]\\s*{diametroStr}", $"{diametroStr}\\s*mm", $"phi\\s*{diametroStr}" };
+                foreach (var pat in patterns)
+                {
+                    var rx = new System.Text.RegularExpressions.Regex(pat, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    var found = tipos.FirstOrDefault(t => !string.IsNullOrEmpty(t.Name) && rx.IsMatch(t.Name));
+                    if (found != null) { return found; }
+                }
+
+                foreach (var t in tipos)
+                {
+                    try
+                    {
+                        double nominalFeet = t.BarNominalDiameter;
+                        double nominalMm = Uteis.FeetParaMilimetros(nominalFeet);
+                        if (Math.Abs(nominalMm - diametro) < 0.5)
+                        {
+                            return t;
+                        }
+                    }
+                    catch { }
+                }
+
+                var matchSubstring = tipos.FirstOrDefault(t => !string.IsNullOrEmpty(t.Name) && t.Name.IndexOf(diametroStr, StringComparison.OrdinalIgnoreCase) >= 0);
+                if (matchSubstring != null) { return matchSubstring; }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

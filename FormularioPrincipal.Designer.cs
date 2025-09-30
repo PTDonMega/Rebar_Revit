@@ -1,4 +1,4 @@
-namespace Rebar_Revit
+Ôªønamespace Rebar_Revit
 {
     partial class FormularioPrincipal
     {
@@ -52,27 +52,44 @@ namespace Rebar_Revit
             panelDireito = new Panel();
             groupArmaduraLongitudinal = new GroupBox();
             groupArmaduraSuperior = new GroupBox();
-            labelQuantSuperior = new Label();
-            numQuantSuperior = new NumericUpDown();
-            labelDiamSuperior = new Label();
-            comboDiamSuperior = new ComboBox();
+            checkCombinacaoSuperior = new CheckBox();
+            labelQuant1Superior = new Label();
+            numQuant1Superior = new NumericUpDown();
+            labelDiam1Superior = new Label();
+            comboDiam1Superior = new ComboBox();
+            labelQuant2Superior = new Label();
+            numQuant2Superior = new NumericUpDown();
+            labelDiam2Superior = new Label();
+            comboDiam2Superior = new ComboBox();
             groupArmaduraInferior = new GroupBox();
-            labelQuantInferior = new Label();
-            numQuantInferior = new NumericUpDown();
-            labelDiamInferior = new Label();
-            comboDiamInferior = new ComboBox();
+            checkCombinacaoInferior = new CheckBox();
+            labelQuant1Inferior = new Label();
+            numQuant1Inferior = new NumericUpDown();
+            labelDiam1Inferior = new Label();
+            comboDiam1Inferior = new ComboBox();
+            labelQuant2Inferior = new Label();
+            numQuant2Inferior = new NumericUpDown();
+            labelDiam2Inferior = new Label();
+            comboDiam2Inferior = new ComboBox();
             groupArmaduraLateral = new GroupBox();
             checkArmaduraLateral = new CheckBox();
-            labelQuantLateral = new Label();
-            numQuantLateral = new NumericUpDown();
-            labelDiamLateral = new Label();
-            comboDiamLateral = new ComboBox();
+            checkCombinacaoLateral = new CheckBox();
+            labelQuant1Lateral = new Label();
+            numQuant1Lateral = new NumericUpDown();
+            labelDiam1Lateral = new Label();
+            comboDiam1Lateral = new ComboBox();
+            labelQuant2Lateral = new Label();
+            numQuant2Lateral = new NumericUpDown();
+            labelDiam2Lateral = new Label();
+            comboDiam2Lateral = new ComboBox();
             groupEstribos = new GroupBox();
-            labelDiamEstribo = new Label();
-            comboDiamEstribo = new ComboBox();
-            labelEspacamentoEstribo = new Label();
-            numEspacamentoEstribo = new NumericUpDown();
-            checkEspacamentoVariavel = new CheckBox();
+            checkCombinacaoEstribos = new CheckBox();
+            labelDiam1Estribo = new Label();
+            comboDiam1Estribo = new ComboBox();
+            labelEspac1Estribo = new Label();
+            numEspac1Estribo = new NumericUpDown();
+            labelDiam2Estribo = new Label();
+            comboDiam2Estribo = new ComboBox();
             groupParametros = new GroupBox();
             labelCobrimento = new Label();
             numCobrimento = new NumericUpDown();
@@ -87,13 +104,16 @@ namespace Rebar_Revit
             panelDireito.SuspendLayout();
             groupArmaduraLongitudinal.SuspendLayout();
             groupArmaduraSuperior.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantSuperior).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Superior).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Superior).BeginInit();
             groupArmaduraInferior.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantInferior).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Inferior).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Inferior).BeginInit();
             groupArmaduraLateral.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantLateral).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Lateral).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Lateral).BeginInit();
             groupEstribos.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numEspacamentoEstribo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numEspac1Estribo).BeginInit();
             groupParametros.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numCobrimento).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numMultAmarracao).BeginInit();
@@ -108,7 +128,7 @@ namespace Rebar_Revit
             panelEsquerdo.Margin = new Padding(3, 4, 3, 4);
             panelEsquerdo.Name = "panelEsquerdo";
             panelEsquerdo.Padding = new Padding(10, 12, 10, 12);
-            panelEsquerdo.Size = new Size(500, 759);
+            panelEsquerdo.Size = new Size(500, 813);
             panelEsquerdo.TabIndex = 0;
             // 
             // groupSelecaoViga
@@ -179,7 +199,7 @@ namespace Rebar_Revit
             radioFiltrarPorDesignacao.Name = "radioFiltrarPorDesignacao";
             radioFiltrarPorDesignacao.Size = new Size(108, 24);
             radioFiltrarPorDesignacao.TabIndex = 4;
-            radioFiltrarPorDesignacao.Text = "DesignaÁ„o";
+            radioFiltrarPorDesignacao.Text = "Designa√ß√£o";
             radioFiltrarPorDesignacao.UseVisualStyleBackColor = true;
             // 
             // buttonAtualizarLista
@@ -217,10 +237,10 @@ namespace Rebar_Revit
             groupVisualizacao.Margin = new Padding(3, 4, 3, 4);
             groupVisualizacao.Name = "groupVisualizacao";
             groupVisualizacao.Padding = new Padding(3, 4, 3, 4);
-            groupVisualizacao.Size = new Size(480, 735);
+            groupVisualizacao.Size = new Size(480, 789);
             groupVisualizacao.TabIndex = 1;
             groupVisualizacao.TabStop = false;
-            groupVisualizacao.Text = "PrÈ-visualizaÁ„o (secÁ„o)";
+            groupVisualizacao.Text = "Pr√©-visualiza√ß√£o (sec√ß√£o)";
             // 
             // visualizador
             // 
@@ -228,7 +248,6 @@ namespace Rebar_Revit
             visualizador.BorderStyle = BorderStyle.FixedSingle;
             informacaoArmaduraViga1.Altura = 500D;
             informacaoArmaduraViga1.AmarracaoAutomatica = true;
-            informacaoArmaduraViga1.Comprimento = 5000D;
             informacaoArmaduraViga1.Designacao = "";
             informacaoArmaduraViga1.Largura = 300D;
             informacaoArmaduraViga1.MultiplicadorAmarracao = 50D;
@@ -252,7 +271,7 @@ namespace Rebar_Revit
             labelDimensoes.Name = "labelDimensoes";
             labelDimensoes.Size = new Size(143, 18);
             labelDimensoes.TabIndex = 0;
-            labelDimensoes.Text = "Dimensıes (mm):";
+            labelDimensoes.Text = "Dimens√µes (mm):";
             // 
             // labelAltura
             // 
@@ -300,7 +319,7 @@ namespace Rebar_Revit
             labelInfoViga.Name = "labelInfoViga";
             labelInfoViga.Size = new Size(450, 422);
             labelInfoViga.TabIndex = 7;
-            labelInfoViga.Text = "PrÈ-visualizaÁ„o 2D da secÁ„o da viga com armaduras";
+            labelInfoViga.Text = "Pr√©-visualiza√ß√£o 2D da sec√ß√£o da viga com armaduras";
             labelInfoViga.TextAlign = ContentAlignment.MiddleCenter;
             labelInfoViga.Visible = false;
             labelInfoViga.Click += labelInfoViga_Click;
@@ -318,7 +337,7 @@ namespace Rebar_Revit
             panelDireito.Margin = new Padding(3, 4, 3, 4);
             panelDireito.Name = "panelDireito";
             panelDireito.Padding = new Padding(10, 12, 10, 12);
-            panelDireito.Size = new Size(400, 759);
+            panelDireito.Size = new Size(400, 813);
             panelDireito.TabIndex = 1;
             // 
             // groupArmaduraLongitudinal
@@ -327,135 +346,250 @@ namespace Rebar_Revit
             groupArmaduraLongitudinal.Controls.Add(groupArmaduraInferior);
             groupArmaduraLongitudinal.Controls.Add(groupArmaduraLateral);
             groupArmaduraLongitudinal.Dock = DockStyle.Top;
-            groupArmaduraLongitudinal.Location = new Point(10, 238);
+            groupArmaduraLongitudinal.Location = new Point(10, 240);
             groupArmaduraLongitudinal.Margin = new Padding(3, 4, 3, 4);
             groupArmaduraLongitudinal.Name = "groupArmaduraLongitudinal";
             groupArmaduraLongitudinal.Padding = new Padding(3, 4, 3, 4);
-            groupArmaduraLongitudinal.Size = new Size(380, 350);
+            groupArmaduraLongitudinal.Size = new Size(380, 474);
             groupArmaduraLongitudinal.TabIndex = 0;
             groupArmaduraLongitudinal.TabStop = false;
             groupArmaduraLongitudinal.Text = "Armadura Longitudinal";
             // 
             // groupArmaduraSuperior
             // 
-            groupArmaduraSuperior.Controls.Add(labelQuantSuperior);
-            groupArmaduraSuperior.Controls.Add(numQuantSuperior);
-            groupArmaduraSuperior.Controls.Add(labelDiamSuperior);
-            groupArmaduraSuperior.Controls.Add(comboDiamSuperior);
+            groupArmaduraSuperior.Controls.Add(checkCombinacaoSuperior);
+            groupArmaduraSuperior.Controls.Add(labelQuant1Superior);
+            groupArmaduraSuperior.Controls.Add(numQuant1Superior);
+            groupArmaduraSuperior.Controls.Add(labelDiam1Superior);
+            groupArmaduraSuperior.Controls.Add(comboDiam1Superior);
+            groupArmaduraSuperior.Controls.Add(labelQuant2Superior);
+            groupArmaduraSuperior.Controls.Add(numQuant2Superior);
+            groupArmaduraSuperior.Controls.Add(labelDiam2Superior);
+            groupArmaduraSuperior.Controls.Add(comboDiam2Superior);
             groupArmaduraSuperior.Location = new Point(15, 31);
             groupArmaduraSuperior.Margin = new Padding(3, 4, 3, 4);
             groupArmaduraSuperior.Name = "groupArmaduraSuperior";
             groupArmaduraSuperior.Padding = new Padding(3, 4, 3, 4);
-            groupArmaduraSuperior.Size = new Size(350, 94);
+            groupArmaduraSuperior.Size = new Size(350, 126);
             groupArmaduraSuperior.TabIndex = 0;
             groupArmaduraSuperior.TabStop = false;
             groupArmaduraSuperior.Text = "Armadura Superior";
             // 
-            // labelQuantSuperior
+            // checkCombinacaoSuperior
             // 
-            labelQuantSuperior.AutoSize = true;
-            labelQuantSuperior.Location = new Point(15, 31);
-            labelQuantSuperior.Name = "labelQuantSuperior";
-            labelQuantSuperior.Size = new Size(90, 20);
-            labelQuantSuperior.TabIndex = 0;
-            labelQuantSuperior.Text = "Quantidade:";
+            checkCombinacaoSuperior.AutoSize = true;
+            checkCombinacaoSuperior.Location = new Point(225, 27);
+            checkCombinacaoSuperior.Name = "checkCombinacaoSuperior";
+            checkCombinacaoSuperior.Size = new Size(115, 24);
+            checkCombinacaoSuperior.TabIndex = 4;
+            checkCombinacaoSuperior.Text = "Combina√ß√£o";
+            checkCombinacaoSuperior.UseVisualStyleBackColor = true;
             // 
-            // numQuantSuperior
+            // labelQuant1Superior
             // 
-            numQuantSuperior.Location = new Point(15, 56);
-            numQuantSuperior.Margin = new Padding(3, 4, 3, 4);
-            numQuantSuperior.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
-            numQuantSuperior.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
-            numQuantSuperior.Name = "numQuantSuperior";
-            numQuantSuperior.Size = new Size(60, 27);
-            numQuantSuperior.TabIndex = 1;
-            numQuantSuperior.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            labelQuant1Superior.AutoSize = true;
+            labelQuant1Superior.Enabled = false;
+            labelQuant1Superior.Location = new Point(15, 54);
+            labelQuant1Superior.Name = "labelQuant1Superior";
+            labelQuant1Superior.Size = new Size(49, 20);
+            labelQuant1Superior.TabIndex = 5;
+            labelQuant1Superior.Text = "Qtd 1:";
             // 
-            // labelDiamSuperior
+            // numQuant1Superior
             // 
-            labelDiamSuperior.AutoSize = true;
-            labelDiamSuperior.Location = new Point(100, 31);
-            labelDiamSuperior.Name = "labelDiamSuperior";
-            labelDiamSuperior.Size = new Size(115, 20);
-            labelDiamSuperior.TabIndex = 2;
-            labelDiamSuperior.Text = "Di‚metro (mm):";
+            numQuant1Superior.Enabled = false;
+            numQuant1Superior.Location = new Point(15, 82);
+            numQuant1Superior.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant1Superior.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numQuant1Superior.Name = "numQuant1Superior";
+            numQuant1Superior.Size = new Size(50, 27);
+            numQuant1Superior.TabIndex = 6;
+            numQuant1Superior.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
-            // comboDiamSuperior
+            // labelDiam1Superior
             // 
-            comboDiamSuperior.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboDiamSuperior.FormattingEnabled = true;
-            comboDiamSuperior.Location = new Point(100, 56);
-            comboDiamSuperior.Margin = new Padding(3, 4, 3, 4);
-            comboDiamSuperior.Name = "comboDiamSuperior";
-            comboDiamSuperior.Size = new Size(70, 28);
-            comboDiamSuperior.TabIndex = 3;
+            labelDiam1Superior.AutoSize = true;
+            labelDiam1Superior.Enabled = false;
+            labelDiam1Superior.Location = new Point(76, 54);
+            labelDiam1Superior.Name = "labelDiam1Superior";
+            labelDiam1Superior.Size = new Size(71, 20);
+            labelDiam1Superior.TabIndex = 7;
+            labelDiam1Superior.Text = "√ò1 (mm):";
+            // 
+            // comboDiam1Superior
+            // 
+            comboDiam1Superior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam1Superior.Enabled = false;
+            comboDiam1Superior.Location = new Point(76, 82);
+            comboDiam1Superior.Name = "comboDiam1Superior";
+            comboDiam1Superior.Size = new Size(60, 28);
+            comboDiam1Superior.TabIndex = 8;
+            // 
+            // labelQuant2Superior
+            // 
+            labelQuant2Superior.AutoSize = true;
+            labelQuant2Superior.Enabled = false;
+            labelQuant2Superior.Location = new Point(200, 54);
+            labelQuant2Superior.Name = "labelQuant2Superior";
+            labelQuant2Superior.Size = new Size(49, 20);
+            labelQuant2Superior.TabIndex = 9;
+            labelQuant2Superior.Text = "Qtd 2:";
+            // 
+            // numQuant2Superior
+            // 
+            numQuant2Superior.Enabled = false;
+            numQuant2Superior.Location = new Point(199, 83);
+            numQuant2Superior.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant2Superior.Name = "numQuant2Superior";
+            numQuant2Superior.Size = new Size(50, 27);
+            numQuant2Superior.TabIndex = 10;
+            numQuant2Superior.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            // 
+            // labelDiam2Superior
+            // 
+            labelDiam2Superior.AutoSize = true;
+            labelDiam2Superior.Enabled = false;
+            labelDiam2Superior.Location = new Point(260, 54);
+            labelDiam2Superior.Name = "labelDiam2Superior";
+            labelDiam2Superior.Size = new Size(71, 20);
+            labelDiam2Superior.TabIndex = 11;
+            labelDiam2Superior.Text = "√ò2 (mm):";
+            // 
+            // comboDiam2Superior
+            // 
+            comboDiam2Superior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam2Superior.Enabled = false;
+            comboDiam2Superior.Location = new Point(265, 82);
+            comboDiam2Superior.Name = "comboDiam2Superior";
+            comboDiam2Superior.Size = new Size(60, 28);
+            comboDiam2Superior.TabIndex = 12;
             // 
             // groupArmaduraInferior
             // 
-            groupArmaduraInferior.Controls.Add(labelQuantInferior);
-            groupArmaduraInferior.Controls.Add(numQuantInferior);
-            groupArmaduraInferior.Controls.Add(labelDiamInferior);
-            groupArmaduraInferior.Controls.Add(comboDiamInferior);
-            groupArmaduraInferior.Location = new Point(15, 138);
+            groupArmaduraInferior.Controls.Add(checkCombinacaoInferior);
+            groupArmaduraInferior.Controls.Add(labelQuant1Inferior);
+            groupArmaduraInferior.Controls.Add(numQuant1Inferior);
+            groupArmaduraInferior.Controls.Add(labelDiam1Inferior);
+            groupArmaduraInferior.Controls.Add(comboDiam1Inferior);
+            groupArmaduraInferior.Controls.Add(labelQuant2Inferior);
+            groupArmaduraInferior.Controls.Add(numQuant2Inferior);
+            groupArmaduraInferior.Controls.Add(labelDiam2Inferior);
+            groupArmaduraInferior.Controls.Add(comboDiam2Inferior);
+            groupArmaduraInferior.Location = new Point(15, 162);
             groupArmaduraInferior.Margin = new Padding(3, 4, 3, 4);
             groupArmaduraInferior.Name = "groupArmaduraInferior";
             groupArmaduraInferior.Padding = new Padding(3, 4, 3, 4);
-            groupArmaduraInferior.Size = new Size(350, 94);
+            groupArmaduraInferior.Size = new Size(350, 138);
             groupArmaduraInferior.TabIndex = 1;
             groupArmaduraInferior.TabStop = false;
             groupArmaduraInferior.Text = "Armadura Inferior";
             // 
-            // labelQuantInferior
+            // checkCombinacaoInferior
             // 
-            labelQuantInferior.AutoSize = true;
-            labelQuantInferior.Location = new Point(15, 31);
-            labelQuantInferior.Name = "labelQuantInferior";
-            labelQuantInferior.Size = new Size(90, 20);
-            labelQuantInferior.TabIndex = 0;
-            labelQuantInferior.Text = "Quantidade:";
+            checkCombinacaoInferior.AutoSize = true;
+            checkCombinacaoInferior.Location = new Point(225, 27);
+            checkCombinacaoInferior.Name = "checkCombinacaoInferior";
+            checkCombinacaoInferior.Size = new Size(115, 24);
+            checkCombinacaoInferior.TabIndex = 4;
+            checkCombinacaoInferior.Text = "Combina√ß√£o";
+            checkCombinacaoInferior.UseVisualStyleBackColor = true;
             // 
-            // numQuantInferior
+            // labelQuant1Inferior
             // 
-            numQuantInferior.Location = new Point(15, 56);
-            numQuantInferior.Margin = new Padding(3, 4, 3, 4);
-            numQuantInferior.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
-            numQuantInferior.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
-            numQuantInferior.Name = "numQuantInferior";
-            numQuantInferior.Size = new Size(60, 27);
-            numQuantInferior.TabIndex = 1;
-            numQuantInferior.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            labelQuant1Inferior.AutoSize = true;
+            labelQuant1Inferior.Enabled = false;
+            labelQuant1Inferior.Location = new Point(15, 62);
+            labelQuant1Inferior.Name = "labelQuant1Inferior";
+            labelQuant1Inferior.Size = new Size(49, 20);
+            labelQuant1Inferior.TabIndex = 5;
+            labelQuant1Inferior.Text = "Qtd 1:";
             // 
-            // labelDiamInferior
+            // numQuant1Inferior
             // 
-            labelDiamInferior.AutoSize = true;
-            labelDiamInferior.Location = new Point(100, 31);
-            labelDiamInferior.Name = "labelDiamInferior";
-            labelDiamInferior.Size = new Size(115, 20);
-            labelDiamInferior.TabIndex = 2;
-            labelDiamInferior.Text = "Di‚metro (mm):";
+            numQuant1Inferior.Enabled = false;
+            numQuant1Inferior.Location = new Point(14, 90);
+            numQuant1Inferior.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant1Inferior.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numQuant1Inferior.Name = "numQuant1Inferior";
+            numQuant1Inferior.Size = new Size(50, 27);
+            numQuant1Inferior.TabIndex = 6;
+            numQuant1Inferior.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
-            // comboDiamInferior
+            // labelDiam1Inferior
             // 
-            comboDiamInferior.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboDiamInferior.FormattingEnabled = true;
-            comboDiamInferior.Location = new Point(100, 56);
-            comboDiamInferior.Margin = new Padding(3, 4, 3, 4);
-            comboDiamInferior.Name = "comboDiamInferior";
-            comboDiamInferior.Size = new Size(70, 28);
-            comboDiamInferior.TabIndex = 3;
+            labelDiam1Inferior.AutoSize = true;
+            labelDiam1Inferior.Enabled = false;
+            labelDiam1Inferior.Location = new Point(75, 62);
+            labelDiam1Inferior.Name = "labelDiam1Inferior";
+            labelDiam1Inferior.Size = new Size(71, 20);
+            labelDiam1Inferior.TabIndex = 7;
+            labelDiam1Inferior.Text = "√ò1 (mm):";
+            // 
+            // comboDiam1Inferior
+            // 
+            comboDiam1Inferior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam1Inferior.Enabled = false;
+            comboDiam1Inferior.Location = new Point(75, 89);
+            comboDiam1Inferior.Name = "comboDiam1Inferior";
+            comboDiam1Inferior.Size = new Size(60, 28);
+            comboDiam1Inferior.TabIndex = 8;
+            // 
+            // labelQuant2Inferior
+            // 
+            labelQuant2Inferior.AutoSize = true;
+            labelQuant2Inferior.Enabled = false;
+            labelQuant2Inferior.Location = new Point(200, 62);
+            labelQuant2Inferior.Name = "labelQuant2Inferior";
+            labelQuant2Inferior.Size = new Size(49, 20);
+            labelQuant2Inferior.TabIndex = 9;
+            labelQuant2Inferior.Text = "Qtd 2:";
+            // 
+            // numQuant2Inferior
+            // 
+            numQuant2Inferior.Enabled = false;
+            numQuant2Inferior.Location = new Point(200, 90);
+            numQuant2Inferior.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant2Inferior.Name = "numQuant2Inferior";
+            numQuant2Inferior.Size = new Size(50, 27);
+            numQuant2Inferior.TabIndex = 10;
+            numQuant2Inferior.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            // 
+            // labelDiam2Inferior
+            // 
+            labelDiam2Inferior.AutoSize = true;
+            labelDiam2Inferior.Enabled = false;
+            labelDiam2Inferior.Location = new Point(260, 62);
+            labelDiam2Inferior.Name = "labelDiam2Inferior";
+            labelDiam2Inferior.Size = new Size(71, 20);
+            labelDiam2Inferior.TabIndex = 11;
+            labelDiam2Inferior.Text = "√ò2 (mm):";
+            // 
+            // comboDiam2Inferior
+            // 
+            comboDiam2Inferior.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam2Inferior.Enabled = false;
+            comboDiam2Inferior.Location = new Point(271, 87);
+            comboDiam2Inferior.Name = "comboDiam2Inferior";
+            comboDiam2Inferior.Size = new Size(60, 28);
+            comboDiam2Inferior.TabIndex = 12;
             // 
             // groupArmaduraLateral
             // 
             groupArmaduraLateral.Controls.Add(checkArmaduraLateral);
-            groupArmaduraLateral.Controls.Add(labelQuantLateral);
-            groupArmaduraLateral.Controls.Add(numQuantLateral);
-            groupArmaduraLateral.Controls.Add(labelDiamLateral);
-            groupArmaduraLateral.Controls.Add(comboDiamLateral);
-            groupArmaduraLateral.Location = new Point(15, 244);
+            groupArmaduraLateral.Controls.Add(checkCombinacaoLateral);
+            groupArmaduraLateral.Controls.Add(labelQuant1Lateral);
+            groupArmaduraLateral.Controls.Add(numQuant1Lateral);
+            groupArmaduraLateral.Controls.Add(labelDiam1Lateral);
+            groupArmaduraLateral.Controls.Add(comboDiam1Lateral);
+            groupArmaduraLateral.Controls.Add(labelQuant2Lateral);
+            groupArmaduraLateral.Controls.Add(numQuant2Lateral);
+            groupArmaduraLateral.Controls.Add(labelDiam2Lateral);
+            groupArmaduraLateral.Controls.Add(comboDiam2Lateral);
+            groupArmaduraLateral.Location = new Point(15, 306);
             groupArmaduraLateral.Margin = new Padding(3, 4, 3, 4);
             groupArmaduraLateral.Name = "groupArmaduraLateral";
             groupArmaduraLateral.Padding = new Padding(3, 4, 3, 4);
-            groupArmaduraLateral.Size = new Size(350, 94);
+            groupArmaduraLateral.Size = new Size(350, 154);
             groupArmaduraLateral.TabIndex = 2;
             groupArmaduraLateral.TabStop = false;
             groupArmaduraLateral.Text = "Armadura Alma";
@@ -464,123 +598,191 @@ namespace Rebar_Revit
             // checkArmaduraLateral
             // 
             checkArmaduraLateral.AutoSize = true;
-            checkArmaduraLateral.Location = new Point(280, 31);
-            checkArmaduraLateral.Margin = new Padding(3, 4, 3, 4);
+            checkArmaduraLateral.Location = new Point(6, 27);
             checkArmaduraLateral.Name = "checkArmaduraLateral";
             checkArmaduraLateral.Size = new Size(70, 24);
-            checkArmaduraLateral.TabIndex = 0;
+            checkArmaduraLateral.TabIndex = 14;
             checkArmaduraLateral.Text = "Ativar";
             checkArmaduraLateral.UseVisualStyleBackColor = true;
             // 
-            // labelQuantLateral
+            // checkCombinacaoLateral
             // 
-            labelQuantLateral.AutoSize = true;
-            labelQuantLateral.Enabled = false;
-            labelQuantLateral.Location = new Point(15, 31);
-            labelQuantLateral.Name = "labelQuantLateral";
-            labelQuantLateral.Size = new Size(90, 20);
-            labelQuantLateral.TabIndex = 1;
-            labelQuantLateral.Text = "Quantidade:";
+            checkCombinacaoLateral.AutoSize = true;
+            checkCombinacaoLateral.Enabled = false;
+            checkCombinacaoLateral.Location = new Point(225, 27);
+            checkCombinacaoLateral.Name = "checkCombinacaoLateral";
+            checkCombinacaoLateral.Size = new Size(115, 24);
+            checkCombinacaoLateral.TabIndex = 5;
+            checkCombinacaoLateral.Text = "Combina√ß√£o";
+            checkCombinacaoLateral.UseVisualStyleBackColor = true;
             // 
-            // numQuantLateral
+            // labelQuant1Lateral
             // 
-            numQuantLateral.Enabled = false;
-            numQuantLateral.Location = new Point(15, 56);
-            numQuantLateral.Margin = new Padding(3, 4, 3, 4);
-            numQuantLateral.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            numQuantLateral.Name = "numQuantLateral";
-            numQuantLateral.Size = new Size(60, 27);
-            numQuantLateral.TabIndex = 2;
-            numQuantLateral.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            labelQuant1Lateral.AutoSize = true;
+            labelQuant1Lateral.Enabled = false;
+            labelQuant1Lateral.Location = new Point(14, 66);
+            labelQuant1Lateral.Name = "labelQuant1Lateral";
+            labelQuant1Lateral.Size = new Size(49, 20);
+            labelQuant1Lateral.TabIndex = 6;
+            labelQuant1Lateral.Text = "Qtd 1:";
             // 
-            // labelDiamLateral
+            // numQuant1Lateral
             // 
-            labelDiamLateral.AutoSize = true;
-            labelDiamLateral.Enabled = false;
-            labelDiamLateral.Location = new Point(100, 31);
-            labelDiamLateral.Name = "labelDiamLateral";
-            labelDiamLateral.Size = new Size(115, 20);
-            labelDiamLateral.TabIndex = 3;
-            labelDiamLateral.Text = "Di‚metro (mm):";
+            numQuant1Lateral.Enabled = false;
+            numQuant1Lateral.Location = new Point(15, 99);
+            numQuant1Lateral.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant1Lateral.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numQuant1Lateral.Name = "numQuant1Lateral";
+            numQuant1Lateral.Size = new Size(50, 27);
+            numQuant1Lateral.TabIndex = 7;
+            numQuant1Lateral.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
-            // comboDiamLateral
+            // labelDiam1Lateral
             // 
-            comboDiamLateral.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboDiamLateral.Enabled = false;
-            comboDiamLateral.FormattingEnabled = true;
-            comboDiamLateral.Location = new Point(100, 56);
-            comboDiamLateral.Margin = new Padding(3, 4, 3, 4);
-            comboDiamLateral.Name = "comboDiamLateral";
-            comboDiamLateral.Size = new Size(70, 28);
-            comboDiamLateral.TabIndex = 4;
+            labelDiam1Lateral.AutoSize = true;
+            labelDiam1Lateral.Enabled = false;
+            labelDiam1Lateral.Location = new Point(83, 66);
+            labelDiam1Lateral.Name = "labelDiam1Lateral";
+            labelDiam1Lateral.Size = new Size(71, 20);
+            labelDiam1Lateral.TabIndex = 8;
+            labelDiam1Lateral.Text = "√ò1 (mm):";
+            // 
+            // comboDiam1Lateral
+            // 
+            comboDiam1Lateral.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam1Lateral.Enabled = false;
+            comboDiam1Lateral.Location = new Point(75, 99);
+            comboDiam1Lateral.Name = "comboDiam1Lateral";
+            comboDiam1Lateral.Size = new Size(60, 28);
+            comboDiam1Lateral.TabIndex = 9;
+            // 
+            // labelQuant2Lateral
+            // 
+            labelQuant2Lateral.AutoSize = true;
+            labelQuant2Lateral.Enabled = false;
+            labelQuant2Lateral.Location = new Point(201, 66);
+            labelQuant2Lateral.Name = "labelQuant2Lateral";
+            labelQuant2Lateral.Size = new Size(49, 20);
+            labelQuant2Lateral.TabIndex = 10;
+            labelQuant2Lateral.Text = "Qtd 2:";
+            // 
+            // numQuant2Lateral
+            // 
+            numQuant2Lateral.Enabled = false;
+            numQuant2Lateral.Location = new Point(199, 99);
+            numQuant2Lateral.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            numQuant2Lateral.Name = "numQuant2Lateral";
+            numQuant2Lateral.Size = new Size(50, 27);
+            numQuant2Lateral.TabIndex = 11;
+            numQuant2Lateral.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            // 
+            // labelDiam2Lateral
+            // 
+            labelDiam2Lateral.AutoSize = true;
+            labelDiam2Lateral.Enabled = false;
+            labelDiam2Lateral.Location = new Point(265, 66);
+            labelDiam2Lateral.Name = "labelDiam2Lateral";
+            labelDiam2Lateral.Size = new Size(71, 20);
+            labelDiam2Lateral.TabIndex = 12;
+            labelDiam2Lateral.Text = "√ò2 (mm):";
+            // 
+            // comboDiam2Lateral
+            // 
+            comboDiam2Lateral.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam2Lateral.Enabled = false;
+            comboDiam2Lateral.Location = new Point(271, 99);
+            comboDiam2Lateral.Name = "comboDiam2Lateral";
+            comboDiam2Lateral.Size = new Size(60, 28);
+            comboDiam2Lateral.TabIndex = 13;
             // 
             // groupEstribos
             // 
-            groupEstribos.Controls.Add(labelDiamEstribo);
-            groupEstribos.Controls.Add(comboDiamEstribo);
-            groupEstribos.Controls.Add(labelEspacamentoEstribo);
-            groupEstribos.Controls.Add(numEspacamentoEstribo);
-            groupEstribos.Controls.Add(checkEspacamentoVariavel);
+            groupEstribos.Controls.Add(checkCombinacaoEstribos);
+            groupEstribos.Controls.Add(labelDiam1Estribo);
+            groupEstribos.Controls.Add(comboDiam1Estribo);
+            groupEstribos.Controls.Add(labelEspac1Estribo);
+            groupEstribos.Controls.Add(numEspac1Estribo);
+            groupEstribos.Controls.Add(labelDiam2Estribo);
+            groupEstribos.Controls.Add(comboDiam2Estribo);
             groupEstribos.Dock = DockStyle.Top;
             groupEstribos.Location = new Point(10, 113);
             groupEstribos.Margin = new Padding(3, 4, 3, 4);
             groupEstribos.Name = "groupEstribos";
             groupEstribos.Padding = new Padding(3, 4, 3, 4);
-            groupEstribos.Size = new Size(380, 125);
+            groupEstribos.Size = new Size(380, 127);
             groupEstribos.TabIndex = 1;
             groupEstribos.TabStop = false;
             groupEstribos.Text = "Estribos";
             // 
-            // labelDiamEstribo
+            // checkCombinacaoEstribos
             // 
-            labelDiamEstribo.AutoSize = true;
-            labelDiamEstribo.Location = new Point(15, 31);
-            labelDiamEstribo.Name = "labelDiamEstribo";
-            labelDiamEstribo.Size = new Size(115, 20);
-            labelDiamEstribo.TabIndex = 0;
-            labelDiamEstribo.Text = "Di‚metro (mm):";
+            checkCombinacaoEstribos.AutoSize = true;
+            checkCombinacaoEstribos.Location = new Point(240, 27);
+            checkCombinacaoEstribos.Name = "checkCombinacaoEstribos";
+            checkCombinacaoEstribos.Size = new Size(115, 24);
+            checkCombinacaoEstribos.TabIndex = 5;
+            checkCombinacaoEstribos.Text = "Combina√ß√£o";
+            checkCombinacaoEstribos.UseVisualStyleBackColor = true;
             // 
-            // comboDiamEstribo
+            // labelDiam1Estribo
             // 
-            comboDiamEstribo.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboDiamEstribo.FormattingEnabled = true;
-            comboDiamEstribo.Location = new Point(15, 56);
-            comboDiamEstribo.Margin = new Padding(3, 4, 3, 4);
-            comboDiamEstribo.Name = "comboDiamEstribo";
-            comboDiamEstribo.Size = new Size(70, 28);
-            comboDiamEstribo.TabIndex = 1;
+            labelDiam1Estribo.AutoSize = true;
+            labelDiam1Estribo.Enabled = false;
+            labelDiam1Estribo.Location = new Point(9, 54);
+            labelDiam1Estribo.Name = "labelDiam1Estribo";
+            labelDiam1Estribo.Size = new Size(71, 20);
+            labelDiam1Estribo.TabIndex = 6;
+            labelDiam1Estribo.Text = "√ò1 (mm):";
             // 
-            // labelEspacamentoEstribo
+            // comboDiam1Estribo
             // 
-            labelEspacamentoEstribo.AutoSize = true;
-            labelEspacamentoEstribo.Location = new Point(162, 32);
-            labelEspacamentoEstribo.Name = "labelEspacamentoEstribo";
-            labelEspacamentoEstribo.Size = new Size(141, 20);
-            labelEspacamentoEstribo.TabIndex = 2;
-            labelEspacamentoEstribo.Text = "EspaÁamento (mm):";
+            comboDiam1Estribo.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam1Estribo.Enabled = false;
+            comboDiam1Estribo.Location = new Point(15, 78);
+            comboDiam1Estribo.Name = "comboDiam1Estribo";
+            comboDiam1Estribo.Size = new Size(60, 28);
+            comboDiam1Estribo.TabIndex = 7;
             // 
-            // numEspacamentoEstribo
+            // labelEspac1Estribo
             // 
-            numEspacamentoEstribo.Increment = new decimal(new int[] { 25, 0, 0, 0 });
-            numEspacamentoEstribo.Location = new Point(162, 57);
-            numEspacamentoEstribo.Margin = new Padding(3, 4, 3, 4);
-            numEspacamentoEstribo.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
-            numEspacamentoEstribo.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
-            numEspacamentoEstribo.Name = "numEspacamentoEstribo";
-            numEspacamentoEstribo.Size = new Size(80, 27);
-            numEspacamentoEstribo.TabIndex = 3;
-            numEspacamentoEstribo.Value = new decimal(new int[] { 125, 0, 0, 0 });
+            labelEspac1Estribo.AutoSize = true;
+            labelEspac1Estribo.Enabled = false;
+            labelEspac1Estribo.Location = new Point(272, 54);
+            labelEspac1Estribo.Name = "labelEspac1Estribo";
+            labelEspac1Estribo.Size = new Size(78, 20);
+            labelEspac1Estribo.TabIndex = 8;
+            labelEspac1Estribo.Text = "Esp. (mm):";
             // 
-            // checkEspacamentoVariavel
+            // numEspac1Estribo
             // 
-            checkEspacamentoVariavel.AutoSize = true;
-            checkEspacamentoVariavel.Location = new Point(15, 94);
-            checkEspacamentoVariavel.Margin = new Padding(3, 4, 3, 4);
-            checkEspacamentoVariavel.Name = "checkEspacamentoVariavel";
-            checkEspacamentoVariavel.Size = new Size(308, 24);
-            checkEspacamentoVariavel.TabIndex = 4;
-            checkEspacamentoVariavel.Text = "EspaÁamento vari·vel (menor nos apoios)";
-            checkEspacamentoVariavel.UseVisualStyleBackColor = true;
+            numEspac1Estribo.Enabled = false;
+            numEspac1Estribo.Increment = new decimal(new int[] { 25, 0, 0, 0 });
+            numEspac1Estribo.Location = new Point(285, 79);
+            numEspac1Estribo.Maximum = new decimal(new int[] { 500, 0, 0, 0 });
+            numEspac1Estribo.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
+            numEspac1Estribo.Name = "numEspac1Estribo";
+            numEspac1Estribo.Size = new Size(70, 27);
+            numEspac1Estribo.TabIndex = 9;
+            numEspac1Estribo.Value = new decimal(new int[] { 125, 0, 0, 0 });
+            // 
+            // labelDiam2Estribo
+            // 
+            labelDiam2Estribo.AutoSize = true;
+            labelDiam2Estribo.Enabled = false;
+            labelDiam2Estribo.Location = new Point(91, 54);
+            labelDiam2Estribo.Name = "labelDiam2Estribo";
+            labelDiam2Estribo.Size = new Size(71, 20);
+            labelDiam2Estribo.TabIndex = 10;
+            labelDiam2Estribo.Text = "√ò2 (mm):";
+            // 
+            // comboDiam2Estribo
+            // 
+            comboDiam2Estribo.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboDiam2Estribo.Enabled = false;
+            comboDiam2Estribo.Location = new Point(98, 78);
+            comboDiam2Estribo.Name = "comboDiam2Estribo";
+            comboDiam2Estribo.Size = new Size(60, 28);
+            comboDiam2Estribo.TabIndex = 11;
             // 
             // groupParametros
             // 
@@ -596,7 +798,7 @@ namespace Rebar_Revit
             groupParametros.Size = new Size(380, 101);
             groupParametros.TabIndex = 2;
             groupParametros.TabStop = false;
-            groupParametros.Text = "Par‚metros";
+            groupParametros.Text = "Par√¢metros";
             // 
             // labelCobrimento
             // 
@@ -625,7 +827,7 @@ namespace Rebar_Revit
             labelAmarracao.Name = "labelAmarracao";
             labelAmarracao.Size = new Size(178, 20);
             labelAmarracao.TabIndex = 2;
-            labelAmarracao.Text = "Multiplicador AmarraÁ„o:";
+            labelAmarracao.Text = "Multiplicador Amarra√ß√£o:";
             // 
             // numMultAmarracao
             // 
@@ -642,7 +844,7 @@ namespace Rebar_Revit
             // 
             buttonExecutar.BackColor = Color.LightGreen;
             buttonExecutar.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            buttonExecutar.Location = new Point(95, 638);
+            buttonExecutar.Location = new Point(25, 722);
             buttonExecutar.Margin = new Padding(3, 4, 3, 4);
             buttonExecutar.Name = "buttonExecutar";
             buttonExecutar.Size = new Size(160, 44);
@@ -652,7 +854,7 @@ namespace Rebar_Revit
             // 
             // buttonCancelar
             // 
-            buttonCancelar.Location = new Point(265, 638);
+            buttonCancelar.Location = new Point(265, 722);
             buttonCancelar.Margin = new Padding(3, 4, 3, 4);
             buttonCancelar.Name = "buttonCancelar";
             buttonCancelar.Size = new Size(100, 44);
@@ -662,7 +864,7 @@ namespace Rebar_Revit
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(15, 700);
+            progressBar.Location = new Point(25, 774);
             progressBar.Margin = new Padding(3, 4, 3, 4);
             progressBar.Name = "progressBar";
             progressBar.Size = new Size(350, 25);
@@ -673,7 +875,7 @@ namespace Rebar_Revit
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(900, 759);
+            ClientSize = new Size(900, 813);
             Controls.Add(panelDireito);
             Controls.Add(panelEsquerdo);
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -681,7 +883,7 @@ namespace Rebar_Revit
             MaximizeBox = false;
             Name = "FormularioPrincipal";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Armaduras em Vigas - v0.1_Alpha";
+            Text = "Armaduras em Vigas - v0.2_Alpha";
             panelEsquerdo.ResumeLayout(false);
             groupSelecaoViga.ResumeLayout(false);
             groupSelecaoViga.PerformLayout();
@@ -691,16 +893,19 @@ namespace Rebar_Revit
             groupArmaduraLongitudinal.ResumeLayout(false);
             groupArmaduraSuperior.ResumeLayout(false);
             groupArmaduraSuperior.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantSuperior).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Superior).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Superior).EndInit();
             groupArmaduraInferior.ResumeLayout(false);
             groupArmaduraInferior.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantInferior).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Inferior).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Inferior).EndInit();
             groupArmaduraLateral.ResumeLayout(false);
             groupArmaduraLateral.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numQuantLateral).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant1Lateral).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numQuant2Lateral).EndInit();
             groupEstribos.ResumeLayout(false);
             groupEstribos.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numEspacamentoEstribo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numEspac1Estribo).EndInit();
             groupParametros.ResumeLayout(false);
             groupParametros.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numCobrimento).EndInit();
@@ -710,7 +915,7 @@ namespace Rebar_Revit
 
         #endregion
 
-        // PAINEL ESQUERDO - SELE«√O E VISUALIZA«√O
+        // PAINEL ESQUERDO - SELE√á√ÉO E VISUALIZA√á√ÉO
         private Panel panelEsquerdo;
         private GroupBox groupSelecaoViga;
         private Label labelSelecionarViga;
@@ -724,35 +929,56 @@ namespace Rebar_Revit
         private CheckBox checkUsarVigaSelecionada;
         private System.Windows.Forms.Timer selectionTimer;
 
-        // PAINEL DIREITO - CONFIGURA«√O DE ARMADURA
+        // PAINEL DIREITO - CONFIGURA√á√ÉO DE ARMADURA
         private Panel panelDireito;
 
         private GroupBox groupArmaduraLongitudinal;
         private GroupBox groupArmaduraSuperior;
-        private Label labelQuantSuperior;
-        private NumericUpDown numQuantSuperior;
-        private Label labelDiamSuperior;
-        private ComboBox comboDiamSuperior;
+        // Novos controles para combina√ß√µes com interface melhorada
+        private CheckBox checkCombinacaoSuperior;
+        private Label labelQuant1Superior;
+        private NumericUpDown numQuant1Superior;
+        private Label labelDiam1Superior;
+        private ComboBox comboDiam1Superior;
+        private Label labelQuant2Superior;
+        private NumericUpDown numQuant2Superior;
+        private Label labelDiam2Superior;
+        private ComboBox comboDiam2Superior;
 
         private GroupBox groupArmaduraInferior;
-        private Label labelQuantInferior;
-        private NumericUpDown numQuantInferior;
-        private Label labelDiamInferior;
-        private ComboBox comboDiamInferior;
+        // Novos controles para combina√ß√µes com interface melhorada
+        private CheckBox checkCombinacaoInferior;
+        private Label labelQuant1Inferior;
+        private NumericUpDown numQuant1Inferior;
+        private Label labelDiam1Inferior;
+        private ComboBox comboDiam1Inferior;
+        private Label labelQuant2Inferior;
+        private NumericUpDown numQuant2Inferior;
+        private Label labelDiam2Inferior;
+        private ComboBox comboDiam2Inferior;
 
         private GroupBox groupArmaduraLateral;
+        // Novos controles para combina√ß√µes com interface melhorada
         private CheckBox checkArmaduraLateral;
-        private Label labelQuantLateral;
-        private NumericUpDown numQuantLateral;
-        private Label labelDiamLateral;
-        private ComboBox comboDiamLateral;
+        private CheckBox checkCombinacaoLateral;
+        private Label labelQuant1Lateral;
+        private NumericUpDown numQuant1Lateral;
+        private Label labelDiam1Lateral;
+        private ComboBox comboDiam1Lateral;
+        private Label labelQuant2Lateral;
+        private NumericUpDown numQuant2Lateral;
+        private Label labelDiam2Lateral;
+        private ComboBox comboDiam2Lateral;
 
         private GroupBox groupEstribos;
-        private Label labelDiamEstribo;
-        private ComboBox comboDiamEstribo;
-        private Label labelEspacamentoEstribo;
-        private NumericUpDown numEspacamentoEstribo;
-        private CheckBox checkEspacamentoVariavel;
+        // Novos controles para combina√ß√µes de estribos com interface melhorada
+        private CheckBox checkCombinacaoEstribos;
+        private Label labelDiam1Estribo;
+        private ComboBox comboDiam1Estribo;
+        private Label labelEspac1Estribo;
+        private NumericUpDown numEspac1Estribo;
+        private Label labelDiam2Estribo;
+        private ComboBox comboDiam2Estribo;
 
         private GroupBox groupParametros;
         private Label labelCobrimento;
@@ -760,7 +986,7 @@ namespace Rebar_Revit
         private Label labelAmarracao;
         private NumericUpDown numMultAmarracao;
 
-        // BOT’ES DE A«√O
+        // BOT√ïES DE A√á√ÉO
         private Button buttonExecutar;
         private Button buttonCancelar;
         private ProgressBar progressBar;

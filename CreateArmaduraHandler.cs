@@ -91,13 +91,29 @@ namespace Rebar_Revit
                 config.Varoes.Clear();
                 foreach (var v in Data.Varoes)
                 {
-                    config.Varoes.Add(new ArmVar(v.Quantidade, v.Diametro) { TipoArmadura = v.TipoArmadura });
+                    // Preserve combination objects when present so generation logic can create alternated sequence
+                    if (v.UsaCombinacao && v.Combinacao != null)
+                    {
+                        config.Varoes.Add(new ArmVar(v.Combinacao, v.TipoArmadura));
+                    }
+                    else
+                    {
+                        config.Varoes.Add(new ArmVar(v.Quantidade, v.Diametro) { TipoArmadura = v.TipoArmadura });
+                    }
                 }
 
                 config.Estribos.Clear();
                 foreach (var e in Data.Estribos)
                 {
-                    config.Estribos.Add(new ArmStirrup(e.Diametro, e.Espacamento) { Alternado = e.Alternado });
+                    // Preserve combination objects when present so generation logic can create alternated sequence
+                    if (e.UsaCombinacao && e.Combinacao != null)
+                    {
+                        config.Estribos.Add(new ArmStirrup(e.Combinacao) { Alternado = e.Alternado });
+                    }
+                    else
+                    {
+                        config.Estribos.Add(new ArmStirrup(e.Diametro, e.Espacamento) { Alternado = e.Alternado });
+                    }
                 }
 
                 int total = Data.ElementIds.Count;
@@ -116,13 +132,13 @@ namespace Rebar_Revit
                             Element el = doc.GetElement(id);
                             if (el == null)
                             {
-                                errors.Add($"Elemento ID {id} n?o encontrado");
+                                errors.Add($"Elemento ID {id} não encontrado");
                                 continue;
                             }
 
                             bool res = config.ColocarArmadura(el);
                             if (res) success++;
-                            else errors.Add($"Falha na coloca??o em Element {id}");
+                            else errors.Add($"Falha na colocação em Element {id}");
                         }
                         catch (Exception ex)
                         {
@@ -139,11 +155,11 @@ namespace Rebar_Revit
                     trans.Commit();
                 }
 
-                string mensagem = $"Processo conclu?do!\n\nVigas processadas: {total}\nArmaduras criadas: {success}\nErros: {errors.Count}";
+                string mensagem = $"Processo concluído!\n\nVigas processadas: {total}\nArmaduras criadas: {success}\nErros: {errors.Count}";
                 if (errors.Count > 0)
                 {
                     mensagem += "\n\nPrimeiros erros:";
-                    for (int i = 0; i < Math.Min(errors.Count, 5); i++) mensagem += $"\n? {errors[i]}";
+                    for (int i = 0; i < Math.Min(errors.Count, 5); i++) mensagem += $"\n• {errors[i]}";
                 }
 
                 // notify UI that processing is complete

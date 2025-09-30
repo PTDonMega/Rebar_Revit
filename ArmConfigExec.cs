@@ -526,40 +526,137 @@ namespace Rebar_Revit
     }
 
     /// <summary>
-    /// Classe para representar um varão individual para vigas
+    /// Classe para representar um varão individual para vigas com suporte a combinações
     /// </summary>
     public class ArmVar
     {
         public int Quantidade { get; set; }
         public double Diametro { get; set; }
         public string TipoArmadura { get; set; } = "Superior";
+        
+        // Novas propriedades para combinações
+        public bool UsaCombinacao { get; set; } = false;
+        public CombinacaoVaroes Combinacao { get; set; }
 
         public ArmVar(int quantidade, double diametro)
         {
             Quantidade = quantidade;
             Diametro = diametro;
+            UsaCombinacao = false;
         }
 
-        public override string ToString() => $"{Quantidade}Ø{Diametro}mm ({TipoArmadura})";
+        // Construtor para combinações
+        public ArmVar(CombinacaoVaroes combinacao, string tipoArmadura = "Superior")
+        {
+            UsaCombinacao = true;
+            Combinacao = combinacao;
+            TipoArmadura = tipoArmadura;
+            
+            // Definir quantidade e diâmetro principal baseado na combinação
+            if (combinacao?.Varoes?.Any() == true)
+            {
+                Quantidade = combinacao.QuantidadeTotal;
+                Diametro = combinacao.Varoes.OrderByDescending(v => v.Diametro).First().Diametro;
+            }
+        }
+
+        /// <summary>
+        /// Obtém a distribuição de diâmetros para este varão
+        /// </summary>
+        public List<double> ObterDistribuicaoDiametros()
+        {
+            if (UsaCombinacao && Combinacao != null)
+            {
+                return Combinacao.ObterDistribuicaoOrdenada();
+            }
+            else
+            {
+                // Retornar lista com o mesmo diâmetro repetido
+                return Enumerable.Repeat(Diametro, Quantidade).ToList();
+            }
+        }
+
+        public override string ToString() 
+        {
+            if (UsaCombinacao && Combinacao != null)
+            {
+                return $"{Combinacao} ({TipoArmadura})";
+            }
+            return $"{Quantidade}?{Diametro}mm ({TipoArmadura})";
+        }
     }
 
     /// <summary>
-    /// Classe para representar configuração de estribos
+    /// Classe para representar configuração de estribos com suporte a combinações
     /// </summary>
     public class ArmStirrup
     {
         public double Diametro { get; set; }
         public double Espacamento { get; set; }
         public bool Alternado { get; set; } = false;
+        
+        // Novas propriedades para combinações
+        public bool UsaCombinacao { get; set; } = false;
+        public CombinacaoEstribos Combinacao { get; set; }
 
         public ArmStirrup(double diametro, double espacamento)
         {
             Diametro = diametro;
             Espacamento = espacamento;
+            UsaCombinacao = false;
+        }
+
+        // Construtor para combinações
+        public ArmStirrup(CombinacaoEstribos combinacao)
+        {
+            UsaCombinacao = true;
+            Combinacao = combinacao;
+            Alternado = combinacao?.Intercalado ?? false;
+            
+            // Definir diâmetro e espaçamento principal baseado na combinação
+            if (combinacao?.Estribos?.Any() == true)
+            {
+                var primeiro = combinacao.Estribos.First();
+                Diametro = primeiro.Diametro;
+                Espacamento = primeiro.Espacamento;
+            }
+        }
+
+        /// <summary>
+        /// Gera a sequência de estribos para um comprimento específico
+        /// </summary>
+        public List<PosicaoEstribo> GerarSequencia(double comprimentoViga)
+        {
+            if (UsaCombinacao && Combinacao != null)
+            {
+                return Combinacao.GerarSequenciaEstribos(comprimentoViga);
+            }
+            else
+            {
+                // Gerar sequência uniforme
+                var resultado = new List<PosicaoEstribo>();
+                double posicao = Espacamento; // Começar no primeiro espaçamento
+                
+                while (posicao < comprimentoViga)
+                {
+                    resultado.Add(new PosicaoEstribo
+                    {
+                        Posicao = posicao,
+                        Diametro = Diametro,
+                        EspacamentoOriginal = Espacamento
+                    });
+                    
+                    posicao += Espacamento;
+                }
+                
+                return resultado;
+            }
         }
 
         public override string ToString() =>
-            $"Ø{Diametro}mm//{Espacamento}mm{(Alternado ? " Alt." : "")}";
+            UsaCombinacao && Combinacao != null ? 
+                Combinacao.ToString() : 
+                $"?{Diametro}mm//{Espacamento}mm{(Alternado ? " Alt." : "")}";
     }
 
     /// <summary>
